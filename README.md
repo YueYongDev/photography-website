@@ -117,6 +117,8 @@ http://localhost:3000/sign-up
 
 Note: After the first admin user is created, the `/sign-up` route will be disabled for security purposes. Any subsequent attempts to access the sign-up page will automatically redirect to the sign-in page (`/sign-in`).
 
+### Enable Cloudflare Image Resizing
+
 ### Custom Domain Configuration
 
 Before deploying, you need to update the custom domain in `image-loader.ts`:
