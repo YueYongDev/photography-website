@@ -19,9 +19,10 @@ export default function cloudflareLoader({
   //   return src;
   // }
   const params = [`width=${width}`];
-  if (quality) {
-    params.push(`quality=${quality}`);
+  if (!quality) {
+    quality = 75; // Default quality if not provided
   }
+  params.push(`quality=${quality}`);
   const paramsString = params.join(",");
 
   return `https://cdn.yueyong.fun/cdn-cgi/image/${paramsString}/${normalizeSrc(
