@@ -19,7 +19,7 @@ interface CityItemProps {
 export const CityItem = ({ city, onMouseEnter }: CityItemProps) => {
   const router = useRouter();
 
-  const citySlug = slugify(city.city);
+  // const citySlug = slugify(city.city);
 
   return (
     <div
