@@ -1,0 +1,1 @@
+ALTER TABLE "photos" RENAME COLUMN "isFavorite" TO "is_favorite";
