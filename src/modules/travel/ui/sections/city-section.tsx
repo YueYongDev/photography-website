@@ -68,7 +68,7 @@ const CitySectionSuspense = ({ city }: Props) => {
         {/* CITY INFO CARD  */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 2xl:grid-cols-3 gap-4 items-stretch">
           <div className="col-span-1 md:col-span-2 lg:col-span-1 2xl:col-span-2">
-            <div className="flex flex-col p-10 gap-24 bg-muted rounded-xl font-light relative h-full">
+            <div className="flex flex-col p-10 gap-10 bg-muted rounded-xl font-light relative h-full">
               <div className="flex gap-4 items-center">
                 {/* NAME  */}
                 <div className="flex flex-col gap-[2px]">
@@ -77,7 +77,7 @@ const CitySectionSuspense = ({ city }: Props) => {
               </div>
 
               <div>
-                <p className="text-text-muted text-[15px]">
+                <p className="text-text-muted text-[15px] whitespace-pre-line">
                   {cityData.description}
                 </p>
               </div>

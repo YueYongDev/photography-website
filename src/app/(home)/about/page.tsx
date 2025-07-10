@@ -60,7 +60,7 @@ const AboutPage = () => {
           <CardContainer>
             <div className="flex items-center justify-between p-6">
               <h1 className="text-lg">SONY</h1>
-              <p className="text-sm">Alpha ILCE-6700</p>
+              <p className="text-sm">Alpha ILCE-6700L</p>
             </div>
           </CardContainer>
         </PageTransitionItem>

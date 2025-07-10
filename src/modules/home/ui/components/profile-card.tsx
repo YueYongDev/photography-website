@@ -21,7 +21,7 @@ const ProfileCard = () => {
                 src="https://cdn.yueyong.fun/photography-website/photos/IMG_9251.jpg"
                 alt="Avatar"
               />
-              <AvatarFallback>EC</AvatarFallback>
+              <AvatarFallback>YUEYONG</AvatarFallback>
             </Avatar>
 
             {/* NAME  */}
@@ -48,14 +48,14 @@ const ProfileCard = () => {
       <div className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 flex flex-col justify-between gap-3">
         <ContactCard
           title="Instagram"
-          href="https://www.instagram.com/yueyong.lyy?igsh=Ym1rdXlwODVmenAw&utm_source=qr"
+          href="https://www.instagram.com/yueyong.lyy"
         />
 
         <ContactCard title="GitHub" href="https://github.com/YueYongDev" />
 
         <ContactCard
           title="Xiaohongshu"
-          href="https://www.xiaohongshu.com/user/profile/66c84ba2000000001b01b3f1"
+          href="https://www.xiaohongshu.com/user/profile/5c1313b60000000007003641"
         />
 
         <ContactCard

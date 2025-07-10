@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "photograph.ecarry.uk",
+        hostname: "p.yueyong.fun",
         port: "",
       },
     ],

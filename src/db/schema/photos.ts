@@ -130,8 +130,75 @@ export const photosUpdateSchema = createUpdateSchema(photos)
     latitude: true,
     longitude: true,
     visibility: true,
+    make: true,
+    model: true,
+    lensModel: true,
+    focalLength: true,
+    focalLength35mm: true,
+    fNumber: true,
+    iso: true,
+    exposureTime: true,
+    exposureCompensation: true,
+    dateTimeOriginal: true,
   })
-  .partial();
+  .partial()
+  .extend({
+    focalLength: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    focalLength35mm: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    fNumber: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    iso: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    exposureTime: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    exposureCompensation: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    latitude: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    longitude: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((val) =>
+        val === "" || val === undefined ? undefined : Number(val)
+      ),
+    dateTimeOriginal: z
+      .union([z.string(), z.date()])
+      .optional()
+      .transform((val) => {
+        if (!val || val === "") return undefined;
+        return typeof val === "string" ? new Date(val) : val;
+      }),
+  });
 
 // Types
 export type Photo = InferSelectModel<typeof photos>;

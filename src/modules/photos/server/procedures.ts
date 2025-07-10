@@ -57,7 +57,10 @@ export const photosRouter = createTRPCRouter({
             .select()
             .from(citySets)
             .where(
-              sql`${citySets.country} = ${insertedPhoto.country} AND ${citySets.city} = ${insertedPhoto.city}`
+              and(
+                eq(citySets.country, insertedPhoto.country),
+                eq(citySets.city, cityName)
+              )
             );
 
           console.log("Updated city set:", updatedCitySet);
@@ -76,30 +79,20 @@ export const photosRouter = createTRPCRouter({
         });
       }
     }),
+
   remove: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-      })
-    )
+    .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
       const { id } = input;
 
-      if (!id) {
-        throw new TRPCError({ code: "BAD_REQUEST" });
-      }
-
       try {
         const [photo] = await db.select().from(photos).where(eq(photos.id, id));
-
-        if (!photo) {
+        if (!photo)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Photo not found",
           });
-        }
 
-        // city set related
         if (photo.country && photo.city) {
           const [citySet] = await db
             .select()
@@ -111,14 +104,10 @@ export const photosRouter = createTRPCRouter({
               )
             );
 
-          // if city set photo count is 1, delete the city set
-          if (citySet && citySet.photoCount === 1) {
-            await db.delete(citySets).where(eq(citySets.id, citySet.id));
-          }
-
           if (citySet) {
-            // if this is the cover photo, find a new cover photo
-            if (citySet.coverPhotoId === photo.id) {
+            if (citySet.photoCount === 1) {
+              await db.delete(citySets).where(eq(citySets.id, citySet.id));
+            } else if (citySet.coverPhotoId === photo.id) {
               const [newCoverPhoto] = await db
                 .select()
                 .from(photos)
@@ -130,13 +119,11 @@ export const photosRouter = createTRPCRouter({
                   )
                 );
 
-              if (!newCoverPhoto) return;
-
               await db
                 .update(citySets)
                 .set({
                   photoCount: sql`${citySets.photoCount} - 1`,
-                  coverPhotoId: newCoverPhoto.id,
+                  coverPhotoId: newCoverPhoto?.id ?? null,
                   updatedAt: new Date(),
                 })
                 .where(
@@ -146,7 +133,6 @@ export const photosRouter = createTRPCRouter({
                   )
                 );
             } else {
-              // update the city set photo count
               await db
                 .update(citySets)
                 .set({
@@ -163,29 +149,19 @@ export const photosRouter = createTRPCRouter({
           }
         }
 
-        // delete cloudflare r2 file & database record
         try {
           const key = new URL(photo.url).pathname.slice(1);
-          const command = new DeleteObjectCommand({
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-            Key: key,
-          });
-          await s3Client.send(command);
-
-          await db.delete(photos).where(eq(photos.id, id));
+          await s3Client.send(
+            new DeleteObjectCommand({
+              Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+              Key: key,
+            })
+          );
         } catch (error) {
-          if (error instanceof Error) {
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: error.message,
-            });
-          }
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to delete photo",
-          });
+          console.error("S3 delete failed", error);
         }
 
+        await db.delete(photos).where(eq(photos.id, id));
         return photo;
       } catch (error) {
         console.error("Photo deletion error:", error);
@@ -195,223 +171,167 @@ export const photosRouter = createTRPCRouter({
         });
       }
     }),
+
   update: protectedProcedure
     .input(photosUpdateSchema)
     .mutation(async ({ input }) => {
       const { id } = input;
-
-      if (!id) {
-        throw new TRPCError({ code: "BAD_REQUEST" });
-      }
+      if (!id) throw new TRPCError({ code: "BAD_REQUEST" });
 
       const [updatedPhoto] = await db
         .update(photos)
-        .set({
-          ...input,
-        })
+        .set(input)
         .where(eq(photos.id, id))
         .returning();
 
-      if (!updatedPhoto) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
-
+      if (!updatedPhoto) throw new TRPCError({ code: "NOT_FOUND" });
       return updatedPhoto;
     }),
+
   getOne: baseProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-      })
-    )
+    .input(z.object({ id: z.string().uuid() }))
     .query(async ({ input }) => {
-      const { id } = input;
-
-      const [photo] = await db.select().from(photos).where(eq(photos.id, id));
-
+      const [photo] = await db
+        .select()
+        .from(photos)
+        .where(eq(photos.id, input.id));
       return photo;
     }),
+
   getMany: baseProcedure
     .input(
       z.object({
         cursor: z
-          .object({
-            id: z.string().uuid(),
-            updatedAt: z.date(),
-          })
+          .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
       })
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
+      const whereClause = cursor
+        ? or(
+            lt(photos.updatedAt, cursor.updatedAt),
+            and(
+              eq(photos.updatedAt, cursor.updatedAt),
+              eq(photos.visibility, "public"),
+              lt(photos.id, cursor.id)
+            )
+          )
+        : undefined;
 
       const data = await db
         .select()
         .from(photos)
-        .where(
-          and(
-            cursor
-              ? or(
-                  lt(photos.updatedAt, cursor.updatedAt),
-                  and(
-                    eq(photos.updatedAt, cursor.updatedAt),
-                    eq(photos.visibility, "public"),
-                    lt(photos.id, cursor.id)
-                  )
-                )
-              : undefined
-          )
-        )
+        .where(whereClause)
         .orderBy(desc(photos.updatedAt))
         .limit(limit + 1);
-
       const hasMore = data.length > limit;
-      // Remove the last item if there is more data
       const items = hasMore ? data.slice(0, -1) : data;
-      // Set the next cursor to the last item if there is more data
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore
-        ? {
-            id: lastItem.id,
-            updatedAt: lastItem.updatedAt,
-          }
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
         : null;
 
       return { items, nextCursor };
     }),
+
   getManyWithPrivate: protectedProcedure
     .input(
       z.object({
         cursor: z
-          .object({
-            id: z.string().uuid(),
-            updatedAt: z.date(),
-          })
+          .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
       })
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
+      const whereClause = cursor
+        ? or(
+            lt(photos.updatedAt, cursor.updatedAt),
+            and(
+              eq(photos.updatedAt, cursor.updatedAt),
+              lt(photos.id, cursor.id)
+            )
+          )
+        : undefined;
 
       const data = await db
         .select()
         .from(photos)
-        .where(
-          and(
-            cursor
-              ? or(
-                  lt(photos.updatedAt, cursor.updatedAt),
-                  and(
-                    eq(photos.updatedAt, cursor.updatedAt),
-                    lt(photos.id, cursor.id)
-                  )
-                )
-              : undefined
-          )
-        )
+        .where(whereClause)
         .orderBy(desc(photos.updatedAt))
         .limit(limit + 1);
-
       const hasMore = data.length > limit;
-      // Remove the last item if there is more data
       const items = hasMore ? data.slice(0, -1) : data;
-      // Set the next cursor to the last item if there is more data
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore
-        ? {
-            id: lastItem.id,
-            updatedAt: lastItem.updatedAt,
-          }
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
         : null;
 
       return { items, nextCursor };
     }),
-  getLikedPhotos: baseProcedure
-    .input(
-      z.object({
-        limit: z.number().min(1).max(100).default(10),
-      })
-    )
-    .query(async ({ input }) => {
-      const { limit } = input;
 
-      const data = await db
+  getLikedPhotos: baseProcedure
+    .input(z.object({ limit: z.number().min(1).max(100).default(10) }))
+    .query(async ({ input }) => {
+      return await db
         .select()
         .from(photos)
         .where(
           and(eq(photos.isFavorite, true), eq(photos.visibility, "public"))
         )
         .orderBy(desc(photos.updatedAt))
-        .limit(limit);
-
-      return data;
+        .limit(input.limit);
     }),
+
   getCitySets: baseProcedure
     .input(
       z.object({
         cursor: z
-          .object({
-            id: z.string().uuid(),
-            updatedAt: z.date(),
-          })
+          .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
       })
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
+      const whereClause = cursor
+        ? or(
+            lt(citySets.updatedAt, cursor.updatedAt),
+            and(
+              eq(citySets.updatedAt, cursor.updatedAt),
+              lt(citySets.id, cursor.id)
+            )
+          )
+        : undefined;
 
       const data = await db.query.citySets.findMany({
-        with: {
-          coverPhoto: true,
-          photos: true,
-        },
-        where: cursor
-          ? or(
-              lt(citySets.updatedAt, cursor.updatedAt),
-              and(
-                eq(citySets.updatedAt, cursor.updatedAt),
-                lt(citySets.id, cursor.id)
-              )
-            )
-          : undefined,
+        with: { coverPhoto: true, photos: true },
+        where: whereClause,
         orderBy: [desc(citySets.updatedAt)],
         limit: limit + 1,
       });
 
       const hasMore = data.length > limit;
-      // Remove the last item if there is more data
       const items = hasMore ? data.slice(0, -1) : data;
-      // Set the next cursor to the last item if there is more data
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore
-        ? {
-            id: lastItem.id,
-            updatedAt: lastItem.updatedAt,
-          }
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
         : null;
 
       return { items, nextCursor };
     }),
+
   getCitySetByCity: baseProcedure
-    .input(
-      z.object({
-        city: z.string(),
-      })
-    )
+    .input(z.object({ city: z.string() }))
     .query(async ({ input }) => {
-      const { city } = input;
-
-      const data = await db.query.citySets.findFirst({
-        with: {
-          coverPhoto: true,
-          photos: true,
-        },
-        where: eq(citySets.city, city),
-      });
-
-      return data;
+      return (
+        (await db.query.citySets.findFirst({
+          with: { coverPhoto: true, photos: true },
+          where: eq(citySets.city, input.city),
+        })) ?? null
+      );
     }),
 });

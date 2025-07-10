@@ -72,16 +72,16 @@ export default function MobileMenu({ isOpen, onClose }: Props) {
                 {/* AVATAR  */}
                 <Avatar className="size-[60px]">
                   <AvatarImage
-                    src="https://avatars.githubusercontent.com/u/16572906?s=400&u=a304af70d12572524d540553425d78ff4d1a101a&v=4"
+                    src="https://cdn.yueyong.fun/photography-website/photos/IMG_9251.jpg"
                     alt="Avatar"
                   />
-                  <AvatarFallback>EC</AvatarFallback>
+                  <AvatarFallback>YUEYONG</AvatarFallback>
                 </Avatar>
 
                 {/* NAME  */}
                 <div className="flex flex-col">
-                  <h1 className="text-lg">ECarry</h1>
-                  <p className="text-sm text-text-muted">Photographer</p>
+                  <h1 className="text-lg">YueYong</h1>
+                  <p className="text-sm text-text-muted">Software Engineer, Photographer</p>
                 </div>
               </div>
             </div>

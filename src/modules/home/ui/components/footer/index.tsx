@@ -8,7 +8,7 @@ const Footer = () => {
         {/* AVATAR  */}
         <Avatar className="size-[60px]">
           <AvatarImage src="https://cdn.yueyong.fun/photography-website/photos/IMG_9251.jpg" />
-          <AvatarFallback>EC</AvatarFallback>
+          <AvatarFallback>YUEYONG</AvatarFallback>
         </Avatar>
 
         {/* NAME  */}
