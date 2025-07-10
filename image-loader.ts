@@ -1,4 +1,5 @@
 const normalizeSrc = (src: string) => {
+  console.log("normalizeSrc", src);
   return src.startsWith("/") ? src.slice(1) : src;
 };
 
@@ -23,7 +24,7 @@ export default function cloudflareLoader({
   }
   const paramsString = params.join(",");
 
-  return `https:///cdn.yueyong.fun/cdn-cgi/image/${paramsString}/${normalizeSrc(
+  return `https://photograph.ecarry.uk/cdn-cgi/image/${paramsString}/${normalizeSrc(
     src
   )}`;
 }
