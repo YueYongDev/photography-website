@@ -3,14 +3,6 @@ import { PiArrowRight } from "react-icons/pi";
 import TextScroll from "@/components/text-scroll";
 import { CitySetWithPhotos } from "@/db/schema/photos";
 
-// Slugify Function
-const slugify = (text: string) => {
-  return text
-    .toLowerCase()
-    .replace(/[\s]+/g, "-")      // Replace spaces with dashes
-    .replace(/[^\w\-]+/g, "");   // Remove special characters
-};
-
 interface CityItemProps {
   city: CitySetWithPhotos;
   onMouseEnter: (city: CitySetWithPhotos) => void;
