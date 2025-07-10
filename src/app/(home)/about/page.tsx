@@ -60,7 +60,7 @@ const AboutPage = () => {
           <CardContainer>
             <div className="flex items-center justify-between p-6">
               <h1 className="text-lg">SONY</h1>
-              <p className="text-sm">Alpha 7RⅡ</p>
+              <p className="text-sm">Alpha ILCE-6700</p>
             </div>
           </CardContainer>
         </PageTransitionItem>
@@ -69,7 +69,7 @@ const AboutPage = () => {
           <CardContainer>
             <div className="flex items-center justify-between p-6">
               <h1 className="text-lg">DJI</h1>
-              <p className="text-sm">Air 2S</p>
+              <p className="text-sm">Mini 4PRO</p>
             </div>
           </CardContainer>
         </PageTransitionItem>
@@ -78,7 +78,7 @@ const AboutPage = () => {
           <CardContainer>
             <div className="flex items-center justify-between p-6">
               <h1 className="text-lg">Tamron</h1>
-              <p className="text-sm">50-400mm F/4.5-6.3 Di III VC VXD</p>
+              <p className="text-sm">18-300mm F/3.5-6.3 Di III-A VC VXD</p>
             </div>
           </CardContainer>
         </PageTransitionItem>
@@ -87,7 +87,7 @@ const AboutPage = () => {
           <CardContainer>
             <div className="flex items-center justify-between p-6">
               <h1 className="text-lg">Sigma</h1>
-              <p className="text-sm">35mm F/1.4 DG HSM</p>
+              <p className="text-sm">18-50mm F2.8 DC DN Contemporary</p>
             </div>
           </CardContainer>
         </PageTransitionItem>
@@ -96,7 +96,7 @@ const AboutPage = () => {
           <CardContainer>
             <div className="flex items-center justify-between p-6">
               <h1 className="text-lg">Viltrox</h1>
-              <p className="text-sm">AF 40mm F/2.5 FE</p>
+              <p className="text-sm">AF 27mm F/1.2 E</p>
             </div>
           </CardContainer>
         </PageTransitionItem>
