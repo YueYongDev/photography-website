@@ -52,12 +52,12 @@ const Footer = () => {
           </a>
           <span className="opacity-60">. Powered by </span>
           <a
-            href="https://github.com/ecarry"
+            href="https://github.com/YueYongDev"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-2"
           >
-            ECarry
+            YueYong
           </a>
         </p>
       </div>

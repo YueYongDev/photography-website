@@ -11,6 +11,7 @@ import { Readex_Pro } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/query-provider";
 import ScrollToTop from "@/components/scroll-to-top";
+import Script from 'next/script';
 
 const readex = Readex_Pro({ subsets: ["latin"] });
 
@@ -40,6 +41,11 @@ export default async function RootLayout({
         </ThemeProvider>
         <SpeedInsights />
         <Analytics />
+        <Script
+          src="https://ackee.yueyong.fun/script.js" 
+          data-website-id="906aecd4-e8b8-402d-83c5-eb31b98256bb"
+          strategy="beforeInteractive"
+        />
       </body>
     </html>
   );
