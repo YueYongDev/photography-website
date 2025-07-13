@@ -251,6 +251,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                     <FormField
                       key={name}
                       control={form.control}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       name={name as any}
                       render={({ field }) => (
                         <FormItem>
