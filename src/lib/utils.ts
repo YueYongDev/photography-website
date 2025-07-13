@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ExifParserFactory } from "ts-exif-parser";
 import { encode } from "blurhash";
+import * as exifr from 'exifr';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -193,58 +194,33 @@ const loadImage = async (file: File): Promise<HTMLImageElement> => {
  */
 export const getPhotoExif = async (file: File): Promise<TExifData | null> => {
   try {
-    const buffer = await file.arrayBuffer();
-    const parser = ExifParserFactory.create(Buffer.from(buffer));
-    const result = parser.parse();
+    const exif = await exifr.parse(file, {
+      tiff: true,
+      exif: true,
+      gps: true,
+    });
 
-    if (!result || !result.tags) {
-      return null;
-    }
+    if (!exif) return null;
 
-    const {
-      Make,
-      Model,
-      LensModel,
-      FocalLength,
-      FocalLengthIn35mmFormat,
-      FNumber,
-      ISO,
-      ExposureTime,
-      ExposureCompensation,
-      GPSLatitude,
-      GPSLongitude,
-      GPSAltitude,
-      DateTimeOriginal,
-    } = result.tags;
-
-    // Type cast and validation
     const exifData: TExifData = {
-      make: Make as string | undefined,
-      model: Model as string | undefined,
-      lensModel: LensModel as string | undefined,
-      focalLength: typeof FocalLength === "number" ? FocalLength : undefined,
-      focalLength35mm:
-        typeof FocalLengthIn35mmFormat === "number"
-          ? FocalLengthIn35mmFormat
-          : undefined,
-      fNumber: typeof FNumber === "number" ? FNumber : undefined,
-      iso: typeof ISO === "number" ? ISO : undefined,
-      exposureTime: typeof ExposureTime === "number" ? ExposureTime : undefined,
-      exposureCompensation:
-        typeof ExposureCompensation === "number"
-          ? ExposureCompensation
-          : undefined,
-      latitude: typeof GPSLatitude === "number" ? GPSLatitude : undefined,
-      longitude: typeof GPSLongitude === "number" ? GPSLongitude : undefined,
-      gpsAltitude: typeof GPSAltitude === "number" ? GPSAltitude : undefined,
-      dateTimeOriginal: DateTimeOriginal
-        ? new Date(DateTimeOriginal * 1000)
-        : undefined,
+      make: exif.Make,
+      model: exif.Model,
+      lensModel: exif.LensModel,
+      focalLength: exif.FocalLength,
+      focalLength35mm: exif.FocalLengthIn35mmFormat,
+      fNumber: exif.FNumber,
+      iso: exif.ISO,
+      exposureTime: exif.ExposureTime,
+      exposureCompensation: exif.ExposureCompensation,
+      latitude: exif.latitude ?? exif.GPSLatitude,
+      longitude: exif.longitude ?? exif.GPSLongitude,
+      gpsAltitude: exif.GPSAltitude,
+      dateTimeOriginal: exif.DateTimeOriginal,
     };
-
+    console.log("EXIF data:", exifData);
     return exifData;
   } catch (error) {
-    console.error("Error reading EXIF data:", error);
+    console.error('Error extracting EXIF with exifr:', error);
     return null;
   }
 };

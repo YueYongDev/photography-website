@@ -9,6 +9,7 @@ import { trpc } from "@/trpc/client";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import Masonry from "react-masonry-css";
 
 interface Props {
   city: string;
@@ -33,10 +34,14 @@ const CitySectionSuspense = ({ city }: Props) => {
   }
 
   const decodedCityName = decodeURIComponent(city);
-
   const cityPhotos = cityData.photos.filter(
     (photo) => photo.id !== cityData.coverPhoto.id
   );
+
+  const breakpointColumnsObj = {
+    default: 2,
+    768: 1,
+  };
 
   return (
     <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row w-full">
@@ -70,12 +75,10 @@ const CitySectionSuspense = ({ city }: Props) => {
           <div className="col-span-1 md:col-span-2 lg:col-span-1 2xl:col-span-2">
             <div className="flex flex-col p-10 gap-10 bg-muted rounded-xl font-light relative h-full">
               <div className="flex gap-4 items-center">
-                {/* NAME  */}
                 <div className="flex flex-col gap-[2px]">
                   <h1 className="text-4xl">{decodedCityName}</h1>
                 </div>
               </div>
-
               <div>
                 <p className="text-text-muted text-[15px] whitespace-pre-line">
                   {cityData.description}
@@ -98,9 +101,7 @@ const CitySectionSuspense = ({ city }: Props) => {
             <div className="w-full h-full p-3 lg:p-5 bg-muted rounded-xl flex justify-between items-center">
               <p className="text-xs text-text-muted">Year</p>
               <p className="text-xs">
-                {new Date(
-                  cityData.coverPhoto.dateTimeOriginal || ""
-                ).getFullYear()}
+                {new Date(cityData.coverPhoto.dateTimeOriginal || "").getFullYear()}
               </p>
             </div>
 
@@ -111,28 +112,35 @@ const CitySectionSuspense = ({ city }: Props) => {
           </div>
         </div>
 
-        {/* IMAGES  */}
-        {cityPhotos.map((photo) => (
-          <AspectRatio
-            ratio={photo.aspectRatio}
-            key={photo.id}
-            className="overflow-hidden rounded-lg"
-          >
-            <FlipCard
-              id={photo.id}
-              image={photo.url}
-              title={photo.title || ""}
-              location={photo.city + ", " + photo.country}
-              camera={photo.make + " " + photo.model}
-              blurData={photo.blurData}
-              focalLength={photo.focalLength35mm}
-              fNumber={photo.fNumber}
-              exposureTime={photo.exposureTime}
-              iso={photo.iso}
-              rotate="y"
-            />
-          </AspectRatio>
-        ))}
+        {/* IMAGES -瀑布流 */}
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="flex gap-4"
+          columnClassName="space-y-4"
+        >
+          {cityPhotos.map((photo) => (
+            <AspectRatio
+              ratio={photo.aspectRatio}
+              key={photo.id}
+              className="overflow-hidden rounded-lg"
+            >
+              <FlipCard
+                id={photo.id}
+                image={photo.url}
+                title={photo.title || ""}
+                location={photo.city + ", " + photo.country}
+                camera={photo.make + " " + photo.model}
+                blurData={photo.blurData}
+                focalLength={photo.focalLength35mm}
+                fNumber={photo.fNumber}
+                exposureTime={photo.exposureTime}
+                iso={photo.iso}
+                rotate="y"
+              />
+            </AspectRatio>
+          ))}
+        </Masonry>
+
         {/* FOOTER  */}
         <Footer />
       </div>

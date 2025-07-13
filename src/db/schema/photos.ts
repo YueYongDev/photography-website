@@ -19,7 +19,6 @@ import {
 } from "drizzle-zod";
 import { z } from "zod";
 
-// ⌚️ Reusable timestamps - Define once, use everywhere!
 export const timestamps = {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -80,26 +79,18 @@ export const citySets = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     description: text("description"),
-
-    // GEO DATA
     country: text("country").notNull(),
     countryCode: text("country_code").notNull(),
     city: text("city").notNull(),
-
-    // COVER PHOTO
     coverPhotoId: uuid("cover_photo_id")
       .references(() => photos.id)
       .notNull(),
-
     photoCount: integer("photo_count").default(0).notNull(),
-
-    // META DATA
     ...timestamps,
   },
   (t) => [uniqueIndex("unique_city_set").on(t.country, t.city)]
 );
 
-// Soft relations
 export const citySetsRelations = relations(citySets, ({ one, many }) => ({
   coverPhoto: one(photos, {
     fields: [citySets.coverPhotoId],
@@ -115,12 +106,68 @@ export const photosRelations = relations(photos, ({ one }) => ({
   }),
 }));
 
-// Schema
 export const photosInsertSchema = createInsertSchema(photos).extend({
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().min(1, { message: "Description is required" }),
+  focalLength: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  focalLength35mm: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  fNumber: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  iso: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  exposureTime: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  exposureCompensation: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  latitude: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  longitude: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) =>
+      val === "" || val === undefined ? undefined : Number(val)
+    ),
+  dateTimeOriginal: z
+    .union([z.string(), z.date()])
+    .optional()
+    .transform((val) => {
+      if (!val || val === "") return undefined;
+      return typeof val === "string" ? new Date(val) : val;
+    }),
 });
+
 export const photosSelectSchema = createSelectSchema(photos);
+
 export const photosUpdateSchema = createUpdateSchema(photos)
   .pick({
     id: true,
@@ -200,10 +247,8 @@ export const photosUpdateSchema = createUpdateSchema(photos)
       }),
   });
 
-// Types
 export type Photo = InferSelectModel<typeof photos>;
 export type CitySet = InferSelectModel<typeof citySets>;
-// with photos & cover photo
 export type CitySetWithPhotos = CitySet & { photos: Photo[] } & {
   coverPhoto: Photo;
 };
