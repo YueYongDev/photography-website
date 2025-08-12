@@ -334,4 +334,72 @@ export const photosRouter = createTRPCRouter({
         })) ?? null
       );
     }),
+
+  generateDescription: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { id } = input;
+      
+      // 获取照片信息
+      const [photo] = await db
+        .select()
+        .from(photos)
+        .where(eq(photos.id, id));
+      
+      if (!photo) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Photo not found",
+        });
+      }
+      
+      // 模拟AI生成描述的逻辑
+      // 在实际应用中，这里会调用真正的AI服务API
+      const generateAIContent = async () => {
+        // 模拟API调用延迟
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // 基于照片的EXIF数据生成描述
+        const cameraInfo = photo.make && photo.model ? `${photo.make} ${photo.model}` : 'digital camera';
+        const lensInfo = photo.lensModel ? `${photo.lensModel}` : '';
+        const settings = [];
+        
+        if (photo.fNumber) {
+          settings.push(`f/${photo.fNumber}`);
+        }
+        
+        if (photo.exposureTime) {
+          settings.push(`${photo.exposureTime}s`);
+        }
+        
+        if (photo.iso) {
+          settings.push(`ISO ${photo.iso}`);
+        }
+        
+        const settingsText = settings.length > 0 ? `Settings: ${settings.join(', ')}` : '';
+        const lensText = lensInfo ? `Lens: ${lensInfo}` : '';
+        
+        // 生成标题和描述
+        const title = photo.make || photo.model 
+          ? `Photo taken with ${cameraInfo}${lensInfo ? ` and ${lensInfo}` : ''}` 
+          : "Beautiful moment captured";
+          
+        const description = `A stunning photograph captured with a ${cameraInfo}. ${lensText ? `${lensText}. ` : ''}${settingsText ? `${settingsText}. ` : ''}This image showcases a memorable moment that was frozen in time.`;
+        
+        return {
+          title,
+          description
+        };
+      };
+      
+      try {
+        const content = await generateAIContent();
+        return content;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate AI description",
+        });
+      }
+    }),
 });

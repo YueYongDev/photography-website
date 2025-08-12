@@ -19,6 +19,7 @@ import {
   CopyCheckIcon,
   CopyIcon,
   MoreVerticalIcon,
+  SparklesIcon,
   TrashIcon,
 } from "lucide-react";
 import {
@@ -92,6 +93,18 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     onError: (error) => toast.error(error.message),
   });
 
+  // 创建一个新的mutation用于AI生成描述
+  const generateAIDescription = trpc.photos.generateDescription.useMutation({
+    onSuccess: (data) => {
+      form.setValue("title", data.title);
+      form.setValue("description", data.description);
+      toast.success("AI description generated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate AI description");
+    },
+  });
+
   const form = useForm<z.infer<typeof photosUpdateSchema>>({
     resolver: zodResolver(photosUpdateSchema),
     defaultValues: {
@@ -160,6 +173,24 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
               </p>
             </div>
             <div className="flex items-center gap-x-2">
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => generateAIDescription.mutate({ id: photoId })}
+                disabled={generateAIDescription.isPending}
+              >
+                {generateAIDescription.isPending ? (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4" />
+                    AI Description
+                  </>
+                )}
+              </Button>
               <Button type="submit" disabled={update.isPending}>
                 Save
               </Button>
