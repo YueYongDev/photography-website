@@ -1,17 +1,11 @@
-import { HydrateClient, trpc } from "@/trpc/server";
 import PhotosView from "@/modules/photos/ui/views/photos-view";
+import { PageTransitionContainer } from "@/components/page-transition";
 
-export const dynamic = "force-dynamic";
-
-const page = async () => {
-  void trpc.photos.getManyWithPrivate.prefetchInfinite({
-    limit: 10,
-  });
-
+const page = () => {
   return (
-    <HydrateClient>
+    <PageTransitionContainer>
       <PhotosView />
-    </HydrateClient>
+    </PageTransitionContainer>
   );
 };
 

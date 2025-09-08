@@ -10,11 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const TravelSection = () => {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <ErrorBoundary fallback={<p>Something went wrong</p>}>
-        <TravelSectionSuspense />
-      </ErrorBoundary>
-    </Suspense>
+    <ErrorBoundary fallback={<p>Something went wrong</p>}>
+      <TravelSectionContent />
+    </ErrorBoundary>
   );
 };
 
@@ -31,16 +29,20 @@ export const TravelSectionSkeleton = () => {
   );
 };
 
-const TravelSectionSuspense = () => {
-  const [data] = trpc.travel.getCitySets.useSuspenseQuery({
+const TravelSectionContent = () => {
+  const { data, isLoading } = trpc.travel.getCitySets.useQuery({
     limit: 4,
   });
+  
+  if (isLoading) {
+    return <TravelSectionSkeleton />;
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 w-full border">
       <MapProvider>
-        <TravelPhotos data={data.items} />
-        <TravelMap data={data.items} />
+        <TravelPhotos data={data?.items || []} />
+        <TravelMap data={data?.items || []} />
       </MapProvider>
     </div>
   );

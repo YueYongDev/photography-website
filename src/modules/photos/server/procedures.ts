@@ -14,7 +14,7 @@ import {
 } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "@/lib/s3-client";
+import { createS3Client } from "@/lib/s3-client";
 
 export const photosRouter = createTRPCRouter({
   create: protectedProcedure
@@ -151,6 +151,7 @@ export const photosRouter = createTRPCRouter({
 
         try {
           const key = new URL(photo.url).pathname.slice(1);
+          const s3Client = createS3Client();
           await s3Client.send(
             new DeleteObjectCommand({
               Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
@@ -221,7 +222,23 @@ export const photosRouter = createTRPCRouter({
         : undefined;
 
       const data = await db
-        .select()
+        .select({
+          id: photos.id,
+          url: photos.url,
+          title: photos.title,
+          description: photos.description,
+          visibility: photos.visibility,
+          dateTimeOriginal: photos.dateTimeOriginal,
+          make: photos.make,
+          model: photos.model,
+          lensModel: photos.lensModel,
+          focalLength35mm: photos.focalLength35mm,
+          city: photos.city,
+          countryCode: photos.countryCode,
+          isFavorite: photos.isFavorite,
+          blurData: photos.blurData,
+          updatedAt: photos.updatedAt,
+        })
         .from(photos)
         .where(whereClause)
         .orderBy(desc(photos.updatedAt))
@@ -258,7 +275,23 @@ export const photosRouter = createTRPCRouter({
         : undefined;
 
       const data = await db
-        .select()
+        .select({
+          id: photos.id,
+          url: photos.url,
+          title: photos.title,
+          description: photos.description,
+          visibility: photos.visibility,
+          dateTimeOriginal: photos.dateTimeOriginal,
+          make: photos.make,
+          model: photos.model,
+          lensModel: photos.lensModel,
+          focalLength35mm: photos.focalLength35mm,
+          city: photos.city,
+          countryCode: photos.countryCode,
+          isFavorite: photos.isFavorite,
+          blurData: photos.blurData,
+          updatedAt: photos.updatedAt,
+        })
         .from(photos)
         .where(whereClause)
         .orderBy(desc(photos.updatedAt))
@@ -308,7 +341,6 @@ export const photosRouter = createTRPCRouter({
         : undefined;
 
       const data = await db.query.citySets.findMany({
-        with: { coverPhoto: true, photos: true },
         where: whereClause,
         orderBy: [desc(citySets.updatedAt)],
         limit: limit + 1,
@@ -329,8 +361,11 @@ export const photosRouter = createTRPCRouter({
     .query(async ({ input }) => {
       return (
         (await db.query.citySets.findFirst({
-          with: { coverPhoto: true, photos: true },
           where: eq(citySets.city, input.city),
+          with: {
+            coverPhoto: true,
+            photos: true,
+          },
         })) ?? null
       );
     }),
@@ -353,43 +388,89 @@ export const photosRouter = createTRPCRouter({
         });
       }
       
-      // 模拟AI生成描述的逻辑
-      // 在实际应用中，这里会调用真正的AI服务API
+      // 调用ollama服务生成图片描述
       const generateAIContent = async () => {
-        // 模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // 构造图片的EXIF信息提示词
+        const exifInfo = [];
+        if (photo.make) exifInfo.push(`相机品牌: ${photo.make}`);
+        if (photo.model) exifInfo.push(`相机型号: ${photo.model}`);
+        if (photo.lensModel) exifInfo.push(`镜头型号: ${photo.lensModel}`);
+        if (photo.fNumber) exifInfo.push(`光圈值: f/${photo.fNumber}`);
+        if (photo.exposureTime) exifInfo.push(`曝光时间: ${photo.exposureTime}s`);
+        if (photo.iso) exifInfo.push(`感光度: ISO ${photo.iso}`);
+        if (photo.focalLength) exifInfo.push(`焦距: ${photo.focalLength}mm`);
+        if (photo.dateTimeOriginal) exifInfo.push(`拍摄时间: ${new Date(photo.dateTimeOriginal).toLocaleString('zh-CN')}`);
         
-        // 基于照片的EXIF数据生成描述
-        const cameraInfo = photo.make && photo.model ? `${photo.make} ${photo.model}` : 'digital camera';
-        const lensInfo = photo.lensModel ? `${photo.lensModel}` : '';
-        const settings = [];
+        const exifText = exifInfo.length > 0 ? `照片EXIF信息:\n${exifInfo.join('\n')}` : '无可用EXIF信息。';
         
-        if (photo.fNumber) {
-          settings.push(`f/${photo.fNumber}`);
-        }
+        // 构造提示词 - 要求中文输出
+        const prompt = `根据以下EXIF信息为照片生成一个有创意的标题和详细描述。
         
-        if (photo.exposureTime) {
-          settings.push(`${photo.exposureTime}s`);
-        }
+${exifText}
+
+请提供:
+1. 一个有创意、吸引人的标题 (5-10个字)
+2. 一个详细的描述 (2-3句话)，根据技术信息描述照片可能呈现的视觉内容，重点关注这些设置可能捕捉到的场景或主题。
+
+请用中文回复，并以JSON格式返回，只包含"title"和"description"字段。`;
         
-        if (photo.iso) {
-          settings.push(`ISO ${photo.iso}`);
-        }
-        
-        const settingsText = settings.length > 0 ? `Settings: ${settings.join(', ')}` : '';
-        const lensText = lensInfo ? `Lens: ${lensInfo}` : '';
-        
-        // 生成标题和描述
-        const title = photo.make || photo.model 
-          ? `Photo taken with ${cameraInfo}${lensInfo ? ` and ${lensInfo}` : ''}` 
-          : "Beautiful moment captured";
+        // 调用ollama服务
+        try {
+          const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
+          const response = await fetch(`${ollamaApiUrl}/api/generate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gemma3:4b', // 使用支持中文的模型
+              prompt: prompt,
+              stream: false,
+              format: 'json' // 要求JSON格式响应
+            }),
+          });
           
-        const description = `A stunning photograph captured with a ${cameraInfo}. ${lensText ? `${lensText}. ` : ''}${settingsText ? `${settingsText}. ` : ''}This image showcases a memorable moment that was frozen in time.`;
-        
-        return {
-          title,
-          description
-        };
+          if (!response.ok) {
+            throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          
+          // 解析响应
+          let content;
+          try {
+            // 如果响应是字符串，尝试解析为JSON
+            content = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
+          } catch (parseError) {
+            // 如果解析失败，使用默认标题和描述
+            content = {
+              title: "未命名照片",
+              description: "一个美好的瞬间被永远定格。"
+            };
+          }
+          
+          // 确保返回的内容是中文
+          if (content && typeof content === 'object') {
+            // 如果标题或描述不是中文，使用默认中文内容
+            if (content.title && !/[\u4e00-\u9fa5]/.test(content.title)) {
+              content.title = "未命名照片";
+            }
+            if (content.description && !/[\u4e00-\u9fa5]/.test(content.description)) {
+              content.description = "一个美好的瞬间被永远定格。";
+            }
+          }
+          
+          return content;
+        } catch (error) {
+          console.error("Failed to call Ollama API:", error);
+          // 如果API调用失败，返回默认中文内容
+          return {
+            title: photo.make || photo.model
+              ? `使用${photo.make || ''} ${photo.model || ''}拍摄`.trim()
+              : "未命名照片",
+            description: "一个美好的瞬间被永远定格。"
+          };
+        }
       };
       
       try {

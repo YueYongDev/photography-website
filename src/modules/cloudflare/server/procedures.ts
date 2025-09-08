@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { s3Client } from "@/lib/s3-client";
+import { createS3Client } from "@/lib/s3-client";
 
 /**
  * Generate a public URL for accessing uploaded photos
@@ -50,6 +50,7 @@ export const cloudflareR2Router = createTRPCRouter({
           ContentType: contentType,
         });
 
+        const s3Client = createS3Client();
         const signedUrl = await getSignedUrl(s3Client, command, {
           expiresIn: 3600,
         });

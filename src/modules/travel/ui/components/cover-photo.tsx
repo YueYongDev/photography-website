@@ -21,11 +21,11 @@ export const CoverPhoto = ({ citySet, citySets }: CoverPhotoProps) => {
               }`}
             >
               <BlurImage
-                src={city.coverPhoto.url}
+                src={city.coverPhoto?.url || "/placeholder.svg"}
                 alt={city.city}
                 fill
                 priority
-                blurhash={city.coverPhoto.blurData}
+                blurhash={city.coverPhoto?.blurData || ""}
                 sizes="75vw"
                 className="object-cover"
               />

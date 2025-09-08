@@ -11,12 +11,13 @@ export default function cloudflareLoader({
   width: number;
   quality?: number;
 }) {
+  // For local images (starting with /), return the src directly
+  // This includes /placeholder.svg and other local assets
   if (src.startsWith("/")) {
     return src;
   }
-  // if (process.env.NODE_ENV === "development") {
-  //   return src;
-  // }
+  
+  // For external images, use Cloudflare Image Resizing
   const params = [`width=${width}`];
   if (!quality) {
     quality = 75; // Default quality if not provided

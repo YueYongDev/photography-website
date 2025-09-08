@@ -4,8 +4,19 @@ import { StatisticsCard } from "../components/statistics-card";
 import { trpc } from "@/trpc/client";
 
 export const StatisticsSection = () => {
-  const [summary] = trpc.summary.getSummary.useSuspenseQuery();
-  const yearlyStats = summary.data?.yearlyStats || {};
+  const { data: summary, isLoading } = trpc.summary.getSummary.useQuery();
+  
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 bg-muted rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+  
+  const yearlyStats = summary?.data?.yearlyStats || {};
   const years = Object.keys(yearlyStats)
     .map(Number)
     .sort((a, b) => b - a);
@@ -25,17 +36,17 @@ export const StatisticsSection = () => {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <StatisticsCard
         title="Total photos"
-        value={summary.data?.photoCount || 0}
+        value={summary?.data?.photoCount || 0}
         direction={direction}
         percentage={growthPercentage}
       />
       <StatisticsCard
         title="Total travel cities"
-        value={summary.data?.cityCount || 0}
+        value={summary?.data?.cityCount || 0}
       />
       <StatisticsCard
         title="Total posts"
-        value={summary.data?.postCount || 0}
+        value={summary?.data?.postCount || 0}
       />
       <StatisticsCard title="Likes" value={1000} />
     </div>

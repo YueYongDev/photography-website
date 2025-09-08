@@ -34,9 +34,9 @@ const CitySectionSuspense = ({ city }: Props) => {
   }
 
   const decodedCityName = decodeURIComponent(city);
-  const cityPhotos = cityData.photos.filter(
-    (photo) => photo.id !== cityData.coverPhoto.id
-  );
+  const cityPhotos = cityData.photos?.filter(
+    (photo) => photo.id !== cityData.coverPhoto?.id
+  ) || [];
 
   const breakpointColumnsObj = {
     default: 2,
@@ -56,7 +56,7 @@ const CitySectionSuspense = ({ city }: Props) => {
             quality={75}
             blurhash={cityData.coverPhoto?.blurData || ""}
             sizes="75vw"
-            onClick={() => router.push(`/photograph/${cityData.coverPhoto.id}`)}
+            onClick={() => cityData.coverPhoto?.id && router.push(`/photograph/${cityData.coverPhoto.id}`)}
             className="object-cover rounded-xl overflow-hidden cursor-pointer"
           />
           <div className="absolute right-0 bottom-0">
@@ -101,7 +101,7 @@ const CitySectionSuspense = ({ city }: Props) => {
             <div className="w-full h-full p-3 lg:p-5 bg-muted rounded-xl flex justify-between items-center">
               <p className="text-xs text-text-muted">Year</p>
               <p className="text-xs">
-                {new Date(cityData.coverPhoto.dateTimeOriginal || "").getFullYear()}
+                {cityData.coverPhoto?.dateTimeOriginal ? new Date(cityData.coverPhoto.dateTimeOriginal).getFullYear() : "N/A"}
               </p>
             </div>
 

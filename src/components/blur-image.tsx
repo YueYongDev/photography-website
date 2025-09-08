@@ -31,12 +31,13 @@ const BlurImage = memo(function BlurImage({
   ...props
 }: BlurImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const containerStyle = fill ? "absolute inset-0" : "relative w-full h-full";
 
   return (
     <div className={containerStyle}>
-      {!imageLoaded && (
+      {!imageLoaded && !imageError && blurhash && blurhash.length >= 6 && (
         <div className={`absolute inset-0 ${className}`}>
           <Blurhash
             hash={blurhash}
@@ -54,10 +55,12 @@ const BlurImage = memo(function BlurImage({
         width={width}
         height={height}
         fill={fill}
-        className={`${className} transition-opacity duration-500 ease-in-out ${
-          imageLoaded ? "opacity-100" : "opacity-0"
+        className={`${className} transition-opacity duration-300 ease-in-out ${
+          imageLoaded && !imageError ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setImageLoaded(true)}
+        onError={() => setImageError(true)}
+        loading={props.priority ? undefined : "lazy"}
         {...props}
       />
     </div>
