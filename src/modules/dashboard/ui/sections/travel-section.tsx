@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+// Removed unused Suspense import
 import { MapProvider } from "react-map-gl";
 import { ErrorBoundary } from "react-error-boundary";
 import { TravelMap } from "../components/travel-map";

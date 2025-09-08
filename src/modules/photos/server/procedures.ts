@@ -344,6 +344,10 @@ export const photosRouter = createTRPCRouter({
         where: whereClause,
         orderBy: [desc(citySets.updatedAt)],
         limit: limit + 1,
+        with: {
+          coverPhoto: true,
+          photos: true,
+        },
       });
 
       const hasMore = data.length > limit;
@@ -441,7 +445,8 @@ ${exifText}
           try {
             // 如果响应是字符串，尝试解析为JSON
             content = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
-          } catch (parseError) {
+          } catch {
+            // Intentionally ignore parsing errors and use default content
             // 如果解析失败，使用默认标题和描述
             content = {
               title: "未命名照片",

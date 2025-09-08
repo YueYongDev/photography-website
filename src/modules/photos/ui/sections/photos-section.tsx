@@ -2,7 +2,7 @@
 
 // External dependencies
 import Link from "next/link";
-import { Suspense, memo } from "react";
+import { memo } from "react";
 import { trpc } from "@/trpc/client";
 
 // Internal dependencies - UI Components
@@ -131,7 +131,23 @@ const PhotosSectionContent = () => {
   );
 };
 
-const PhotoTableRow = memo(({ photo }: { photo: any }) => (
+const PhotoTableRow = memo(({ photo }: { photo: {
+  id: string;
+  url: string;
+  title: string;
+  description: string;
+  visibility: string;
+  dateTimeOriginal: Date | null;
+  make: string | null;
+  model: string | null;
+  lensModel: string | null;
+  focalLength35mm: number | null;
+  city: string | null;
+  countryCode: string | null;
+  isFavorite: boolean;
+  blurData: string;
+  updatedAt: Date;
+} }) => (
   <Link href={`/photos/${photo.id}`} legacyBehavior>
     <TableRow className="cursor-pointer">
       <TableCell className="pl-6">

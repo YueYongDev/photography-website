@@ -2,11 +2,10 @@
 
 import { PhotosSection } from "../sections/photos-section";
 import { PageTransitionItem } from "@/components/page-transition";
-import { trpc } from "@/trpc/client";
+// Removed unused trpc import
 
 const PhotosView = () => {
-  // 在组件顶层调用 useQuery 来触发数据获取
-  const photosQuery = trpc.photos.getManyWithPrivate.useQuery({ limit: 5 });
+  // 移除了未使用的 photosQuery
 
   return (
     <div className="flex flex-col gap-y-6 pt-2.5">

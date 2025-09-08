@@ -76,7 +76,7 @@ export function AIContentGenerator({ onContentGenerated }: AIContentGeneratorPro
               id="contentType"
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={contentType}
-              onChange={(e) => setContentType(e.target.value as any)}
+              onChange={(e) => setContentType(e.target.value as "title" | "description" | "article" | "story" | "poem" | "other")}
             >
               <option value="other">其他</option>
               <option value="title">标题</option>

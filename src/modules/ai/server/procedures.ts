@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure, baseProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
 /**
  * AI内容生成模块
@@ -143,7 +143,8 @@ ${exifText}
         let content;
         try {
           content = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
-        } catch (parseError) {
+        } catch {
+          // Intentionally ignore parsing errors and use default content
           content = {
             title: "未命名照片",
             description: "一个美好的瞬间被永远定格。"
@@ -230,7 +231,7 @@ ${exifText}
         
         try {
           return typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
-        } catch (parseError) {
+        } catch {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "无法解析生成的内容",
