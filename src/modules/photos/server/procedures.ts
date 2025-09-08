@@ -396,6 +396,7 @@ export const photosRouter = createTRPCRouter({
         const content = await generateAIContent();
         return content;
       } catch (error) {
+        console.error("Failed to generate AI description", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to generate AI description",
