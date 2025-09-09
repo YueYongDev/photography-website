@@ -43,7 +43,7 @@ const LoadingSkeleton = () => (
 const ErrorState = () => (
   <div className="flex flex-col items-center justify-center h-screen bg-gray-950 text-white">
     <h2 className="text-2xl font-bold mb-4">Oops! Something went wrong</h2>
-    <p className="mb-6 text-gray-300">We could&apos;nt load this photograph</p>
+    <p className="mb-6 text-gray-300">We could'nt load this photograph</p>
     <button
       onClick={() => (window.location.href = "/")}
       className="px-4 py-2 bg-white text-gray-900 rounded-md hover:bg-gray-200 transition-colors"
@@ -202,8 +202,6 @@ const PhotographSectionSuspense = ({ id }: Props) => {
         ref={gridRef}
         className="min-h-screen relative text-white py-12 px-4 sm:px-6 lg:px-8"
       >
-        {/* Blurhash background layer */}
-
         <div className="max-w-7xl mx-auto">
           {/* Grid Header */}
           <div className="text-center mb-12">

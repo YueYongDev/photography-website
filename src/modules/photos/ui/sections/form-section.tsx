@@ -21,6 +21,8 @@ import {
   MoreVerticalIcon,
   SparklesIcon,
   TrashIcon,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import {
   Form,
@@ -47,6 +49,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { photosUpdateSchema } from "@/db/schema/photos";
 import { toast } from "sonner";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 
 const MapboxComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
@@ -75,6 +82,8 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     lat: photo.latitude,
     lng: photo.longitude,
   });
+  const [cameraInfoOpen, setCameraInfoOpen] = useState(false);
+  const [exposureInfoOpen, setExposureInfoOpen] = useState(false);
 
   const update = trpc.photos.update.useMutation({
     onSuccess: () => {
@@ -198,16 +207,19 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 variant="default"
                 onClick={() => generateAIDescription.mutate({ id: photoId })}
                 disabled={generateAIDescription.isPending}
+                className="whitespace-nowrap"
               >
                 {generateAIDescription.isPending ? (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                    Generating...
+                    <span className="hidden sm:inline">Generating...</span>
+                    <span className="sm:hidden">...</span>
                   </>
                 ) : (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4" />
-                    AI Description
+                    <span className="hidden sm:inline">AI Description</span>
+                    <span className="sm:hidden">AI</span>
                   </>
                 )}
               </Button>
@@ -232,319 +244,10 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <div className="space-y-6 lg:col-span-3">
-              <FormField
-                name="title"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Photo title" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="description"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} rows={5} className="resize-none" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="make"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Camera Make</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        placeholder="e.g. Sony"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="model"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Camera Model</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        placeholder="e.g. A6700"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="lensModel"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lens</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        placeholder="e.g. Viltrox 27mm f1.2"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="focalLength"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Focal Length (mm)</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="fNumber"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>f / Number</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        step="0.1"
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="iso"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ISO</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="exposureTime"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Exposure Time (s)</FormLabel>
-                    <FormControl>
-                      <ExposureTimeInput
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="exposureCompensation"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Exposure Compensation</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        step="0.1"
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="dateTimeOriginal"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date Taken</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="datetime-local"
-                        value={
-                          field.value
-                            ? new Date(field.value).toISOString().slice(0, 16)
-                            : ""
-                        }
-                        onChange={(e) =>
-                          field.onChange(new Date(e.target.value).toISOString())
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="isFavorite"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Favorite</FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(value === "true")
-                      }
-                      defaultValue={String(field.value ?? false)}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a favorite" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="visibility"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Visibility</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value ?? undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select visibility" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="public">Public</SelectItem>
-                        <SelectItem value="private">Private</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="gpsCoordinates"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>GPS Coordinates</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={
-                          form.getValues("latitude") && form.getValues("longitude")
-                            ? `${form.getValues("latitude")}, ${form.getValues("longitude")}`
-                            : ""
-                        }
-                        placeholder="e.g. 34.68747764987201, 135.52585996441778"
-                        onChange={(e) => {
-                          field.onChange(e);
-                          const value = e.target.value;
-                          const [lat, lng] = value.split(",").map((str) => parseFloat(str.trim()));
-                          if (!isNaN(lat) && !isNaN(lng)) {
-                            form.setValue("latitude", lat);
-                            form.setValue("longitude", lng);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormItem>
-                <FormLabel>Location</FormLabel>
-                <FormControl>
-                  <div className="h-[300px] w-full rounded-md overflow-hidden border">
-                    <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                      <MapboxComponent
-                        draggableMarker
-                        markers={mapValues.markers}
-                        initialViewState={{
-                          longitude: photo.longitude!,
-                          latitude: photo.latitude!,
-                          zoom: 10,
-                        }}
-                        onMarkerDragEnd={(data) => {
-                          setCurrentLocation({ lat: data.lat, lng: data.lng });
-                          form.setValue("latitude", data.lat);
-                          form.setValue("longitude", data.lng);
-                        }}
-                      />
-                    </Suspense>
-                  </div>
-                </FormControl>
-                <FormDescription>
-                  {formatGPSCoordinates(
-                    currentLocation.lat,
-                    currentLocation.lng
-                  )}
-                </FormDescription>
-              </FormItem>
-            </div>
-
-            <div className="flex flex-col gap-y-8 lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Preview Image and Camera Info - Left side */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Preview Image */}
               <div className="flex flex-col gap-4 bg-muted rounded-xl overflow-hidden h-fit">
                 <div className="aspect-video overflow-hidden relative">
                   <BlurImage
@@ -583,6 +286,374 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   </div>
                 </div>
               </div>
+
+              {/* Camera Info and Exposure Info */}
+              <div className="flex flex-col gap-y-6">
+                {/* Camera Info Collapsible */}
+                <Collapsible open={cameraInfoOpen} onOpenChange={setCameraInfoOpen}>
+                  <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
+                    <h3 className="text-lg font-semibold">Camera Info</h3>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        {cameraInfoOpen ? <ChevronDown /> : <ChevronRight />}
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                  <CollapsibleContent>
+                    <div className="space-y-4 p-4 bg-muted rounded-b-lg">
+                      <FormField
+                        name="make"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Camera Make</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                value={field.value ?? ""}
+                                placeholder="e.g. Sony"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+    
+                      <FormField
+                        name="model"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Camera Model</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                value={field.value ?? ""}
+                                placeholder="e.g. A6700"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+    
+                      <FormField
+                        name="lensModel"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lens</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                value={field.value ?? ""}
+                                placeholder="e.g. Viltrox 27mm f1.2"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+    
+                {/* Exposure Info Collapsible */}
+                <Collapsible open={exposureInfoOpen} onOpenChange={setExposureInfoOpen}>
+                  <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
+                    <h3 className="text-lg font-semibold">Exposure Info</h3>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        {exposureInfoOpen ? <ChevronDown /> : <ChevronRight />}
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                  <CollapsibleContent>
+                    <div className="space-y-4 p-4 bg-muted rounded-b-lg">
+                      <FormField
+                        name="focalLength"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Focal Length (mm)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+    
+                      <FormField
+                        name="fNumber"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>f / Number</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                step="0.1"
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+    
+                      <FormField
+                        name="iso"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>ISO</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+    
+                      <FormField
+                        name="exposureTime"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Exposure Time (s)</FormLabel>
+                            <FormControl>
+                              <ExposureTimeInput
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+    
+                      <FormField
+                        name="exposureCompensation"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Exposure Compensation</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                step="0.1"
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+    
+                      <FormField
+                        name="dateTimeOriginal"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Date Taken</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="datetime-local"
+                                value={
+                                  field.value
+                                    ? new Date(field.value).toISOString().slice(0, 16)
+                                    : ""
+                                }
+                                onChange={(e) =>
+                                  field.onChange(new Date(e.target.value).toISOString())
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            </div>
+
+            {/* Form fields - Right side */}
+            <div className="lg:col-span-2 space-y-6">
+              <FormField
+                name="title"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Photo title" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="description"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={5} className="resize-none" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Favorite and Visibility as Radio Buttons */}
+              <div className="space-y-4">
+                <FormField
+                  name="visibility"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormLabel className="font-medium">Visibility</FormLabel>
+                      <FormControl>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="visibility-public"
+                              value="public"
+                              checked={field.value === "public"}
+                              onChange={() => field.onChange("public")}
+                              className="h-4 w-4"
+                            />
+                            <label htmlFor="visibility-public" className="text-sm">Public</label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="visibility-private"
+                              value="private"
+                              checked={field.value === "private"}
+                              onChange={() => field.onChange("private")}
+                              className="h-4 w-4"
+                            />
+                            <label htmlFor="visibility-private" className="text-sm">Private</label>
+                          </div>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name="isFavorite"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormLabel className="font-medium">Favorite</FormLabel>
+                      <FormControl>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="favorite-yes"
+                              value="true"
+                              checked={field.value === true}
+                              onChange={() => field.onChange(true)}
+                              className="h-4 w-4"
+                            />
+                            <label htmlFor="favorite-yes" className="text-sm">Yes</label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="favorite-no"
+                              value="false"
+                              checked={field.value === false}
+                              onChange={() => field.onChange(false)}
+                              className="h-4 w-4"
+                            />
+                            <label htmlFor="favorite-no" className="text-sm">No</label>
+                          </div>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                name="gpsCoordinates"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GPS Coordinates</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={
+                          form.getValues("latitude") && form.getValues("longitude")
+                            ? `${form.getValues("latitude")}, ${form.getValues("longitude")}`
+                            : ""
+                        }
+                        placeholder="e.g. 34.68747764987201, 135.52585996441778"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const value = e.target.value;
+                          const [lat, lng] = value.split(",").map((str) => parseFloat(str.trim()));
+                          if (!isNaN(lat) && !isNaN(lng)) {
+                            form.setValue("latitude", lat);
+                            form.setValue("longitude", lng);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <div className="h-[200px] w-full rounded-md overflow-hidden border">
+                    <Suspense fallback={<Skeleton className="h-full w-full" />}>
+                      <MapboxComponent
+                        draggableMarker
+                        markers={mapValues.markers}
+                        initialViewState={{
+                          longitude: photo.longitude!,
+                          latitude: photo.latitude!,
+                          zoom: 10,
+                        }}
+                        onMarkerDragEnd={(data) => {
+                          setCurrentLocation({ lat: data.lat, lng: data.lng });
+                          form.setValue("latitude", data.lat);
+                          form.setValue("longitude", data.lng);
+                        }}
+                      />
+                    </Suspense>
+                  </div>
+                </FormControl>
+                <FormDescription>
+                  {formatGPSCoordinates(
+                    currentLocation.lat,
+                    currentLocation.lng
+                  )}
+                </FormDescription>
+              </FormItem>
             </div>
           </div>
         </form>
