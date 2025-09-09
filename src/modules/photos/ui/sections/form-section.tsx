@@ -33,13 +33,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ExposureTimeInput } from "@/components/ui/exposure-time-input";
@@ -157,7 +150,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     if (lat !== undefined && lng !== undefined && lat !== null && lng !== null) {
       setCurrentLocation({ lat, lng });
     }
-  }, [form.watch("latitude"), form.watch("longitude")]);
+  }, [form]);
 
   const mapValues = useMemo(() => {
     const longitude = currentLocation?.lng ?? photo.longitude ?? 0;

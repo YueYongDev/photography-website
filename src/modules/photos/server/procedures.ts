@@ -407,8 +407,17 @@ export const photosRouter = createTRPCRouter({
         try {
           const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
           
+          // 定义请求体类型
+          interface OllamaRequestBody {
+            model: string;
+            prompt: string;
+            stream: boolean;
+            format: string;
+            images?: string[];
+          }
+          
           // 构造请求体
-          const requestBody: any = {
+          const requestBody: OllamaRequestBody = {
             model: 'gemma3:4b', // 使用支持中文的多模态模型
             prompt: prompt,
             stream: false,

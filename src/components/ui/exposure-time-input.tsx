@@ -38,7 +38,6 @@ const commonExposureTimes = [
 export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
   const [inputMode, setInputMode] = useState<"select" | "manual">("select");
   const [manualValue, setManualValue] = useState<string>("");
-  const [fractionValue, setFractionValue] = useState<{numerator: string, denominator: string}>({numerator: "", denominator: ""});
 
   // 初始化值
   useEffect(() => {
@@ -72,7 +71,6 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
     if (selectedValue === "manual") {
       setInputMode("manual");
       setManualValue("");
-      setFractionValue({numerator: "", denominator: ""});
     } else {
       const numericValue = parseFloat(selectedValue);
       if (!isNaN(numericValue)) {
@@ -88,7 +86,6 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
     // 如果是分数形式 (例如: 1/1000)
     if (inputValue.includes("/")) {
       const [numerator, denominator] = inputValue.split("/").map(part => part.trim());
-      setFractionValue({numerator, denominator});
       
       if (numerator && denominator && !isNaN(parseFloat(numerator)) && !isNaN(parseFloat(denominator))) {
         const fractionValue = parseFloat(numerator) / parseFloat(denominator);
@@ -138,13 +135,12 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
             value={manualValue}
             onChange={handleManualChange}
           />
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="text-sm text-blue-500 hover:underline"
             onClick={() => {
               setInputMode("select");
               setManualValue("");
-              setFractionValue({numerator: "", denominator: ""});
             }}
           >
             选择
