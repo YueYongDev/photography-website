@@ -418,7 +418,7 @@ export const photosRouter = createTRPCRouter({
           
           // 构造请求体
           const requestBody: OllamaRequestBody = {
-            model: 'gemma3:4b', // 使用支持中文的多模态模型
+            model: 'gemma3:12b', // 使用支持中文的多模态模型
             prompt: prompt,
             stream: false,
             format: 'json' // 要求JSON格式响应

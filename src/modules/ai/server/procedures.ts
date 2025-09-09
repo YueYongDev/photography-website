@@ -40,7 +40,7 @@ export const aiRouter = createTRPCRouter({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gemma3:4b', // 使用支持中文的模型
+            model: 'gemma3:12b', // 使用支持中文的模型
             prompt: chinesePrompt,
             stream: false,
             options: {
@@ -126,7 +126,7 @@ ${exifText}
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gemma3:4b',
+            model: 'gemma3:12b',
             prompt: prompt,
             stream: false,
             format: 'json'
@@ -216,7 +216,7 @@ ${exifText}
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gemma3:4b',
+            model: 'gemma3:12b',
             prompt: prompt,
             stream: false,
             format: 'json'
