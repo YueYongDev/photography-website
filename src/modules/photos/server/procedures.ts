@@ -401,7 +401,7 @@ export const photosRouter = createTRPCRouter({
 1. 一个有创意、吸引人的标题 (5-15个字)
 2. 一个详细的描述 (2-3句话)，描述照片中的内容、氛围和可能的故事。
 
-请用中文回复，并以JSON格式返回，只包含"title"和"description"字段。`;
+要求以JSON格式返回，且只包含"title"和"description"字段。字段里的内容请用中文表示`;
         
         // 调用ollama服务
         try {
