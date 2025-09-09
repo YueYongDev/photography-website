@@ -19,7 +19,7 @@ export function createS3Client() {
   }
 
   return new S3Client({
-    region: "auto",
+    region: "cn-south-1",
     endpoint,
     credentials: {
       accessKeyId,

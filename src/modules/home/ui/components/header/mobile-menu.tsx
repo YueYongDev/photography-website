@@ -72,7 +72,7 @@ export default function MobileMenu({ isOpen, onClose }: Props) {
                 {/* AVATAR  */}
                 <Avatar className="size-[60px]">
                   <AvatarImage
-                    src="https://cdn.yueyong.fun/photography-website/photos/IMG_9251.jpg"
+                    src="https://cdn.ytools.xyz/photos/IMG_9251.jpg"
                     alt="Avatar"
                   />
                   <AvatarFallback>YUEYONG</AvatarFallback>

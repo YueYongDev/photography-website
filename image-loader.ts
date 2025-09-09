@@ -31,7 +31,9 @@ export default function cloudflareLoader({
   params.push(`fit=cover`);
   const paramsString = params.join(",");
 
-  return `https://cdn.yueyong.fun/cdn-cgi/image/${paramsString}/${normalizeSrc(
-    src
-  )}`;
+  // return `https://cdn.yueyong.fun/cdn-cgi/image/${paramsString}/${normalizeSrc(
+  //   src
+  // )}`;
+  console.log(src);
+  return `${src}?imageView2/2/w/600/q/${quality}`
 }

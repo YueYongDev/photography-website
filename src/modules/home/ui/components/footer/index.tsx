@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="flex flex-col lg:flex-row gap-4 items-center">
         {/* AVATAR  */}
         <Avatar className="size-[60px]">
-          <AvatarImage src="https://cdn.yueyong.fun/photography-website/photos/IMG_9251.jpg" />
+          <AvatarImage src="https://cdn.ytools.xyz/photos/IMG_9251.jpg" />
           <AvatarFallback>YUEYONG</AvatarFallback>
         </Avatar>
 
