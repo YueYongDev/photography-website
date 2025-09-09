@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ExposureTimeInput } from "@/components/ui/exposure-time-input";
 import BlurImage from "@/components/blur-image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
@@ -124,11 +125,30 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
       exposureCompensation: photo.exposureCompensation ?? undefined,
       latitude: photo.latitude ?? undefined,
       longitude: photo.longitude ?? undefined,
+      country: photo.country ?? undefined,
+      countryCode: photo.countryCode ?? undefined,
+      region: photo.region ?? undefined,
+      city: photo.city ?? undefined,
+      district: photo.district ?? undefined,
+      fullAddress: photo.fullAddress ?? undefined,
+      placeFormatted: photo.placeFormatted ?? undefined,
+      gpsAltitude: photo.gpsAltitude ?? undefined,
       dateTimeOriginal: photo.dateTimeOriginal
         ? new Date(photo.dateTimeOriginal)
         : undefined,
     },
   });
+
+  // 当 latitude 或 longitude 字段变化时，更新 currentLocation 状态
+  useEffect(() => {
+    const lat = form.watch("latitude");
+    const lng = form.watch("longitude");
+    
+    // 只有当 lat 和 lng 都有效时才更新 currentLocation
+    if (lat !== undefined && lng !== undefined && lat !== null && lng !== null) {
+      setCurrentLocation({ lat, lng });
+    }
+  }, [form.watch("latitude"), form.watch("longitude")]);
 
   const mapValues = useMemo(() => {
     const longitude = currentLocation?.lng ?? photo.longitude ?? 0;
@@ -358,11 +378,9 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   <FormItem>
                     <FormLabel>Exposure Time (s)</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        step="0.001"
-                        value={field.value ?? ""}
+                      <ExposureTimeInput
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -465,6 +483,36 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 )}
               />
 
+              <FormField
+                name="gpsCoordinates"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GPS Coordinates</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={
+                          form.getValues("latitude") && form.getValues("longitude")
+                            ? `${form.getValues("latitude")}, ${form.getValues("longitude")}`
+                            : ""
+                        }
+                        placeholder="e.g. 34.68747764987201, 135.52585996441778"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const value = e.target.value;
+                          const [lat, lng] = value.split(",").map((str) => parseFloat(str.trim()));
+                          if (!isNaN(lat) && !isNaN(lng)) {
+                            form.setValue("latitude", lat);
+                            form.setValue("longitude", lng);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormItem>
                 <FormLabel>Location</FormLabel>
                 <FormControl>
@@ -478,9 +526,11 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           latitude: photo.latitude!,
                           zoom: 10,
                         }}
-                        onMarkerDragEnd={(data) =>
-                          setCurrentLocation({ lat: data.lat, lng: data.lng })
-                        }
+                        onMarkerDragEnd={(data) => {
+                          setCurrentLocation({ lat: data.lat, lng: data.lng });
+                          form.setValue("latitude", data.lat);
+                          form.setValue("longitude", data.lng);
+                        }}
                       />
                     </Suspense>
                   </div>

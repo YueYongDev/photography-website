@@ -394,44 +394,50 @@ export const photosRouter = createTRPCRouter({
       
       // 调用ollama服务生成图片描述
       const generateAIContent = async () => {
-        // 构造图片的EXIF信息提示词
-        const exifInfo = [];
-        if (photo.make) exifInfo.push(`相机品牌: ${photo.make}`);
-        if (photo.model) exifInfo.push(`相机型号: ${photo.model}`);
-        if (photo.lensModel) exifInfo.push(`镜头型号: ${photo.lensModel}`);
-        if (photo.fNumber) exifInfo.push(`光圈值: f/${photo.fNumber}`);
-        if (photo.exposureTime) exifInfo.push(`曝光时间: ${photo.exposureTime}s`);
-        if (photo.iso) exifInfo.push(`感光度: ISO ${photo.iso}`);
-        if (photo.focalLength) exifInfo.push(`焦距: ${photo.focalLength}mm`);
-        if (photo.dateTimeOriginal) exifInfo.push(`拍摄时间: ${new Date(photo.dateTimeOriginal).toLocaleString('zh-CN')}`);
-        
-        const exifText = exifInfo.length > 0 ? `照片EXIF信息:\n${exifInfo.join('\n')}` : '无可用EXIF信息。';
-        
         // 构造提示词 - 要求中文输出
-        const prompt = `根据以下EXIF信息为照片生成一个有创意的标题和详细描述。
-        
-${exifText}
+        const prompt = `请为这张照片生成一个有创意的标题和详细描述。
 
 请提供:
-1. 一个有创意、吸引人的标题 (5-10个字)
-2. 一个详细的描述 (2-3句话)，根据技术信息描述照片可能呈现的视觉内容，重点关注这些设置可能捕捉到的场景或主题。
+1. 一个有创意、吸引人的标题 (5-15个字)
+2. 一个详细的描述 (2-3句话)，描述照片中的内容、氛围和可能的故事。
 
 请用中文回复，并以JSON格式返回，只包含"title"和"description"字段。`;
         
         // 调用ollama服务
         try {
           const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
+          
+          // 构造请求体
+          const requestBody: any = {
+            model: 'gemma3:4b', // 使用支持中文的多模态模型
+            prompt: prompt,
+            stream: false,
+            format: 'json' // 要求JSON格式响应
+          };
+          
+          // 如果照片URL存在，尝试获取图像数据
+          if (photo.url) {
+            try {
+              // 下载图像数据
+              const imageResponse = await fetch(photo.url);
+              if (imageResponse.ok) {
+                const imageBuffer = await imageResponse.arrayBuffer();
+                const base64Image = Buffer.from(imageBuffer).toString('base64');
+                
+                // 添加图像数据到请求体
+                requestBody.images = [base64Image];
+              }
+            } catch (imageError) {
+              console.warn("Failed to fetch image data, using prompt only:", imageError);
+            }
+          }
+          
           const response = await fetch(`${ollamaApiUrl}/api/generate`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              model: 'gemma3:4b', // 使用支持中文的模型
-              prompt: prompt,
-              stream: false,
-              format: 'json' // 要求JSON格式响应
-            }),
+            body: JSON.stringify(requestBody),
           });
           
           if (!response.ok) {
@@ -456,12 +462,22 @@ ${exifText}
           
           // 确保返回的内容是中文
           if (content && typeof content === 'object') {
-            // 如果标题或描述不是中文，使用默认中文内容
-            if (content.title && !/[\u4e00-\u9fa5]/.test(content.title)) {
-              content.title = "未命名照片";
+            // 清理标题和描述中的非中文字符
+            if (content.title) {
+              // 移除非中文、非数字、非常见标点的字符
+              content.title = content.title.replace(/[^\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef0-9a-zA-Z\s]/g, '');
+              // 如果标题中没有中文字符，使用默认标题
+              if (!/[\u4e00-\u9fa5]/.test(content.title)) {
+                content.title = "未命名照片";
+              }
             }
-            if (content.description && !/[\u4e00-\u9fa5]/.test(content.description)) {
-              content.description = "一个美好的瞬间被永远定格。";
+            if (content.description) {
+              // 移除非中文、非数字、非常见标点的字符
+              content.description = content.description.replace(/[^\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef0-9a-zA-Z\s，。！？；：""''（）、]/g, '');
+              // 如果描述中没有中文字符，使用默认描述
+              if (!/[\u4e00-\u9fa5]/.test(content.description)) {
+                content.description = "一个美好的瞬间被永远定格。";
+              }
             }
           }
           

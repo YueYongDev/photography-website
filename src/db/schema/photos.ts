@@ -187,6 +187,14 @@ export const photosUpdateSchema = createUpdateSchema(photos)
     exposureTime: true,
     exposureCompensation: true,
     dateTimeOriginal: true,
+    country: true,
+    countryCode: true,
+    region: true,
+    city: true,
+    district: true,
+    fullAddress: true,
+    placeFormatted: true,
+    gpsAltitude: true,
   })
   .partial()
   .extend({
