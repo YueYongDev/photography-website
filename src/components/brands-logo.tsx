@@ -42,6 +42,7 @@ export const BrandsLogo = ({
     sigma: { src: "/Sigma_logo.svg", width: 80, height: 30 },
     apple: { src: "/Apple_logo.svg", width: 30, height: 35 },
     dji: { src: "/DJI_logo.svg", width: 50, height: 30 },
+    xiaomi: { src: "/Xiaomi_logo.svg", width: 50, height: 30 },
   };
 
   // Case-insensitive search for brand that starts with the provided string
@@ -56,12 +57,27 @@ export const BrandsLogo = ({
     ? brandConfigs[matchedBrand]
     : { src: "/placeholder.svg", width: 40, height: 40 };
 
+  // Calculate aspect ratio and maintain it when only one dimension is provided
+  const aspectRatio = config.width / config.height;
+  let finalWidth = width || config.width;
+  let finalHeight = height || config.height;
+
+  // If only width is provided, calculate height based on aspect ratio
+  if (width && !height) {
+    finalHeight = Math.round(width / aspectRatio);
+  }
+  // If only height is provided, calculate width based on aspect ratio
+  else if (height && !width) {
+    finalWidth = Math.round(height * aspectRatio);
+  }
+
   return (
     <Image
       src={config.src}
       alt={brand}
-      width={width || config.width}
-      height={height || config.height}
+      width={finalWidth}
+      height={finalHeight}
+      unoptimized={config.src.startsWith("/")}
       className={`object-contain ${className}`}
     />
   );

@@ -122,14 +122,14 @@ const PhotographSectionSuspense = ({ id }: Props) => {
             />
 
             <div className="absolute -bottom-10 left-0 px-6 py-2 w-full bg-white/95 flex justify-between items-center select-none text-gray-900 shadow-md">
-              <div className="flex flex-col text-center">
+              <div className="flex flex-col text-left">
                 <h1
                   className={cn(
                     "font-semibold text-xs sm:text-sm lg:text-lg",
                     data.aspectRatio < 1 ? "lg:text-sm" : "lg:text-lg"
                   )}
                 >
-                  <span className="flex items-center justify-center gap-1">
+                  <span className="flex items-center justify-start gap-1">
                     {data.make} {data.model}
                   </span>
                 </h1>

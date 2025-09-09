@@ -2,6 +2,7 @@
 
 // External dependencies
 import { memo, Suspense } from "react";
+import Link from "next/link";
 import { trpc } from "@/trpc/client";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -41,7 +42,7 @@ const ImageSliderSuspense = memo(function ImageSlider() {
         const shouldPreload = index < 1;
 
         return (
-          <div key={photo.id} className="flex-[0_0_100%] h-full relative">
+          <Link key={photo.id} href={`/photograph/${photo.id}`} className="flex-[0_0_100%] h-full relative">
             <BlurImage
               src={photo.url}
               alt={photo.title}
@@ -52,7 +53,7 @@ const ImageSliderSuspense = memo(function ImageSlider() {
               blurhash={photo.blurData}
               className="w-full h-full object-cover"
             />
-          </div>
+          </Link>
         );
       })}
     </Carousel>

@@ -27,7 +27,7 @@ const CityCard = ({ title, coverPhoto }: Props) => {
           src={coverPhoto?.url || "/placeholder.svg"}
           alt={coverPhoto?.title || ""}
           fill
-          quality={20}
+          quality={25}
           priority
           sizes="75vw"
           className="object-cover lg:group-hover:blur-xs lg:transition-[filter] lg:duration-300 lg:ease-out"

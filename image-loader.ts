@@ -25,7 +25,7 @@ export default function cloudflareLoader({
   const maxWidth = Math.min(width, CLOUDFLARE_MAX_DIMENSION);
   const params = [`width=${maxWidth}`];
   if (!quality) {
-    quality = 30; // Default quality if not provided
+    quality = 95; // Default quality if not provided
   }
   params.push(`quality=${quality}`);
   params.push(`fit=cover`);
@@ -34,6 +34,6 @@ export default function cloudflareLoader({
   // return `https://cdn.yueyong.fun/cdn-cgi/image/${paramsString}/${normalizeSrc(
   //   src
   // )}`;
-  console.log(src);
-  return `${src}?imageView2/2/w/600/q/${quality}`
+  return `${src}?imageView2/0/q/${quality}|imageslim`
+  // return `${src}-zip`
 }
