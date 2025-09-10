@@ -87,19 +87,24 @@ export const PostPreview = ({ content }: { content: string | null }) => {
                 {children}
               </a>
             ),
-            img: ({ src, alt }) => (
-              <div className="my-4">
-                <Image
-                  src={src || ""}
-                  alt={alt || ""}
-                  width={0}
-                  height={0}
-                  sizes="100vw"
-                  className="rounded-lg shadow-md mx-auto max-w-full h-auto"
-                  style={{ width: '100%', height: 'auto' }}
-                />
-              </div>
-            ),
+            img: ({ src, alt }) => {
+              // 处理 src 为 Blob 的情况
+              const isBlob = (src: string | Blob | undefined | null): src is Blob => src instanceof Blob;
+              const imageUrl = src ? (isBlob(src) ? URL.createObjectURL(src) : src) : "";
+              return (
+                <div className="my-4">
+                  <Image
+                    src={imageUrl}
+                    alt={alt || ""}
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    className="rounded-lg shadow-md mx-auto max-w-full h-auto"
+                    style={{ width: '100%', height: 'auto' }}
+                  />
+                </div>
+              );
+            },
             blockquote: ({ children }) => (
               <blockquote className="border-l-4 border-gray-300 dark:border-gray-700 pl-4 italic my-4 text-gray-600 dark:text-gray-400">
                 {children}
