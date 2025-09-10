@@ -2,7 +2,7 @@
 
 // External dependencies
 import { z } from "zod";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/navigation";
 
@@ -25,13 +25,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -175,21 +168,13 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
   });
 
   // Watch the title and content fields to update slug and reading time
-  const title = form.watch("title");
+  // const _title = form.watch("title");
   const content = form.watch("content");
 
   // Generate slug from title
-  const generateSlug = (text: string) => {
-    return text
-      .toString()
-      .trim()
-      .replace(/\s+/g, "-") // Replace spaces with -
-      .replace(/&/g, "-and-") // Replace & with 'and'
-      .replace(/[^\w\u4e00-\u9fa5\-]+/g, "") // Remove all non-word characters except Chinese characters
-      .replace(/\-\-+/g, "-") // Replace multiple - with single -
-      .replace(/^-+/, "") // Trim - from start of text
-      .replace(/-+$/, ""); // Trim - from end of text
-  };
+  // const _generateSlug = (_text: string) => {
+  //   return ""; // This function is not used, so we can return an empty string
+  // };
 
   // Calculate reading time from content
   const calculateReadingTime = (content: string): number => {
@@ -502,7 +487,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   )}
                 />
                 <p className="text-sm text-muted-foreground">
-                  Posts are public by default. Make your changes above and click "Save" to update.
+                  {`Posts are public by default. Make your changes above and click 'Save' to update.`}
                 </p>
               </div>
             </div>

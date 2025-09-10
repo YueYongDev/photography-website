@@ -643,10 +643,12 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  {formatGPSCoordinates(
-                    currentLocation.lat,
-                    currentLocation.lng
-                  )}
+                  {currentLocation.lat !== null && currentLocation.lng !== null
+                    ? formatGPSCoordinates(
+                        currentLocation.lat,
+                        currentLocation.lng
+                      )
+                    : "No GPS coordinates available"}
                 </FormDescription>
               </FormItem>
             </div>

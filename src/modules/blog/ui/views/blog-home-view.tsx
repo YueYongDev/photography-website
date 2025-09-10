@@ -1,7 +1,6 @@
 import { BlogPostsList } from "../sections/blog-posts-list";
 import ContactCard from "@/modules/home/ui/components/contact-card";
 import Footer from "@/modules/home/ui/components/footer";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -24,7 +23,7 @@ export const BlogHomeView = () => {
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Blog</h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Welcome to my blog, where I share my thoughts, experiences, and insights. Whether you're a photographer, a traveler, or someone who appreciates the beauty of life, you'll find content that interests you here.
+            Welcome to my blog, where I share my thoughts, experiences, and insights. Whether you{`'`}re a photographer, a traveler, or someone who appreciates the beauty of life, you{`'`}ll find content that interests you here.
           </p>
         </div>
         

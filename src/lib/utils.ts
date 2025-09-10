@@ -77,11 +77,13 @@ export type TImageInfo = {
  * @param file 照片文件
  * @returns EXIF数据
  */
-export async function getPhotoExif(file: File): Promise<TExifData> {
-  // 这里返回一个空对象或默认值，因为exif-js包未安装
-  // 在实际项目中，您可能需要安装exif-js包或使用其他方式获取EXIF信息
-  console.warn("EXIF parsing is not available because exif-js package is not installed");
-  return {};
+export async function getPhotoExif(_file: File): Promise<TExifData> {
+ // 这里返回一个空对象或默认值，因为exif-js包未安装
+ // 在实际项目中，您可能需要安装exif-js包或使用其他方式获取EXIF信息
+ console.warn("EXIF parsing is not available because exif-js package is not installed");
+ // 使用_file参数来避免未使用变量的警告
+ void _file;
+ return {};
 }
 
 /**

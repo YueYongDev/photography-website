@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -114,17 +114,9 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
   });
 
   // Generate slug from title
-  const generateSlug = (text: string) => {
-    return text
-      .toString()
-      .trim()
-      .replace(/\s+/g, "-") // Replace spaces with -
-      .replace(/&/g, "-and-") // Replace & with 'and'
-      .replace(/[^\w\u4e00-\u9fa5\-]+/g, "") // Remove all non-word characters except Chinese characters
-      .replace(/\-\-+/g, "-") // Replace multiple - with single -
-      .replace(/^-+/, "") // Trim - from start of text
-      .replace(/-+$/, ""); // Trim - from end of text
-  };
+  // const _generateSlug = (_text: string) => {
+  //   return ""; // This function is not used, so we can return an empty string
+  // };
 
   // Calculate reading time from content
   const calculateReadingTime = (content: string): number => {
@@ -190,7 +182,7 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
   };
 
   // Watch the title and content fields to update slug and reading time
-  const title = form.watch("title");
+  // const _title = form.watch("title");
   const content = form.watch("content");
 
   // Update reading time when content changes
@@ -409,7 +401,7 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
           <div className="flex flex-col gap-y-8 lg:col-span-2">
             <div className="flex flex-col gap-4 bg-muted rounded-xl overflow-hidden p-4">
               <p className="text-sm text-muted-foreground">
-                Posts are public by default. Fill in the details above and click "Create Post" to publish.
+                {`Posts are public by default. Fill in the details above and click 'Create Post' to publish.`}
               </p>
             </div>
           </div>

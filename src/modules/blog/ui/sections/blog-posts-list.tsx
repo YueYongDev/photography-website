@@ -8,6 +8,7 @@ import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Tag } from "lucide-react";
+import Image from "next/image";
 
 export const BlogPostsList = () => {
   return (
@@ -49,10 +50,12 @@ const BlogPostsListSuspense = () => {
               <CardHeader className="p-0">
                 {post.coverImage ? (
                   <div className="relative h-48 w-full">
-                    <img
+                    <Image
                       src={post.coverImage}
                       alt={post.title}
-                      className="object-cover w-full h-full"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
                 ) : (

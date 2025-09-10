@@ -2,6 +2,7 @@ import React from "react";
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+import Image from "next/image";
 import "highlight.js/styles/atom-one-dark.css";
 
 // 自定义表格组件
@@ -88,10 +89,14 @@ export const PostPreview = ({ content }: { content: string | null }) => {
             ),
             img: ({ src, alt }) => (
               <div className="my-4">
-                <img
-                  src={src}
-                  alt={alt}
+                <Image
+                  src={src || ""}
+                  alt={alt || ""}
+                  width={0}
+                  height={0}
+                  sizes="100vw"
                   className="rounded-lg shadow-md mx-auto max-w-full h-auto"
+                  style={{ width: '100%', height: 'auto' }}
                 />
               </div>
             ),

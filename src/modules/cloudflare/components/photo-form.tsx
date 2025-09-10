@@ -12,7 +12,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 import BlurImage from "@/components/blur-image";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,6 +92,8 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
       latitude: exif?.latitude ?? currentLocation.lat,
       longitude: exif?.longitude ?? currentLocation.lng,
       ...exif,
+      // 将dateTimeOriginal从字符串转换为Date对象
+      dateTimeOriginal: exif?.dateTimeOriginal ? new Date(exif.dateTimeOriginal) : undefined,
     },
   });
 
