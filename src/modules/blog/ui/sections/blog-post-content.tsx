@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { PostPreview } from "../components/post-preview";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
 
@@ -95,11 +96,12 @@ export const BlogPostContentSuspense = ({ slug }: Props) => {
       <div className="p-6 border-t bg-muted/50">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="bg-primary rounded-full w-10 h-10 flex items-center justify-center text-primary-foreground font-bold">
-              A
-            </div>
+            <Avatar>
+              <AvatarImage src="https://cdn.ytools.xyz/photos/IMG_9251.jpg" />
+              <AvatarFallback className="bg-primary text-primary-foreground font-bold">Y</AvatarFallback>
+            </Avatar>
             <div>
-              <p className="text-sm font-medium">Author</p>
+              <p className="text-sm font-medium">YueYong</p>
               <p className="text-xs text-muted-foreground">Photographer</p>
             </div>
           </div>
