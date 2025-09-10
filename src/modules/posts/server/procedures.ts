@@ -9,7 +9,11 @@ export const postsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(postsInsertSchema)
     .mutation(async ({ input }) => {
-      const values = input;
+      // 如果slug为空，则使用id作为slug
+      const values = {
+        ...input,
+        slug: input.slug || crypto.randomUUID(), // 使用随机ID作为默认slug
+      };
 
       const [newPost] = await db.insert(posts).values(values).returning();
 

@@ -60,11 +60,31 @@ export const blogRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const { slug } = input;
 
-      const [blog] = await db
+      // 首先尝试通过 slug 查找
+      let [blog] = await db
         .select()
         .from(posts)
-        .where(and(eq(posts.visibility, "public"), eq(posts.slug, slug)))
+        .where(
+          and(
+            eq(posts.visibility, "public"),
+            eq(posts.slug, slug)
+          )
+        )
         .limit(1);
+
+      // 如果通过 slug 没找到，且 slug 看起来像 UUID，则尝试通过 id 查找
+      if (!blog && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)) {
+        [blog] = await db
+          .select()
+          .from(posts)
+          .where(
+            and(
+              eq(posts.visibility, "public"),
+              eq(posts.id, slug)
+            )
+          )
+          .limit(1);
+      }
 
       if (!blog) {
         throw new TRPCError({

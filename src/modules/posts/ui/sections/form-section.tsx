@@ -2,7 +2,7 @@
 
 // External dependencies
 import { z } from "zod";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/navigation";
 
@@ -35,7 +35,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import TiptapEditor from "@/components/tiptap-editor";
+import MarkdownEditorEnhanced from "@/components/markdown-editor-enhanced";
+import { SparklesIcon } from "lucide-react";
 
 // Internal dependencies - Hooks & Types
 import { useForm } from "react-hook-form";
@@ -83,11 +84,72 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
   const utils = trpc.useUtils();
   const [post] = trpc.posts.getOne.useSuspenseQuery({ postId });
 
+  // AI生成描述的mutation
+  const generateAIDescriptionMutation = trpc.ai.generateContent.useMutation({
+    onSuccess: (data) => {
+      form.setValue("description", data.content);
+      toast.success("AI description generated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate AI description");
+    },
+  });
+
+  // AI生成标题的mutation
+  const generateAITitleMutation = trpc.ai.generateContent.useMutation({
+    onSuccess: (data) => {
+      form.setValue("title", data.content);
+      toast.success("AI title generated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate AI title");
+    },
+  });
+
+  // AI生成标签的mutation
+  const generateAITagsMutation = trpc.ai.generateContent.useMutation({
+    onSuccess: (data) => {
+      // 将生成的标签字符串转换为数组
+      const tagsArray = data.content
+        .split(",")
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag.length > 0);
+      form.setValue("tags", tagsArray);
+      toast.success("AI tags generated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate AI tags");
+    },
+  });
+
+  // AI生成slug的mutation
+  const generateAISlugMutation = trpc.ai.generateContent.useMutation({
+    onSuccess: (data) => {
+      // 处理AI生成的slug，确保它是URL友好的
+      const slug = data.content
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-") // Replace spaces with -
+        .replace(/&/g, "-and-") // Replace & with 'and'
+        .replace(/[^\w\-]+/g, "") // Remove all non-word characters
+        .replace(/\-\-+/g, "-") // Replace multiple - with single -
+        .replace(/^-+/, "") // Trim - from start of text
+        .replace(/-+$/, ""); // Trim - from end of text
+      form.setValue("slug", slug);
+      toast.success("AI slug generated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate AI slug");
+    },
+  });
+
   const update = trpc.posts.update.useMutation({
     onSuccess: () => {
       toast.success("Post updated");
       utils.posts.getMany.invalidate();
       utils.posts.getOne.invalidate({ postId });
+      router.push("/posts");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -120,11 +182,10 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
   const generateSlug = (text: string) => {
     return text
       .toString()
-      .toLowerCase()
       .trim()
       .replace(/\s+/g, "-") // Replace spaces with -
       .replace(/&/g, "-and-") // Replace & with 'and'
-      .replace(/[^\w\-]+/g, "") // Remove all non-word characters
+      .replace(/[^\w\u4e00-\u9fa5\-]+/g, "") // Remove all non-word characters except Chinese characters
       .replace(/\-\-+/g, "-") // Replace multiple - with single -
       .replace(/^-+/, "") // Trim - from start of text
       .replace(/-+$/, ""); // Trim - from end of text
@@ -146,13 +207,52 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
     return Math.max(1, Math.ceil(wordCount / readingSpeed));
   };
 
-  // Update slug when title changes
-  useEffect(() => {
-    if (title) {
-      const slug = generateSlug(title);
-      form.setValue("slug", slug);
+  // Generate AI description based on content
+  const generateAIDescription = () => {
+    const content = form.getValues("content");
+    const title = form.getValues("title");
+    if (!content && !title) {
+      toast.error("Please write some content or title first");
+      return;
     }
-  }, [title, form]);
+
+    generateAIDescriptionMutation.mutate({
+      prompt: `Based on the following content and title, generate a concise and attractive description:\n\nTitle: ${title}\n\nContent: ${content}`,
+      contentType: "description",
+      maxLength: 200,
+    });
+  };
+
+  // Generate AI title based on content
+  const generateAITitle = () => {
+    const content = form.getValues("content");
+    if (!content) {
+      toast.error("Please write some content first");
+      return;
+    }
+
+    generateAITitleMutation.mutate({
+      prompt: `Based on the following content, generate a concise and attractive title:\n\n${content}`,
+      contentType: "title",
+      maxLength: 100,
+    });
+  };
+
+  // Generate AI tags based on content
+  const generateAITags = () => {
+    const content = form.getValues("content");
+    const title = form.getValues("title");
+    if (!content && !title) {
+      toast.error("Please write some content or title first");
+      return;
+    }
+
+    generateAITagsMutation.mutate({
+      prompt: `Based on the following content and title, generate 3-5 relevant tags separated by commas:\n\nTitle: ${title}\n\nContent: ${content}`,
+      contentType: "other",
+      maxLength: 100,
+    });
+  };
 
   // Update reading time when content changes
   useEffect(() => {
@@ -179,8 +279,62 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
             </div>
 
             <div className="flex items-center gap-x-2">
+              <Button 
+                type="button" 
+                onClick={generateAIDescription}
+                disabled={generateAIDescriptionMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+                variant="secondary"
+              >
+                {generateAIDescriptionMutation.isPending ? (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4" />
+                    AI Description
+                  </>
+                )}
+              </Button>
+              <Button 
+                type="button" 
+                onClick={generateAITitle}
+                disabled={generateAITitleMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+                variant="secondary"
+              >
+                {generateAITitleMutation.isPending ? (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4" />
+                    AI Title
+                  </>
+                )}
+              </Button>
+              <Button 
+                type="button" 
+                onClick={generateAITags}
+                disabled={generateAITagsMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+                variant="secondary"
+              >
+                {generateAITagsMutation.isPending ? (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="mr-2 h-4 w-4" />
+                    AI Tags
+                  </>
+                )}
+              </Button>
               <Button type="submit" disabled={update.isPending}>
-                Save
+                {update.isPending ? "Saving..." : "Save"}
               </Button>
 
               <DropdownMenu>
@@ -219,6 +373,45 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
 
               <FormField
                 control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Slug</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl className="flex-1">
+                        <Input {...field} placeholder="Post slug" />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          const title = form.getValues("title");
+                          if (title) {
+                            // 使用AI生成slug
+                            generateAISlugMutation.mutate({
+                              prompt: `Based on the following title, generate an English, URL-friendly slug. Only return the slug, nothing else:\n\n${title}`,
+                              contentType: "other",
+                              maxLength: 100,
+                            });
+                          } else {
+                            toast.error("Please enter a title first");
+                          }
+                        }}
+                        disabled={generateAISlugMutation.isPending}
+                      >
+                        {generateAISlugMutation.isPending ? "Generating..." : "Generate"}
+                      </Button>
+                    </div>
+                    <FormDescription>
+                      URL-friendly identifier for your post
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -232,6 +425,9 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                         placeholder="Post description"
                       />
                     </FormControl>
+                    <FormDescription>
+                      A short description of your post (optional)
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -244,7 +440,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <TiptapEditor
+                      <MarkdownEditorEnhanced
                         content={field.value || ""}
                         onChange={field.onChange}
                       />
@@ -275,8 +471,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                       />
                     </FormControl>
                     <FormDescription>
-                      Enter tags separated by commas (e.g. technology, news,
-                      guide)
+                      Enter tags separated by commas (e.g. travel, photography, story) or use AI Tags button to generate automatically
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -286,23 +481,6 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
 
             <div className="flex flex-col gap-y-8 lg:col-span-2">
               <div className="flex flex-col gap-4 bg-muted rounded-xl overflow-hidden p-4">
-                <FormField
-                  control={form.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Slug</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="post-url-slug" />
-                      </FormControl>
-                      <FormDescription>
-                        URL-friendly version of the title
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="coverImage"
@@ -316,63 +494,16 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                           placeholder="https://example.com/image.jpg"
                         />
                       </FormControl>
+                      <FormDescription>
+                        URL of the cover image for your post (optional)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="readingTimeMinutes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Reading Time (minutes)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          value={field.value || ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === ""
-                                ? undefined
-                                : parseInt(e.target.value)
-                            )
-                          }
-                          placeholder="5"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="mt-4">
-                  <FormField
-                    control={form.control}
-                    name="visibility"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Visibility</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select visibility" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="public">Public</SelectItem>
-                            <SelectItem value="private">Private</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Posts are public by default. Make your changes above and click "Save" to update.
+                </p>
               </div>
             </div>
           </div>

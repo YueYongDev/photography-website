@@ -1,10 +1,10 @@
-import { BlogView } from "@/modules/blog/ui/views/blog-view";
+import { BlogHomeView } from "@/modules/blog/ui/views/blog-home-view";
 import { HydrateClient, trpc } from "@/trpc/server";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Blog page",
+  description: "Welcome to my blog where I share thoughts, experiences, and insights.",
 };
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ const BlogPage = () => {
 
   return (
     <HydrateClient>
-      <BlogView />
+      <BlogHomeView />
     </HydrateClient>
   );
 };

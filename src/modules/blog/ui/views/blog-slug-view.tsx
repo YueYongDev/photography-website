@@ -1,4 +1,4 @@
-import { PostSection } from "@/modules/blog/ui/sections/post-section";
+import { BlogPostContent } from "@/modules/blog/ui/sections/blog-post-content";
 
 interface Props {
   slug: string;
@@ -7,7 +7,7 @@ interface Props {
 export const BlogSlugView = ({ slug }: Props) => {
   return (
     <div className="size-full">
-      <PostSection slug={slug} />
+      <BlogPostContent slug={slug} />
     </div>
   );
 };

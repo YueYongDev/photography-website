@@ -9,10 +9,14 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slug = (await params).slug;
 
-  const title = slug.split("-").join(" ");
+  // Convert slug to title format (e.g., "kyoto-autumn-zen-time" -> "Kyoto Autumn Zen Time")
+  const title = slug
+    .split("-")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
   return {
-    title,
+    title: `${title} - Blog`,
   };
 }
 
