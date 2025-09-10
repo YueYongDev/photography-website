@@ -243,19 +243,30 @@ const MarkdownEditorEnhanced = ({ content, onChange }: MarkdownEditorEnhancedPro
                   {children}
                 </a>
               ),
-              img: ({ src, alt }) => (
-                <div className="my-4">
-                  <Image
-                    src={src || ""}
-                    alt={alt || ""}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="rounded-lg shadow-md mx-auto max-w-full h-auto"
-                    style={{ width: '100%', height: 'auto' }}
-                  />
-                </div>
-              ),
+              img: ({ src, alt }) => {
+                // 检查 src 是否是字符串类型
+                if (typeof src === 'string') {
+                  // 使用 next/image 组件，并根据 src 是否是 blob URL 来设置 unoptimized 属性
+                  const isBlobUrl = src.startsWith('blob:');
+                  return (
+                    <div className="my-4">
+                      <Image
+                        src={src || ""}
+                        alt={alt || ""}
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        unoptimized={isBlobUrl}
+                        className="rounded-lg shadow-md mx-auto max-w-full h-auto"
+                        style={{ width: '100%', height: 'auto' }}
+                      />
+                    </div>
+                  );
+                } else {
+                  // 如果 src 是其他类型（如 undefined 或 null），则不显示图片
+                  return null;
+                }
+              },
               blockquote: ({ children }) => (
                 <blockquote className="border-l-4 border-gray-300 dark:border-gray-700 pl-4 italic my-4 text-gray-600 dark:text-gray-400">
                   {children}
