@@ -9,15 +9,22 @@ import {
   getImageInfo,
 } from "@/lib/utils";
 import { DEFAULT_FOLDER } from "@/constants";
+import imageCompression from "browser-image-compression";
 
 interface UsePhotoUploadProps {
   folder?: string;
   onUploadSuccess?: (url: string) => void;
+  compressionOptions?: {
+    maxSizeMB?: number;
+    maxWidthOrHeight?: number;
+    useWebWorker?: boolean;
+  };
 }
 
 export function usePhotoUpload({
   folder = DEFAULT_FOLDER,
   onUploadSuccess,
+  compressionOptions = {},
 }: UsePhotoUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
@@ -35,8 +42,18 @@ export function usePhotoUpload({
       setExif(exifData);
       setImageInfo(imageInfo);
 
+      // Compress the image before uploading
+      const options = {
+        maxSizeMB: compressionOptions.maxSizeMB || 1,
+        maxWidthOrHeight: compressionOptions.maxWidthOrHeight || 1920,
+        useWebWorker: compressionOptions.useWebWorker !== undefined ? compressionOptions.useWebWorker : true,
+      };
+      const compressedFile = await imageCompression(file, options);
+      console.log(`Original file size: ${file.size / 1024 / 1024} MB`);
+      console.log(`Compressed file size: ${compressedFile.size / 1024 / 1024} MB`);
+
       const { publicUrl } = await cloudflareR2.upload({
-        file,
+        file: compressedFile,
         folder,
         getUploadUrl,
       });

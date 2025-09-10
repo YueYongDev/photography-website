@@ -24,7 +24,7 @@ export const InfiniteScroll = ({
 }: InfiniteScrollProps) => {
   const { targetRef, isIntersecting } = useIntersectionObserver({
     threshold: 0.5,
-    rootMargin: "100px",
+    rootMargin: "200px",
   });
 
   useEffect(() => {

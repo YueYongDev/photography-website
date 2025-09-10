@@ -83,6 +83,8 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
       toast.success("Photo updated");
       utils.photos.getMany.invalidate();
       utils.photos.getOne.invalidate({ id: photoId });
+      // 保存成功后跳转回Photo页面
+      router.push("/photos");
     },
     onError: (error) => toast.error(error.message),
   });

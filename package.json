@@ -64,6 +64,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "better-auth": "^1.1.15",
     "blurhash": "^2.0.5",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "client-only": "^0.0.1",
     "clsx": "^2.1.1",

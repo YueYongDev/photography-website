@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CopyCheckIcon, CopyIcon, ChevronDown, ChevronRight } from "lucide-react";
+import { CopyCheckIcon, CopyIcon, ChevronDown, ChevronRight, SparklesIcon } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/trpc/client";
 import { useForm } from "react-hook-form";
@@ -50,14 +50,15 @@ interface PhotoFormProps {
 
 export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormProps) {
   const [isCopied, setIsCopied] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [cameraInfoOpen, setCameraInfoOpen] = useState(true);
+  const [exposureInfoOpen, setExposureInfoOpen] = useState(true);
   const [currentLocation, setCurrentLocation] = useState({
     lat: exif?.latitude ?? 39.9042,
     lng: exif?.longitude ?? 116.4074,
   });
 
   useEffect(() => {
-    if (!exif) setOpen(true);
+    if (!exif) setCameraInfoOpen(true);
   }, [exif]);
 
   const { data: address } = useGetAddress({
@@ -82,7 +83,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
     defaultValues: {
       title: "",
       description: "",
-      visibility: "private",
+      visibility: "public",
       isFavorite: false,
       url,
       aspectRatio: imageInfo.aspectRatio,
@@ -120,11 +121,295 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  // 创建一个新的mutation用于AI生成描述
+  const generateAIDescription = trpc.ai.generatePhotoDescriptionFromUrl.useMutation({
+    onSuccess: (data) => {
+      form.setValue("title", data.title);
+      form.setValue("description", data.description);
+      toast.success("AI description generated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate AI description");
+    },
+  });
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="space-y-6 lg:col-span-3">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Photo details</h1>
+            <p className="text-xs text-muted-foreground">
+              Manage your photo details
+            </p>
+          </div>
+          <div className="flex items-center gap-x-2">
+            <Button
+              type="button"
+              variant="default"
+              onClick={() => generateAIDescription.mutate({
+                imageUrl: url
+              })}
+              disabled={generateAIDescription.isPending}
+              className="whitespace-nowrap"
+            >
+              {generateAIDescription.isPending ? (
+                <>
+                  <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
+                  <span className="hidden sm:inline">Generating...</span>
+                  <span className="sm:hidden">...</span>
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">AI Description</span>
+                  <span className="sm:hidden">AI</span>
+                </>
+              )}
+            </Button>
+            <Button type="submit" disabled={create.isPending}>
+              Save
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Preview Image and Camera Info - Left side */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Preview Image */}
+            <div className="flex flex-col gap-4 bg-muted rounded-xl overflow-hidden h-fit">
+              <div className="aspect-video overflow-hidden relative">
+                <BlurImage
+                  src={url}
+                  alt="photo"
+                  fill
+                  blurhash={imageInfo.blurhash}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-4 flex flex-col gap-y-6">
+                <div className="flex justify-between items-center gap-x-2">
+                  <div className="flex flex-col">
+                    <p className="text-sm text-muted-foreground">Photo link</p>
+                    <div className="flex items-center gap-x-2">
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <p className="line-clamp-1 text-sm text-blue-500">{url}</p>
+                      </a>
+                      <Button type="button" variant="ghost" size="icon" onClick={onCopy} className="shrink-0" disabled={isCopied}>
+                        {isCopied ? <CopyCheckIcon /> : <CopyIcon />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Camera Info and Exposure Info */}
+            <div className="flex flex-col gap-y-6">
+              {/* Camera Info Collapsible */}
+              <Collapsible open={cameraInfoOpen} onOpenChange={setCameraInfoOpen}>
+                <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
+                  <h3 className="text-lg font-semibold">Camera Info</h3>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      {cameraInfoOpen ? <ChevronDown /> : <ChevronRight />}
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent>
+                  <div className="space-y-4 p-4 bg-muted rounded-b-lg">
+                    <FormField
+                      name="make"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Camera Make</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="e.g. Sony"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+  
+                    <FormField
+                      name="model"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Camera Model</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="e.g. A6700"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+  
+                    <FormField
+                      name="lensModel"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lens</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="e.g. Viltrox 27mm f1.2"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+  
+              {/* Exposure Info Collapsible */}
+              <Collapsible open={exposureInfoOpen} onOpenChange={setExposureInfoOpen}>
+                <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
+                  <h3 className="text-lg font-semibold">Exposure Info</h3>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      {exposureInfoOpen ? <ChevronDown /> : <ChevronRight />}
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent>
+                  <div className="space-y-4 p-4 bg-muted rounded-b-lg">
+                    <FormField
+                      name="focalLength"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Focal Length (mm)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+  
+                    <FormField
+                      name="fNumber"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>f / Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              step="0.1"
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+  
+                    <FormField
+                      name="iso"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ISO</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+  
+                    <FormField
+                      name="exposureTime"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Exposure Time (s)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="text"
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+  
+                    <FormField
+                      name="exposureCompensation"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Exposure Compensation</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              step="0.1"
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+  
+                    <FormField
+                      name="dateTimeOriginal"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date Taken</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="datetime-local"
+                              value={
+                                field.value
+                                  ? new Date(field.value).toISOString().slice(0, 16)
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                field.onChange(new Date(e.target.value).toISOString())
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          </div>
+
+          {/* Form fields - Right side */}
+          <div className="lg:col-span-2 space-y-6">
             <FormField
               control={form.control}
               name="title"
@@ -138,7 +423,6 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="description"
@@ -153,22 +437,79 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="visibility"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Visibility</FormLabel>
-                  <FormControl>
-                    <select {...field} className="w-full p-2 border rounded-md">
-                      <option value="private">Private</option>
-                      <option value="public">Public</option>
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <FormField
+                name="visibility"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                    <FormLabel className="font-medium">Visibility</FormLabel>
+                    <FormControl>
+                      <div className="flex space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id="visibility-public"
+                            value="public"
+                            checked={field.value === "public"}
+                            onChange={() => field.onChange("public")}
+                            className="h-4 w-4"
+                          />
+                          <label htmlFor="visibility-public" className="text-sm">Public</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id="visibility-private"
+                            value="private"
+                            checked={field.value === "private"}
+                            onChange={() => field.onChange("private")}
+                            className="h-4 w-4"
+                          />
+                          <label htmlFor="visibility-private" className="text-sm">Private</label>
+                        </div>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="isFavorite"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                    <FormLabel className="font-medium">Favorite</FormLabel>
+                    <FormControl>
+                      <div className="flex space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id="favorite-yes"
+                            value="true"
+                            checked={field.value === true}
+                            onChange={() => field.onChange(true)}
+                            className="h-4 w-4"
+                          />
+                          <label htmlFor="favorite-yes" className="text-sm">Yes</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id="favorite-no"
+                            value="false"
+                            checked={field.value === false}
+                            onChange={() => field.onChange(false)}
+                            className="h-4 w-4"
+                          />
+                          <label htmlFor="favorite-no" className="text-sm">No</label>
+                        </div>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormItem>
               <FormLabel>Location</FormLabel>
@@ -224,106 +565,6 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
               ))}
             </div>
 
-            {/* Collapsible: Camera Info */}
-            <Collapsible open={open} onOpenChange={setOpen}>
-              <div className="flex items-center justify-between px-1 py-2">
-                <h3 className="text-lg font-semibold">Camera Info (optional)</h3>
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    {open ? <ChevronDown /> : <ChevronRight />}
-                  </Button>
-                </CollapsibleTrigger>
-              </div>
-              <CollapsibleContent>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  {([
-                    ["make", "Camera Make", "e.g. Sony"],
-                    ["model", "Camera Model", "e.g. A6700"],
-                    ["lensModel", "Lens Model", "e.g. Viltrox 27mm F1.2"],
-                    ["focalLength", "Focal Length (mm)", "27"],
-                    ["focalLength35mm", "Focal Length 35mm", "40"],
-                    ["fNumber", "Aperture (f/)", "1.8"],
-                    ["exposureTime", "Shutter Speed (s)", "0.004"],
-                    ["exposureCompensation", "Exposure Compensation (EV)", "0"],
-                    ["iso", "ISO", "100"],
-                    ["dateTimeOriginal", "Date Taken", ""]
-                  ] as const).map(([name, label, placeholder]) => (
-                    <FormField
-                      key={name}
-                      control={form.control}
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      name={name as any}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{label}</FormLabel>
-                          <FormControl>
-                            {name === "dateTimeOriginal" ? (
-                              <Input
-                                type="datetime-local"
-                                value={field.value ? new Date(field.value).toISOString().slice(0, 16) : ""}
-                                onChange={(e) => field.onChange(new Date(e.target.value))}
-                              />
-                            ) : (
-                              <Input
-                                {...field}
-                                type={typeof field.value === "number" ? "number" : "text"}
-                                placeholder={placeholder}
-                              />
-                            )}
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
-
-          <div className="flex flex-col gap-y-8 lg:col-span-2">
-            <div className="flex flex-col gap-4 bg-muted rounded-md overflow-hidden h-fit">
-              <div className="aspect-video overflow-hidden relative">
-                <BlurImage
-                  src={url}
-                  alt="photo"
-                  fill
-                  blurhash={imageInfo.blurhash}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-4 flex flex-col gap-y-6">
-                <div className="flex justify-between items-center gap-x-2">
-                  <div className="flex flex-col">
-                    <p className="text-sm text-muted-foreground">Photo link</p>
-                    <div className="flex items-center gap-x-2">
-                      <a href={url} target="_blank" rel="noopener noreferrer">
-                        <p className="line-clamp-1 text-sm text-blue-500">{url}</p>
-                      </a>
-                      <Button type="button" variant="ghost" size="icon" onClick={onCopy} className="shrink-0" disabled={isCopied}>
-                        {isCopied ? <CopyCheckIcon /> : <CopyIcon />}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <FormField
-              control={form.control}
-              name="isFavorite"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Favorite</FormLabel>
-                    <FormDescription>Mark this photo as favorite</FormDescription>
-                  </div>
-                  <FormControl>
-                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
           </div>
         </div>
         <div className="flex items-center justify-end mt-6">

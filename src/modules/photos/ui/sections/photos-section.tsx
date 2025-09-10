@@ -2,7 +2,7 @@
 
 // External dependencies
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { trpc } from "@/trpc/client";
 
 // Internal dependencies - UI Components
@@ -88,13 +88,34 @@ const PhotosSectionContent = () => {
   const { data: photos, ...query } =
     trpc.photos.getManyWithPrivate.useInfiniteQuery(
       {
-        limit: 5,
+        limit: 15,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       }
     );
   
+  // 预加载图片
+  useEffect(() => {
+    if (photos && photos.pages) {
+      // 获取当前显示的图片列表
+      const currentPhotos = photos.pages.flatMap((page) => page.items);
+      
+      // 预加载下一页的图片
+      if (query.hasNextPage && !query.isFetchingNextPage) {
+        // 触发下一页的预加载
+        query.fetchNextPage();
+      }
+      
+      // 预加载当前显示图片的后续图片
+      const preloadCount = Math.min(5, currentPhotos.length);
+      for (let i = 0; i < preloadCount; i++) {
+        const img = new Image();
+        img.src = currentPhotos[i].url;
+      }
+    }
+  }, [photos, query]);
+
   if (!photos) {
     return <PhotosSectionSkeleton />
   }
@@ -157,7 +178,7 @@ const PhotoTableRow = memo(({ photo }: { photo: {
               src={photo.url}
               alt={photo.title}
               fill
-              quality={10}
+              quality={30}
               className="object-cover"
               blurhash={photo.blurData}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
