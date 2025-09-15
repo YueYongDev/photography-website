@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { encode } from "blurhash";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -101,15 +102,53 @@ export async function getImageInfo(file: File): Promise<TImageInfo> {
       const height = img.naturalHeight;
       const aspectRatio = width / height;
       
-      // 生成blurhash
-      // 这里简化处理，实际项目中可能需要使用blurhash库
-      const blurhash = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="; // placeholder
-      
+      // 创建 canvas 来获取像素数据
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        // 为了性能考虑，将图片缩放到较小的尺寸
+        const maxSize = 100;
+        const scale = Math.min(maxSize / width, maxSize / height);
+        canvas.width = Math.max(1, Math.floor(width * scale));
+        canvas.height = Math.max(1, Math.floor(height * scale));
+        
+        // 绘制缩放后的图片
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // 获取像素数据
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // 生成 blurhash
+        const blurhash = encode(imageData.data, imageData.width, imageData.height, 4, 4);
+        
+        URL.revokeObjectURL(objectUrl);
+        resolve({
+          width,
+          height,
+          aspectRatio,
+          blurhash,
+        });
+      } else {
+        // 如果无法获取 canvas 上下文，使用默认 blurhash
+        const blurhash = "LEHV6nWB2yk8pyo0adR*.7kCMdnj"; // 默认 blurhash
+        URL.revokeObjectURL(objectUrl);
+        resolve({
+          width,
+          height,
+          aspectRatio,
+          blurhash,
+        });
+      }
+    };
+    
+    img.onerror = function () {
+      // 如果图片加载失败，使用默认 blurhash
+      const blurhash = "LEHV6nWB2yk8pyo0adR*.7kCMdnj"; // 默认 blurhash
       URL.revokeObjectURL(objectUrl);
       resolve({
-        width,
-        height,
-        aspectRatio,
+        width: 0,
+        height: 0,
+        aspectRatio: 1,
         blurhash,
       });
     };
