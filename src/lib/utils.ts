@@ -78,13 +78,42 @@ export type TImageInfo = {
  * @param file 照片文件
  * @returns EXIF数据
  */
-export async function getPhotoExif(_file: File): Promise<TExifData> {
- // 这里返回一个空对象或默认值，因为exif-js包未安装
- // 在实际项目中，您可能需要安装exif-js包或使用其他方式获取EXIF信息
- console.warn("EXIF parsing is not available because exif-js package is not installed");
- // 使用_file参数来避免未使用变量的警告
- void _file;
- return {};
+export async function getPhotoExif(file: File): Promise<TExifData> {
+  try {
+    // 动态导入 exifr 库以减少初始包大小
+    const exifr = (await import('exifr')).default;
+    
+    // 将 File 对象转换为 ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // 解析 EXIF 数据
+    const exifData = await exifr.parse(arrayBuffer);
+    
+    if (!exifData) {
+      return {};
+    }
+    
+    // 提取所需的 EXIF 信息
+    return {
+      make: exifData.Make,
+      model: exifData.Model,
+      lensModel: exifData.LensModel,
+      focalLength: exifData.FocalLength,
+      focalLength35mm: exifData.FocalLengthIn35mmFilm,
+      fNumber: exifData.FNumber,
+      iso: exifData.ISO,
+      exposureTime: exifData.ExposureTime,
+      exposureCompensation: exifData.ExposureCompensation,
+      latitude: exifData.GPSLatitude,
+      longitude: exifData.GPSLongitude,
+      gpsAltitude: exifData.GPSAltitude,
+      dateTimeOriginal: exifData.DateTimeOriginal,
+    };
+  } catch (error) {
+    console.warn("Failed to parse EXIF data:", error);
+    // 如果解析失败，返回空对象
+    return {};
+  }
 }
 
 /**
