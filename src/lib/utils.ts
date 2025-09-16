@@ -59,11 +59,70 @@ export type TExifData = {
   iso?: number;
   exposureTime?: number;
   exposureCompensation?: number;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number[]; // GPS坐标以数组形式存储
+  longitude?: number[]; // GPS坐标以数组形式存储
   gpsAltitude?: number;
   dateTimeOriginal?: string;
 };
+
+// 图片EXIF表单数据类型（用于表单提交）
+export type TExifFormData = {
+  make?: string;
+  model?: string;
+  lensModel?: string;
+  focalLength?: number;
+  focalLength35mm?: number;
+  fNumber?: number;
+  iso?: number;
+  exposureTime?: number;
+  exposureCompensation?: number;
+  latitude?: string; // 表单中使用字符串格式
+  longitude?: string; // 表单中使用字符串格式
+  gpsAltitude?: number;
+  dateTimeOriginal?: string;
+};
+
+/**
+ * 将GPS坐标数组转换为十进制度数格式
+ * @param gpsCoordinate GPS坐标数组 [度, 分, 秒]
+ * @returns 十进制度数
+ */
+export function convertGPSCoordinate(gpsCoordinate: number[] | undefined): number | undefined {
+  if (!gpsCoordinate || gpsCoordinate.length < 3) {
+    return undefined;
+  }
+  
+  const [degrees, minutes, seconds] = gpsCoordinate;
+  const sign = degrees < 0 ? -1 : 1; // 确定符号
+  return sign * (Math.abs(degrees) + minutes / 60 + seconds / 3600);
+}
+
+/**
+ * 将GPS坐标数组转换为字符串格式
+ * @param gpsCoordinate GPS坐标数组 [度, 分, 秒]
+ * @returns 格式化的坐标字符串
+ */
+export function formatGPSCoordinateToString(gpsCoordinate: number[] | undefined): string | undefined {
+  const decimalDegrees = convertGPSCoordinate(gpsCoordinate);
+  if (decimalDegrees === undefined) {
+    return undefined;
+  }
+  
+  return decimalDegrees.toString();
+}
+
+/**
+ * 将原始EXIF数据转换为表单数据
+ * @param exifData 原始EXIF数据
+ * @returns 用于表单的EXIF数据
+ */
+export function convertExifToFormData(exifData: TExifData): TExifFormData {
+  return {
+    ...exifData,
+    latitude: formatGPSCoordinateToString(exifData.latitude),
+    longitude: formatGPSCoordinateToString(exifData.longitude),
+  };
+}
 
 // 图片信息类型
 export type TImageInfo = {

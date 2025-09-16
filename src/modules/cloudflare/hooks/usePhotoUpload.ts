@@ -4,9 +4,11 @@ import { trpc } from "@/trpc/client";
 import { cloudflareR2 } from "@/lib/cloudflare-r2";
 import {
   type TExifData,
+  type TExifFormData,
   type TImageInfo,
   getPhotoExif,
   getImageInfo,
+  convertExifToFormData,
 } from "@/lib/utils";
 import { DEFAULT_FOLDER } from "@/constants";
 import imageCompression from "browser-image-compression";
@@ -28,7 +30,7 @@ export function usePhotoUpload({
 }: UsePhotoUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [exif, setExif] = useState<TExifData | null>(null);
+  const [exif, setExif] = useState<TExifFormData | null>(null);
   const [imageInfo, setImageInfo] = useState<TImageInfo | null>(null);
 
   const { mutateAsync: getUploadUrl } =
@@ -39,8 +41,14 @@ export function usePhotoUpload({
       setIsUploading(true);
       const exifData = await getPhotoExif(file);
       const imageInfo = await getImageInfo(file);
-      setExif(exifData);
+      
+      // 转换EXIF数据为表单数据格式
+      const formattedExifData = convertExifToFormData(exifData);
+      
+      setExif(formattedExifData);
       setImageInfo(imageInfo);
+
+      console.log("EXIF Data:", formattedExifData);
 
       // Compress the image before uploading
       const options = {
