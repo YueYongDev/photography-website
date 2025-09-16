@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { trpc } from "@/trpc/client";
 import { cloudflareR2 } from "@/lib/cloudflare-r2";
 import {
-  type TExifData,
   type TExifFormData,
   type TImageInfo,
   getPhotoExif,

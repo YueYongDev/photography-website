@@ -24,7 +24,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetAddress } from "../hooks/use-get-address";
 import { photosInsertSchema } from "@/db/schema/photos";
-import type { TExifData, TImageInfo } from "@/lib/utils";
+import type { TExifData, TExifFormData, TImageInfo } from "@/lib/utils";
+import { convertGPSCoordinate, convertGPSCoordinateFromString } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -41,19 +42,52 @@ const MapboxComponent = dynamic(() => import("@/components/map"), {
 });
 
 interface PhotoFormProps {
-  exif: TExifData | null;
+  exif: TExifData | null | TExifFormData;
   imageInfo: TImageInfo;
   url: string;
   onCreateSuccess?: () => void;
 }
+
+// 辅助函数：根据exif类型正确转换GPS坐标
+const convertExifLatitude = (exif: TExifData | TExifFormData | null) => {
+  if (!exif) return undefined;
+  
+  // 如果是TExifData类型（数组）
+  if (Array.isArray(exif.latitude)) {
+    return convertGPSCoordinate(exif.latitude);
+  }
+  
+  // 如果是TExifFormData类型（字符串）
+  if (typeof exif.latitude === 'string') {
+    return convertGPSCoordinateFromString(exif.latitude);
+  }
+  
+  return undefined;
+};
+
+const convertExifLongitude = (exif: TExifData | TExifFormData | null) => {
+  if (!exif) return undefined;
+  
+  // 如果是TExifData类型（数组）
+  if (Array.isArray(exif.longitude)) {
+    return convertGPSCoordinate(exif.longitude);
+  }
+  
+  // 如果是TExifFormData类型（字符串）
+  if (typeof exif.longitude === 'string') {
+    return convertGPSCoordinateFromString(exif.longitude);
+  }
+  
+  return undefined;
+};
 
 export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [cameraInfoOpen, setCameraInfoOpen] = useState(true);
   const [exposureInfoOpen, setExposureInfoOpen] = useState(true);
   const [currentLocation, setCurrentLocation] = useState({
-    lat: exif?.latitude ?? 39.9042,
-    lng: exif?.longitude ?? 116.4074,
+    lat: convertExifLatitude(exif) ?? 39.9042,
+    lng: convertExifLongitude(exif) ?? 116.4074,
   });
 
   useEffect(() => {
@@ -89,9 +123,18 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
       width: imageInfo.width,
       height: imageInfo.height,
       blurData: imageInfo.blurhash,
-      latitude: exif?.latitude ?? currentLocation.lat,
-      longitude: exif?.longitude ?? currentLocation.lng,
-      ...exif,
+      latitude: convertExifLatitude(exif) ?? currentLocation.lat,
+      longitude: convertExifLongitude(exif) ?? currentLocation.lng,
+      make: exif?.make,
+      model: exif?.model,
+      lensModel: exif?.lensModel,
+      focalLength: exif?.focalLength,
+      focalLength35mm: exif?.focalLength35mm,
+      fNumber: exif?.fNumber,
+      iso: exif?.iso,
+      exposureTime: exif?.exposureTime,
+      exposureCompensation: exif?.exposureCompensation,
+      gpsAltitude: exif?.gpsAltitude,
       // 将dateTimeOriginal从字符串转换为Date对象
       dateTimeOriginal: exif?.dateTimeOriginal ? new Date(exif.dateTimeOriginal) : undefined,
     },

@@ -112,6 +112,20 @@ export function formatGPSCoordinateToString(gpsCoordinate: number[] | undefined)
 }
 
 /**
+ * 将字符串格式的GPS坐标转换为十进制度数格式
+ * @param gpsCoordinateString 字符串格式的GPS坐标
+ * @returns 十进制度数
+ */
+export function convertGPSCoordinateFromString(gpsCoordinateString: string | undefined): number | undefined {
+  if (!gpsCoordinateString) {
+    return undefined;
+  }
+  
+  const num = parseFloat(gpsCoordinateString);
+  return isNaN(num) ? undefined : num;
+}
+
+/**
  * 将原始EXIF数据转换为表单数据
  * @param exifData 原始EXIF数据
  * @returns 用于表单的EXIF数据
