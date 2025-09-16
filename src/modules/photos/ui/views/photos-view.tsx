@@ -20,7 +20,7 @@ const PhotosView = () => {
           </div>
           <Button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-1">
             <ImagePlus size={16} />
-            Create
+            Upload
           </Button>
         </div>
       </PageTransitionItem>
@@ -28,7 +28,7 @@ const PhotosView = () => {
         <PhotosSection />
       </PageTransitionItem>
       
-      <PhotoUploadModal />
+      <PhotoUploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
     </div>
   );
 };

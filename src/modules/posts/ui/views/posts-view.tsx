@@ -26,7 +26,7 @@ export const PostsView = () => {
           </div>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <PlusIcon className="mr-2 h-4 w-4" />
-            Create Post
+            Create
           </Button>
         </div>
       </PageTransitionItem>

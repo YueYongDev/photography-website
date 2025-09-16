@@ -7,8 +7,12 @@ import { PhotoUploader } from "@/modules/cloudflare/components/photo-uploader";
 import { ImagePlus } from "lucide-react";
 import { useState } from "react";
 
-export const PhotoUploadModal = () => {
-  const [isUploading, setIsUploading] = useState(false);
+export const PhotoUploadModal = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) => {
+  const [internalIsUploading, setInternalIsUploading] = useState(false);
+  
+  // 如果传入了isOpen和onClose，则使用外部控制，否则使用内部状态
+  const isUploading = isOpen !== undefined ? isOpen : internalIsUploading;
+  const setIsUploading = onClose !== undefined ? onClose : setInternalIsUploading;
 
   return (
     <>
