@@ -3,7 +3,7 @@
 // External dependencies
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { trpc } from "@/trpc/client";
 import { snakeCaseToTitle, cleanImageUrl } from "@/lib/utils";
 
@@ -19,41 +19,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import { InfiniteScroll } from "@/components/infinite-scroll";
-import { Globe2Icon, LockIcon, PlusIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { CreatePostSection } from "./create-post-section";
+import { Globe2Icon, LockIcon } from "lucide-react";
 
 export const PostsSection = () => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
   return (
     <Suspense fallback={<PostsSectionSkeleton />}>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        {/* Create Post Button */}
-        <div className="flex justify-end mb-4">
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusIcon className="mr-2 h-4 w-4" />
-                Create Post
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Post</DialogTitle>
-              </DialogHeader>
-              <CreatePostSection onCreateSuccess={() => setIsCreateDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
-        
         <PostsSectionSuspense />
       </ErrorBoundary>
     </Suspense>

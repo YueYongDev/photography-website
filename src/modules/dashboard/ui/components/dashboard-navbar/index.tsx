@@ -2,7 +2,6 @@ import Link from "next/link";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import UserButton from "@/modules/auth/components/user-button";
 import { RiCameraLensFill } from "react-icons/ri";
-import { PhotoUploadModal } from "../photo-upload-modal";
 
 export const DashboardNavbar = () => {
   return (
@@ -24,7 +23,6 @@ export const DashboardNavbar = () => {
 
         {/* Profile & Auth */}
         <div className="shrink-0 items-center flex gap-4">
-          <PhotoUploadModal />
           <UserButton />
         </div>
       </div>
