@@ -48,7 +48,7 @@ export const StatisticsSection = () => {
         title="Total posts"
         value={summary?.data?.postCount || 0}
       />
-      <StatisticsCard title="Likes" value={1000} />
+      <StatisticsCard title="Likes" value={summary?.data?.favoriteCount || 0} />
     </div>
   );
 };

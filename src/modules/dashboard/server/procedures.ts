@@ -2,13 +2,21 @@ import { db } from "@/db/drizzle";
 import { citySets, photos } from "@/db/schema/photos";
 import { posts } from "@/db/schema/posts";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const summaryRouter = createTRPCRouter({
   getSummary: protectedProcedure.query(async () => {
     const photosData = await db.select().from(photos);
     const citySetsData = await db.select().from(citySets);
     const postsData = await db.select().from(posts);
+
+    // 统计 favorite 照片数量
+    const favoritePhotosCount = await db
+      .select({ count: sql<number>`COUNT(*)::integer` })
+      .from(photos)
+      .where(eq(photos.isFavorite, true));
+
+    const favoriteCount = favoritePhotosCount[0]?.count || 0;
 
     const currentYear = new Date().getFullYear();
     const startYear = currentYear - 4;
@@ -53,6 +61,7 @@ export const summaryRouter = createTRPCRouter({
         yearlyStats: yearCounts,
         topCities,
         postCount: postsData.length,
+        favoriteCount,
       },
     };
   }),
