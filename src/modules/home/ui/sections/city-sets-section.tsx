@@ -40,9 +40,11 @@ const CitySetsSectionSuspense = () => {
       )}
 
       <InfiniteScroll
+        isManual
         hasNextPage={query.hasNextPage}
         fetchNextPage={query.fetchNextPage}
         isFetchingNextPage={query.isFetchingNextPage}
+        className="col-span-full"
       />
     </div>
   );

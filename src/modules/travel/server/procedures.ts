@@ -33,9 +33,39 @@ export const travelRouter = createTRPCRouter({
       const { cursor, limit } = input;
 
       const data = await db.query.citySets.findMany({
+        columns: {
+          id: true,
+          description: true,
+          country: true,
+          countryCode: true,
+          city: true,
+          coverPhotoId: true,
+          photoCount: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         with: {
-          coverPhoto: true,
-          photos: true,
+          coverPhoto: {
+            columns: {
+              id: true,
+              url: true,
+              title: true,
+              blurData: true,
+              longitude: true,
+              latitude: true,
+              dateTimeOriginal: true,
+            },
+          },
+          photos: {
+            columns: {
+              id: true,
+              url: true,
+              title: true,
+              blurData: true,
+              longitude: true,
+              latitude: true,
+            },
+          },
         },
         where: cursor
           ? or(

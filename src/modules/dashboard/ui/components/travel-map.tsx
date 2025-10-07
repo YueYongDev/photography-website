@@ -1,15 +1,23 @@
 import BlurImage from "@/components/blur-image";
 import Mapbox, { MapboxProps } from "@/components/map";
-import { CitySetWithPhotos } from "@/db/schema/photos";
+import type { DashboardTravelCitySet } from "./travel-types";
 
 interface TravelMapProps {
-  data: CitySetWithPhotos[];
+  data: DashboardTravelCitySet[];
 }
 
 export const TravelMap = ({ data }: TravelMapProps) => {
+  if (data.length === 0) {
+    return (
+      <div className="size-full relative overflow-hidden min-h-[300px]" />
+    );
+  }
+
+  const defaultCenter = { longitude: -122.4, latitude: 37.74 };
+  const coverPhoto = data[0]?.coverPhoto;
   const initialMarker = {
-    longitude: data[0].coverPhoto.longitude ?? -122.4,
-    latitude: data[0].coverPhoto.latitude ?? 37.74,
+    longitude: coverPhoto?.longitude ?? defaultCenter.longitude,
+    latitude: coverPhoto?.latitude ?? defaultCenter.latitude,
   };
 
   const markers: MapboxProps["markers"] =

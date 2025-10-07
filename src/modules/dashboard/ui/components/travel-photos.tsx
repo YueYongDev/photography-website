@@ -1,16 +1,16 @@
 import BlurImage from "@/components/blur-image";
-import type { CitySetWithPhotos } from "@/db/schema/photos";
 import { ImageIcon } from "lucide-react";
 import { useMap } from "react-map-gl";
+import type { DashboardTravelCitySet } from "./travel-types";
 
 interface TravelPhotosProps {
-  data: CitySetWithPhotos[];
+  data: DashboardTravelCitySet[];
 }
 
 export const TravelPhotos = ({ data }: TravelPhotosProps) => {
   const { city } = useMap();
 
-  const handleHover = (citySet: CitySetWithPhotos) => {
+  const handleHover = (citySet: DashboardTravelCitySet) => {
     if (!citySet.coverPhoto.longitude || !citySet.coverPhoto.latitude) return;
 
     city?.flyTo({
