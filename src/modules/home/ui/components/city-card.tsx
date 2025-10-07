@@ -13,6 +13,13 @@ interface Props {
 
 const CityCard = ({ title, coverPhoto }: Props) => {
   const router = useRouter();
+  const fallbackRatio = 3 / 4;
+  const aspectRatio =
+    coverPhoto?.aspectRatio && coverPhoto.aspectRatio > 0
+      ? coverPhoto.aspectRatio
+      : coverPhoto?.width && coverPhoto?.height
+        ? coverPhoto.width / coverPhoto.height
+        : fallbackRatio;
 
   return (
     <div
@@ -20,7 +27,7 @@ const CityCard = ({ title, coverPhoto }: Props) => {
       onClick={() => router.push(`/travel/${title}`)}
     >
       <AspectRatio
-        ratio={0.75 / 1}
+        ratio={aspectRatio}
         className="overflow-hidden rounded-lg relative"
       >
         <BlurImage
@@ -29,7 +36,7 @@ const CityCard = ({ title, coverPhoto }: Props) => {
           fill
           quality={25}
           priority
-          sizes="75vw"
+          sizes="(min-width: 1536px) calc(100vw / 3), (min-width: 768px) 50vw, 100vw"
           className="object-cover lg:group-hover:blur-xs lg:transition-[filter] lg:duration-300 lg:ease-out"
           blurhash={coverPhoto?.blurData || ""}
         />

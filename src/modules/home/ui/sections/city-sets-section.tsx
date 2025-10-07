@@ -28,23 +28,26 @@ const CitySetsSectionSuspense = () => {
   );
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
-      {data.pages.map((page) =>
-        page.items.map((item) => (
-          <CityCard
-            key={item.id}
-            title={item.city}
-            coverPhoto={item.coverPhoto}
-          />
-        ))
-      )}
+    <div className="flex flex-col gap-3">
+      <div className="columns-1 md:columns-2 2xl:columns-3 gap-3">
+        {data.pages.map((page) =>
+          page.items.map((item) => (
+            <div
+              key={item.id}
+              className="mb-3 break-inside-avoid-column"
+            >
+              <CityCard title={item.city} coverPhoto={item.coverPhoto} />
+            </div>
+          ))
+        )}
+      </div>
 
       <InfiniteScroll
         isManual
         hasNextPage={query.hasNextPage}
         fetchNextPage={query.fetchNextPage}
         isFetchingNextPage={query.isFetchingNextPage}
-        className="col-span-full"
+        className="pt-2"
       />
     </div>
   );
