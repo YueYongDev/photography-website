@@ -1,7 +1,6 @@
 "use client";
 
 // External dependencies
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo, useEffect } from "react";
 import { trpc } from "@/trpc/client";
