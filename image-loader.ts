@@ -19,6 +19,21 @@ export default function cloudflareLoader({
   if (src.startsWith("/")) {
     return src;
   }
+
+  let parsedUrl: URL | null = null;
+  try {
+    parsedUrl = new URL(src);
+  } catch {
+    return src;
+  }
+
+  if (parsedUrl.search) {
+    return src;
+  }
+
+  if (parsedUrl.hostname !== "p.yueyong.fun") {
+    return src;
+  }
   
   // For external images, use Cloudflare Image Resizing
   // Ensure width doesn't exceed Cloudflare's maximum dimension
@@ -34,6 +49,6 @@ export default function cloudflareLoader({
   // return `https://cdn.yueyong.fun/cdn-cgi/image/${paramsString}/${normalizeSrc(
   //   src
   // )}`;
-  return `${src}?imageView2/0/q/${quality}|imageslim`
+  return `${src}?imageView2/0/q/${quality}|imageslim`;
   // return `${src}-zip`
 }

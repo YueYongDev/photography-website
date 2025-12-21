@@ -9,13 +9,12 @@ import { ErrorBoundary } from "react-error-boundary";
 // UI Components
 import Carousel from "@/components/Carousel";
 import BlurImage from "@/components/blur-image";
-import { Skeleton } from "@/components/ui/skeleton";
 import VectorCombined from "@/components/vector-combined";
 
 export const ImageSliderSection = () => {
   return (
     <div className="w-full h-full relative">
-      <Suspense fallback={<Skeleton className="size-full" />}>
+      <Suspense fallback={<div className="size-full rounded-md bg-primary/10" />}>
         <ErrorBoundary fallback={<div>Something went wrong</div>}>
           <ImageSliderSuspense />
         </ErrorBoundary>
