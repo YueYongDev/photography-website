@@ -47,6 +47,7 @@ export const posts = pgTable(
     index("category_idx").on(t.categoryId),
     index("tags_idx").on(t.tags),
     index("slug_idx").on(t.slug),
+    index("posts_updated_at_idx").on(t.updatedAt),
   ]
 );
 

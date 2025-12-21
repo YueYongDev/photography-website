@@ -71,6 +71,7 @@ export const photos = pgTable(
   (t) => [
     index("year_idx").on(sql`DATE_TRUNC('year', ${t.dateTimeOriginal})`),
     index("city_idx").on(t.city),
+    index("photos_updated_at_idx").on(t.updatedAt),
   ]
 );
 
@@ -88,7 +89,10 @@ export const citySets = pgTable(
     photoCount: integer("photo_count").default(0).notNull(),
     ...timestamps,
   },
-  (t) => [uniqueIndex("unique_city_set").on(t.country, t.city)]
+  (t) => [
+    uniqueIndex("unique_city_set").on(t.country, t.city),
+    index("city_sets_updated_at_idx").on(t.updatedAt),
+  ]
 );
 
 export const citySetsRelations = relations(citySets, ({ one, many }) => ({

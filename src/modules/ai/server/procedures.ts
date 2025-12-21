@@ -20,45 +20,41 @@ export const aiRouter = createTRPCRouter({
     }))
     .mutation(async ({ input }) => {
       const { prompt, contentType, maxLength, temperature } = input;
-      
-      // 构造针对中文优化的提示词
-      const chinesePrompt = `请根据以下要求生成中文内容：
-      
-内容类型: ${contentType}
-主题: ${prompt}
-最大长度: ${maxLength} 字符
-风格要求: 自然、流畅、符合中文表达习惯
 
-请直接返回生成的内容，不需要额外的解释或格式。`;
-      
+      const systemPrompt = `你是一个专业的中文内容创作者。请根据用户的要求生成自然、流畅、符合中文表达习惯的内容。
+内容类型: ${contentType}
+最大长度: ${maxLength} 字符`;
+
       try {
-        // 调用Ollama API生成内容
-        const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
-        const response = await fetch(`${ollamaApiUrl}/api/generate`, {
+        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+        const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: 'gemma3:12b', // 使用支持中文的模型
-            prompt: chinesePrompt,
-            stream: false,
-            options: {
-              temperature: temperature,
-              num_predict: maxLength,
-            }
+            model: 'glm-4-flash',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: prompt }
+            ],
+            temperature: temperature,
+            max_tokens: maxLength,
           }),
         });
-        
+
         if (!response.ok) {
-          throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`Zhipu AI API error: ${response.status} ${JSON.stringify(errorData)}`);
         }
-        
+
         const data = await response.json();
-        
+        const content = data.choices?.[0]?.message?.content || "内容生成失败";
+
         // 返回生成的内容
         return {
-          content: data.response || "内容生成失败",
+          content,
           contentType: contentType,
           timestamp: new Date().toISOString(),
         };
@@ -91,7 +87,7 @@ export const aiRouter = createTRPCRouter({
     }))
     .mutation(async ({ input }) => {
       const { exifData, sceneType } = input;
-      
+
       // 构造EXIF信息提示词
       const exifInfo = [];
       if (exifData.make) exifInfo.push(`相机品牌: ${exifData.make}`);
@@ -102,9 +98,9 @@ export const aiRouter = createTRPCRouter({
       if (exifData.iso) exifInfo.push(`感光度: ISO ${exifData.iso}`);
       if (exifData.focalLength) exifInfo.push(`焦距: ${exifData.focalLength}mm`);
       if (exifData.dateTimeOriginal) exifInfo.push(`拍摄时间: ${new Date(exifData.dateTimeOriginal).toLocaleString('zh-CN')}`);
-      
+
       const exifText = exifInfo.length > 0 ? `照片EXIF信息:\n${exifInfo.join('\n')}` : '无可用EXIF信息。';
-      
+
       // 构造提示词
       const prompt = `根据以下EXIF信息和场景类型为照片生成一个有创意的标题和详细描述。
       
@@ -115,52 +111,42 @@ ${exifText}
 1. 一个有创意、吸引人的标题 (5-15个字)
 2. 一个详细的描述 (2-3句话)，根据技术信息和场景类型描述照片可能呈现的视觉内容，重点关注这些设置可能捕捉到的场景或主题。
 
-请用中文回复，并以JSON格式返回，只包含"title"和"description"字段。`;
-      
+请用中文回复，并以JSON格式返回，只包含"title"和"description"字段。请确保直接输出合法的 JSON，不要包含 Markdown 代码块。`;
+
       try {
-        // 调用Ollama API生成内容
-        const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
-        const response = await fetch(`${ollamaApiUrl}/api/generate`, {
+        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+        const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: 'gemma3:12b',
-            prompt: prompt,
-            stream: false,
-            format: 'json'
+            model: 'glm-4',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.7,
           }),
         });
-        
+
         if (!response.ok) {
-          throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+          throw new Error(`Zhipu AI API error: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
-        // 解析响应
+        const rawResponse = data.choices?.[0]?.message?.content || "";
+
         let content;
         try {
-          content = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
+          const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+          const jsonStr = jsonMatch ? jsonMatch[0] : rawResponse;
+          content = JSON.parse(jsonStr);
         } catch {
-          // Intentionally ignore parsing errors and use default content
           content = {
             title: "未命名照片",
             description: "一个美好的瞬间被永远定格。"
           };
         }
-        
-        // 确保返回的内容是中文
-        if (content && typeof content === 'object') {
-          if (content.title && !/[\u4e00-\u9fa5]/.test(content.title)) {
-            content.title = "未命名照片";
-          }
-          if (content.description && !/[\u4e00-\u9fa5]/.test(content.description)) {
-            content.description = "一个美好的瞬间被永远定格。";
-          }
-        }
-        
+
         return content;
       } catch (error) {
         console.error("照片描述生成失败:", error);
@@ -181,7 +167,7 @@ ${exifText}
     }))
     .mutation(async ({ input }) => {
       const { imageUrl } = input;
-      
+
       // 构造提示词
       const prompt = `请为这张照片生成一个有创意的标题和详细描述。
 
@@ -189,97 +175,55 @@ ${exifText}
 1. 一个有创意、吸引人的标题 (5-15个字)
 2. 一个详细的描述 (2-3句话)，描述照片中的内容、氛围和可能的故事。
 
-要求以JSON格式返回，且只包含"title"和"description"字段。字段里的内容请用中文表示`;
-      
+直接以JSON格式返回，只包含"title"和"description"字段。请确保输出合法的 JSON，不要包含 Markdown 代码块。字段内容必须是中文。`;
+
       try {
-        // 调用Ollama API生成内容
-        const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
-        
-        // 定义请求体类型
-        interface OllamaRequestBody {
-          model: string;
-          prompt: string;
-          stream: boolean;
-          format: string;
-          images?: string[];
-        }
-        
-        // 构造请求体
-        const requestBody: OllamaRequestBody = {
-          model: 'gemma3:12b', // 使用支持中文的多模态模型
-          prompt: prompt,
-          stream: false,
-          format: 'json' // 要求JSON格式响应
-        };
-        
-        // 尝试获取图像数据
-        try {
-          // 下载图像数据
-          const imageResponse = await fetch(imageUrl);
-          if (imageResponse.ok) {
-            const imageBuffer = await imageResponse.arrayBuffer();
-            const base64Image = Buffer.from(imageBuffer).toString('base64');
-            
-            // 添加图像数据到请求体
-            requestBody.images = [base64Image];
-          }
-        } catch (imageError) {
-          console.warn("Failed to fetch image data, using prompt only:", imageError);
-        }
-        
-        const response = await fetch(`${ollamaApiUrl}/api/generate`, {
+        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+
+        const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
           },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify({
+            model: 'glm-4v-plus-0111',
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'image_url', image_url: { url: imageUrl } },
+                  { type: 'text', text: prompt }
+                ]
+              }
+            ],
+            stream: false
+          }),
         });
-        
+
         if (!response.ok) {
-          throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+          const errorText = await response.text();
+          throw new Error(`Zhipu AI API error: ${response.status} ${errorText}`);
         }
-        
+
         const data = await response.json();
-        
-        // 解析响应
+        const rawResponse = data.choices?.[0]?.message?.content || "";
+
         let content;
         try {
-          // 如果响应是字符串，尝试解析为JSON
-          content = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
+          const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+          const jsonStr = jsonMatch ? jsonMatch[0] : rawResponse;
+          content = JSON.parse(jsonStr);
         } catch {
-          // Intentionally ignore parsing errors and use default content
-          // 如果解析失败，使用默认标题和描述
           content = {
             title: "未命名照片",
             description: "一个美好的瞬间被永远定格。"
           };
         }
-        
-        // 确保返回的内容是中文
-        if (content && typeof content === 'object') {
-          // 清理标题和描述中的非中文字符
-          if (content.title) {
-            // 移除非中文、非数字、非常见标点的字符
-            content.title = content.title.replace(/[^\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef0-9a-zA-Z\s]/g, '');
-            // 如果标题中没有中文字符，使用默认标题
-            if (!/[\u4e00-\u9fa5]/.test(content.title)) {
-              content.title = "未命名照片";
-            }
-          }
-          if (content.description) {
-            // 移除非中文、非数字、非常见标点的字符
-            content.description = content.description.replace(/[^\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef0-9a-zA-Z\s，。！？；：""''（）、]/g, '');
-            // 如果描述中没有中文字符，使用默认描述
-            if (!/[\u4e00-\u9fa5]/.test(content.description)) {
-              content.description = "一个美好的瞬间被永远定格。";
-            }
-          }
-        }
-        
+
         return content;
       } catch (error) {
-        console.error("Failed to call Ollama API:", error);
-        // 如果API调用失败，返回默认中文内容
+        console.error("Failed to generate description from URL:", error);
         return {
           title: "未命名照片",
           description: "一个美好的瞬间被永远定格。"
@@ -299,7 +243,7 @@ ${exifText}
     }))
     .mutation(async ({ input }) => {
       const { topic, wordCount, tone } = input;
-      
+
       const prompt = `请为以下主题生成一个中文博客文章的大纲：
       
 主题: ${topic}
@@ -312,7 +256,7 @@ ${exifText}
 3. 为每个章节提供简短的描述
 4. 包含一个结论部分
 
-请以JSON格式返回，结构如下:
+以JSON格式返回，结构如下:
 {
   "title": "文章标题",
   "sections": [
@@ -322,31 +266,35 @@ ${exifText}
     }
   ],
   "conclusion": "结论描述"
-}`;
-      
+}
+请确保输出合法的 JSON，不要包含 Markdown 代码块。`;
+
       try {
-        const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
-        const response = await fetch(`${ollamaApiUrl}/api/generate`, {
+        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+        const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: 'gemma3:12b',
-            prompt: prompt,
-            stream: false,
-            format: 'json'
+            model: 'glm-4',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.7,
           }),
         });
-        
+
         if (!response.ok) {
-          throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+          throw new Error(`Zhipu AI API error: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+        const rawResponse = data.choices?.[0]?.message?.content || "";
+
         try {
-          return typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
+          const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+          const jsonStr = jsonMatch ? jsonMatch[0] : rawResponse;
+          return JSON.parse(jsonStr);
         } catch {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",

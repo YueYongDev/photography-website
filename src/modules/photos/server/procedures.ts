@@ -212,13 +212,13 @@ export const photosRouter = createTRPCRouter({
       const { cursor, limit } = input;
       const whereClause = cursor
         ? or(
-            lt(photos.updatedAt, cursor.updatedAt),
-            and(
-              eq(photos.updatedAt, cursor.updatedAt),
-              eq(photos.visibility, "public"),
-              lt(photos.id, cursor.id)
-            )
+          lt(photos.updatedAt, cursor.updatedAt),
+          and(
+            eq(photos.updatedAt, cursor.updatedAt),
+            eq(photos.visibility, "public"),
+            lt(photos.id, cursor.id)
           )
+        )
         : undefined;
 
       const data = await db
@@ -247,7 +247,7 @@ export const photosRouter = createTRPCRouter({
       const items = hasMore ? data.slice(0, -1) : data;
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore
-        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt ?? new Date() }
         : null;
 
       return { items, nextCursor };
@@ -266,12 +266,12 @@ export const photosRouter = createTRPCRouter({
       const { cursor, limit } = input;
       const whereClause = cursor
         ? or(
-            lt(photos.updatedAt, cursor.updatedAt),
-            and(
-              eq(photos.updatedAt, cursor.updatedAt),
-              lt(photos.id, cursor.id)
-            )
+          lt(photos.updatedAt, cursor.updatedAt),
+          and(
+            eq(photos.updatedAt, cursor.updatedAt),
+            lt(photos.id, cursor.id)
           )
+        )
         : undefined;
 
       const data = await db
@@ -300,7 +300,7 @@ export const photosRouter = createTRPCRouter({
       const items = hasMore ? data.slice(0, -1) : data;
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore
-        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt ?? new Date() }
         : null;
 
       return { items, nextCursor };
@@ -332,12 +332,12 @@ export const photosRouter = createTRPCRouter({
       const { cursor, limit } = input;
       const whereClause = cursor
         ? or(
-            lt(citySets.updatedAt, cursor.updatedAt),
-            and(
-              eq(citySets.updatedAt, cursor.updatedAt),
-              lt(citySets.id, cursor.id)
-            )
+          lt(citySets.updatedAt, cursor.updatedAt),
+          and(
+            eq(citySets.updatedAt, cursor.updatedAt),
+            lt(citySets.id, cursor.id)
           )
+        )
         : undefined;
 
       const data = await db.query.citySets.findMany({
@@ -378,122 +378,77 @@ export const photosRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
       const { id } = input;
-      
+
       // 获取照片信息
       const [photo] = await db
         .select()
         .from(photos)
         .where(eq(photos.id, id));
-      
+
       if (!photo) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Photo not found",
         });
       }
-      
-      // 调用ollama服务生成图片描述
-      const generateAIContent = async () => {
-        // 构造提示词 - 要求中文输出
-        const prompt = `请为这张照片生成一个有创意的标题和详细描述。
 
-请提供:
+      // 调用智谱AI服务生成图片描述
+      const generateAIContent = async () => {
+        const prompt = `请为这张照片生成一个有创意的标题和详细描述。
+      
+要求:
 1. 一个有创意、吸引人的标题 (5-15个字)
 2. 一个详细的描述 (2-3句话)，描述照片中的内容、氛围和可能的故事。
 
-要求以JSON格式返回，且只包含"title"和"description"字段。字段里的内容请用中文表示`;
-        
-        // 调用ollama服务
+直接以JSON格式返回，只包含"title"和"description"字段。请确保输出合法的 JSON，不要包含 Markdown 代码块。字段内容必须是中文。`;
+
         try {
-          const ollamaApiUrl = process.env.OLLAMA_API_URL || 'https://ollama.yueyong.fun';
-          
-          // 定义请求体类型
-          interface OllamaRequestBody {
-            model: string;
-            prompt: string;
-            stream: boolean;
-            format: string;
-            images?: string[];
-          }
-          
-          // 构造请求体
-          const requestBody: OllamaRequestBody = {
-            model: 'gemma3:12b', // 使用支持中文的多模态模型
-            prompt: prompt,
-            stream: false,
-            format: 'json' // 要求JSON格式响应
-          };
-          
-          // 如果照片URL存在，尝试获取图像数据
-          if (photo.url) {
-            try {
-              // 下载图像数据
-              const imageResponse = await fetch(photo.url);
-              if (imageResponse.ok) {
-                const imageBuffer = await imageResponse.arrayBuffer();
-                const base64Image = Buffer.from(imageBuffer).toString('base64');
-                
-                // 添加图像数据到请求体
-                requestBody.images = [base64Image];
-              }
-            } catch (imageError) {
-              console.warn("Failed to fetch image data, using prompt only:", imageError);
-            }
-          }
-          
-          const response = await fetch(`${ollamaApiUrl}/api/generate`, {
+          const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+
+          const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`,
             },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify({
+              model: 'glm-4v-plus-0111',
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { type: 'image_url', image_url: { url: photo.url } },
+                    { type: 'text', text: prompt }
+                  ]
+                }
+              ],
+              stream: false
+            }),
           });
-          
+
           if (!response.ok) {
-            throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Zhipu AI API error: ${response.status} ${errorText}`);
           }
-          
+
           const data = await response.json();
-          
-          // 解析响应
+          const rawResponse = data.choices?.[0]?.message?.content || "";
+
           let content;
           try {
-            // 如果响应是字符串，尝试解析为JSON
-            content = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
+            const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : rawResponse;
+            content = JSON.parse(jsonStr);
           } catch {
-            // Intentionally ignore parsing errors and use default content
-            // 如果解析失败，使用默认标题和描述
             content = {
               title: "未命名照片",
               description: "一个美好的瞬间被永远定格。"
             };
           }
-          
-          // 确保返回的内容是中文
-          if (content && typeof content === 'object') {
-            // 清理标题和描述中的非中文字符
-            if (content.title) {
-              // 移除非中文、非数字、非常见标点的字符
-              content.title = content.title.replace(/[^\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef0-9a-zA-Z\s]/g, '');
-              // 如果标题中没有中文字符，使用默认标题
-              if (!/[\u4e00-\u9fa5]/.test(content.title)) {
-                content.title = "未命名照片";
-              }
-            }
-            if (content.description) {
-              // 移除非中文、非数字、非常见标点的字符
-              content.description = content.description.replace(/[^\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef0-9a-zA-Z\s，。！？；：""''（）、]/g, '');
-              // 如果描述中没有中文字符，使用默认描述
-              if (!/[\u4e00-\u9fa5]/.test(content.description)) {
-                content.description = "一个美好的瞬间被永远定格。";
-              }
-            }
-          }
-          
+
           return content;
         } catch (error) {
-          console.error("Failed to call Ollama API:", error);
-          // 如果API调用失败，返回默认中文内容
+          console.error("Failed to call Zhipu AI API:", error);
           return {
             title: photo.make || photo.model
               ? `使用${photo.make || ''} ${photo.model || ''}拍摄`.trim()
@@ -502,7 +457,7 @@ export const photosRouter = createTRPCRouter({
           };
         }
       };
-      
+
       try {
         const content = await generateAIContent();
         return content;

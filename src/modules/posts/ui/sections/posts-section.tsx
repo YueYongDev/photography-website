@@ -2,6 +2,7 @@
 
 // External dependencies
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Suspense } from "react";
 import { trpc } from "@/trpc/client";
@@ -79,6 +80,7 @@ const PostsSectionSkeleton = () => {
 };
 
 const PostsSectionSuspense = () => {
+  const router = useRouter();
   const [posts, query] = trpc.posts.getMany.useSuspenseInfiniteQuery(
     {
       limit: 10,
@@ -104,64 +106,65 @@ const PostsSectionSuspense = () => {
           {posts.pages
             .flatMap((page) => page.items)
             .map((post) => (
-              <Link href={`/posts/${post.id}`} key={post.id} legacyBehavior>
-                <TableRow className="cursor-pointer">
-                  <TableCell className="pl-6">
-                    <div className="flex items-center gap-4">
-                      <div className="relative aspect-video w-36 shrink-0">
-                        <Image
-                          src={cleanImageUrl(post.coverImage)}
-                          alt={post.title}
-                          fill
-                          quality={25}
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      </div>
-                      <div className="flex flex-col overflow-hidden gap-y-1">
-                        <span className="text-sm line-clamp-1">
-                          {post.title}
-                        </span>
+              <TableRow
+                key={post.id}
+                className="cursor-pointer"
+                onClick={() => router.push(`/posts/${post.id}`)}
+              >
+                <TableCell className="pl-6">
+                  <div className="flex items-center gap-4">
+                    <div className="relative aspect-video w-36 shrink-0">
+                      <Image
+                        src={cleanImageUrl(post.coverImage)}
+                        alt={post.title}
+                        fill
+                        quality={25}
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                    <div className="flex flex-col overflow-hidden gap-y-1">
+                      <span className="text-sm line-clamp-1">
+                        {post.title}
+                      </span>
 
-                        <span className="text-xs text-muted-foreground line-clamp-1">
-                          {post.description || "No description"}
-                        </span>
-                      </div>
+                      <span className="text-xs text-muted-foreground line-clamp-1">
+                        {post.description || "No description"}
+                      </span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      {post.visibility === "private" ? (
-                        <LockIcon className="size-4 mr-2" />
-                      ) : (
-                        <Globe2Icon className="size-4 mr-2" />
-                      )}
-                      {snakeCaseToTitle(post.visibility)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs truncate">
-                    {post.createdAt &&
-                      new Date(post.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      })}
-                  </TableCell>
-                  <TableCell>Travel</TableCell>
-                  <TableCell className="text-right pr-6">
-                    {post.tags &&
-                      post.tags.map((tag) => (
-                        <span key={tag} className="mr-2">
-                          {tag}
-                        </span>
-                      ))}
-                  </TableCell>
-                </TableRow>
-              </Link>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    {post.visibility === "private" ? (
+                      <LockIcon className="size-4 mr-2" />
+                    ) : (
+                      <Globe2Icon className="size-4 mr-2" />
+                    )}
+                    {snakeCaseToTitle(post.visibility)}
+                  </div>
+                </TableCell>
+                <TableCell className="text-xs truncate">
+                  {post.createdAt &&
+                    new Date(post.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
+                </TableCell>
+                <TableCell>Travel</TableCell>
+                <TableCell className="text-right pr-6">
+                  {post.tags &&
+                    post.tags.map((tag) => (
+                      <span key={tag} className="mr-2">
+                        {tag}
+                      </span>
+                    ))}
+                </TableCell>
+              </TableRow>
             ))}
         </TableBody>
       </Table>
-
       <InfiniteScroll
         hasNextPage={query.hasNextPage}
         fetchNextPage={query.fetchNextPage}

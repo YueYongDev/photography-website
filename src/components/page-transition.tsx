@@ -7,18 +7,18 @@ const VARIANTS_CONTAINER = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.05,
     },
   },
 };
 
 const VARIANTS_SECTION = {
-  hidden: { opacity: 0, y: 20, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
   visible: { opacity: 1, y: 0, filter: "blur(0px)" },
 };
 
 const TRANSITION_SECTION = {
-  duration: 0.3,
+  duration: 0.2,
 };
 
 interface PageTransitionProps {

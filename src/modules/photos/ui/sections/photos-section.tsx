@@ -2,6 +2,7 @@
 
 // External dependencies
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { memo, useEffect } from "react";
 import { trpc } from "@/trpc/client";
 
@@ -94,19 +95,13 @@ const PhotosSectionContent = () => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       }
     );
-  
+
   // 预加载图片
   useEffect(() => {
     if (photos && photos.pages) {
       // 获取当前显示的图片列表
       const currentPhotos = photos.pages.flatMap((page) => page.items);
-      
-      // 预加载下一页的图片
-      if (query.hasNextPage && !query.isFetchingNextPage) {
-        // 触发下一页的预加载
-        query.fetchNextPage();
-      }
-      
+
       // 预加载当前显示图片的后续图片
       const preloadCount = Math.min(5, currentPhotos.length);
       for (let i = 0; i < preloadCount; i++) {
@@ -114,7 +109,7 @@ const PhotosSectionContent = () => {
         img.src = currentPhotos[i].url;
       }
     }
-  }, [photos, query]);
+  }, [photos]);
 
   if (!photos) {
     return <PhotosSectionSkeleton />
@@ -152,25 +147,32 @@ const PhotosSectionContent = () => {
   );
 };
 
-const PhotoTableRow = memo(({ photo }: { photo: {
-  id: string;
-  url: string;
-  title: string;
-  description: string;
-  visibility: string;
-  dateTimeOriginal: Date | null;
-  make: string | null;
-  model: string | null;
-  lensModel: string | null;
-  focalLength35mm: number | null;
-  city: string | null;
-  countryCode: string | null;
-  isFavorite: boolean;
-  blurData: string;
-  updatedAt: Date;
-} }) => (
-  <Link href={`/photos/${photo.id}`} legacyBehavior>
-    <TableRow className="cursor-pointer">
+const PhotoTableRow = memo(({ photo }: {
+  photo: {
+    id: string;
+    url: string;
+    title: string;
+    description: string;
+    visibility: string;
+    dateTimeOriginal: Date | null;
+    make: string | null;
+    model: string | null;
+    lensModel: string | null;
+    focalLength35mm: number | null;
+    city: string | null;
+    countryCode: string | null;
+    isFavorite: boolean;
+    blurData: string;
+    updatedAt: Date;
+  }
+}) => {
+  const router = useRouter();
+
+  return (
+    <TableRow
+      className="cursor-pointer"
+      onClick={() => router.push(`/photos/${photo.id}`)}
+    >
       <TableCell className="pl-6">
         <div className="flex items-center gap-4">
           <div className="relative aspect-video w-36 shrink-0">
@@ -244,6 +246,6 @@ const PhotoTableRow = memo(({ photo }: { photo: {
         </div>
       </TableCell>
     </TableRow>
-  </Link>
-));
+  );
+});
 PhotoTableRow.displayName = "PhotoTableRow";
