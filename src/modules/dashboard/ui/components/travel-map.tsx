@@ -1,4 +1,3 @@
-import BlurImage from "@/components/blur-image";
 import MapComponent, { MapProps } from "@/components/map";
 import type { DashboardTravelCitySet } from "./travel-types";
 
