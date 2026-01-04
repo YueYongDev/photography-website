@@ -27,11 +27,13 @@ interface CustomPhotoType {
 interface PhotoListDrawerProps {
   photos: Photo[];
   className?: string;
+  filterLabel?: string | null;
 }
 
 export const PhotoListDrawer = ({
   photos,
   className,
+  filterLabel,
 }: PhotoListDrawerProps) => {
   const getMap = useMapStore((state) => state.getMap);
   const discoverMap = getMap("discoverMap");
@@ -207,7 +209,9 @@ export const PhotoListDrawer = ({
         <div className="h-full w-full overflow-y-auto pr-2 sm:pr-4">
           <div className="space-y-4 p-2 sm:p-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Photos</h2>
+              <h2 className="text-xl font-semibold">
+                Photos{filterLabel ? ` - ${filterLabel}` : ""}
+              </h2>
               <span className="text-sm text-muted-foreground">
                 {photoAlbumPhotos.length} items
               </span>

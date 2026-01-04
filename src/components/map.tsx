@@ -10,7 +10,6 @@ import {
   MarkerPopup,
   useMap,
 } from "@/components/ui/map";
-import { useTheme } from "next-themes";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ export interface MapProps {
     id: string;
     longitude: number;
     latitude: number;
+    onClick?: (e: MouseEvent) => void;
     popupContent?: React.ReactNode;
     element?: React.ReactNode;
   }>;
@@ -186,6 +186,7 @@ const MapComponent = ({
             latitude={marker.latitude}
             draggable={draggableMarker}
             onDragEnd={onMarkerDragEnd}
+            onClick={marker.onClick}
           >
             <MarkerContent>
               {marker.element || (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import Image, { ImageProps } from "next/image";
 import { Blurhash } from "react-blurhash";
 
@@ -32,8 +32,16 @@ const BlurImage = memo(function BlurImage({
 }: BlurImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
 
   const containerStyle = fill ? "absolute inset-0" : "relative w-full h-full";
+
+  useEffect(() => {
+    if (!imageRef.current) return;
+    if (imageRef.current.complete && imageRef.current.naturalWidth > 0) {
+      setImageLoaded(true);
+    }
+  }, [src]);
 
   return (
     <div className={containerStyle}>
@@ -55,10 +63,12 @@ const BlurImage = memo(function BlurImage({
         width={width}
         height={height}
         fill={fill}
+        ref={imageRef}
         className={`${className} transition-opacity duration-300 ease-in-out ${
           imageLoaded && !imageError ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setImageLoaded(true)}
+        onLoadingComplete={() => setImageLoaded(true)}
         onError={() => setImageError(true)}
         loading={props.priority ? undefined : "lazy"}
         {...props}

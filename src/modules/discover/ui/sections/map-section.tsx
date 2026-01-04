@@ -1,12 +1,11 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useMemo, useState } from "react";
 import MapComponent, { MapProps } from "@/components/map";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import { trpc } from "@/trpc/client";
 import BlurImage from "@/components/blur-image";
-import { Blurhash } from "react-blurhash";
 import { useRouter } from "next/navigation";
 import { PhotoListDrawer } from "./photo-list-drawer";
 // removed react-map-gl import
@@ -29,9 +28,29 @@ const MapSectionSkeleton = () => {
   );
 };
 
+const markerColor = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+    hash |= 0;
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue} 80% 45%)`;
+};
+
+const normalizeLocation = (value?: string | null) => {
+  if (!value) return null;
+  return value.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+};
+
 const MapSectionSuspense = () => {
   const router = useRouter();
   const [data] = trpc.map.getMany.useSuspenseQuery();
+  const [activeLocation, setActiveLocation] = useState<{
+    id?: string;
+    city?: string;
+    region?: string;
+  } | null>(null);
 
   const markers: MapProps["markers"] =
     data
@@ -45,25 +64,21 @@ const MapSectionSuspense = () => {
         id: photo.id,
         longitude: photo.longitude,
         latitude: photo.latitude,
+        onClick: () =>
+          setActiveLocation({
+            id: photo.id,
+            city: photo.city ?? undefined,
+            region: photo.city ? undefined : photo.region ?? undefined,
+          }),
         element: (
           <div className="relative cursor-pointer group -translate-y-1/2">
-            {/* Ping effect for active/discovery feel */}
-            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-            </span>
-
-            <div className="size-10 rounded-full border-2 border-white shadow-lg overflow-hidden transition-all duration-300 group-hover:scale-125 group-hover:ring-4 group-hover:ring-blue-400/30">
-              <div className="w-full h-full transform scale-125">
-                <Blurhash
-                  hash={photo.blurData}
-                  width={40}
-                  height={40}
-                  punch={1}
-                  style={{ width: "100%", height: "100%", display: "block" }}
-                />
-              </div>
-            </div>
+            <div
+              className="size-4 rounded-full border border-white shadow-md transition-all duration-200 group-hover:scale-125"
+              style={{
+                background: markerColor(photo.id),
+                boxShadow: "0 6px 14px -6px rgba(0,0,0,0.45)",
+              }}
+            />
           </div>
         ),
         popupContent: (
@@ -94,6 +109,34 @@ const MapSectionSuspense = () => {
         ),
       })) || [];
 
+  const filteredPhotos = useMemo(() => {
+    if (!data) return [];
+    if (!activeLocation) return data;
+    const cityKey = normalizeLocation(activeLocation.city);
+    const regionKey = normalizeLocation(activeLocation.region);
+    let filtered = data;
+
+    if (cityKey) {
+      filtered = data.filter(
+        (photo) => normalizeLocation(photo.city) === cityKey
+      );
+    } else if (regionKey) {
+      filtered = data.filter(
+        (photo) => normalizeLocation(photo.region) === regionKey
+      );
+    }
+
+    if (filtered.length === 0 && activeLocation.id) {
+      const selected = data.find((photo) => photo.id === activeLocation.id);
+      return selected ? [selected] : [];
+    }
+
+    return filtered;
+  }, [data, activeLocation]);
+
+  const filterLabel =
+    activeLocation?.city ?? activeLocation?.region ?? null;
+
   return (
     <div className="relative size-full">
       <MapComponent
@@ -105,7 +148,7 @@ const MapSectionSuspense = () => {
         }}
         markers={markers}
       />
-      <PhotoListDrawer photos={data} />
+      <PhotoListDrawer photos={filteredPhotos} filterLabel={filterLabel} />
     </div>
   );
 };
