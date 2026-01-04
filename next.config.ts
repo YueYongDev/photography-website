@@ -1,12 +1,17 @@
 import type { NextConfig } from "next";
+import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
 const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
-const r2Pattern = r2PublicUrl
+const r2Pattern: RemotePattern | null = r2PublicUrl
   ? (() => {
       try {
         const parsed = new URL(r2PublicUrl);
+        const protocol =
+          parsed.protocol === "https:" || parsed.protocol === "http:"
+            ? (parsed.protocol.replace(":", "") as "https" | "http")
+            : undefined;
         return {
-          protocol: parsed.protocol.replace(":", ""),
+          protocol,
           hostname: parsed.hostname,
           port: parsed.port,
         };

@@ -103,7 +103,7 @@
     "ts-exif-parser": "^0.2.2",
     "ua-parser-js": "^2.0.0",
     "vaul": "^1.1.2",
-    "zod": "^3.24.2",
+    "zod": "^4.3.5",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
