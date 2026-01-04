@@ -31,24 +31,15 @@ export default function cloudflareLoader({
     return src;
   }
 
-  if (parsedUrl.hostname !== "p.yueyong.fun") {
+  if (parsedUrl.hostname !== "p.yueyong.fun" && parsedUrl.hostname !== "cdn.ytools.xyz") {
     return src;
   }
-  
-  // For external images, use Cloudflare Image Resizing
-  // Ensure width doesn't exceed Cloudflare's maximum dimension
-  const maxWidth = Math.min(width, CLOUDFLARE_MAX_DIMENSION);
-  const params = [`width=${maxWidth}`];
-  if (!quality) {
-    quality = 95; // Default quality if not provided
-  }
-  params.push(`quality=${quality}`);
-  params.push(`fit=cover`);
-  const paramsString = params.join(",");
 
-  // return `https://cdn.yueyong.fun/cdn-cgi/image/${paramsString}/${normalizeSrc(
-  //   src
-  // )}`;
-  return `${src}?imageView2/0/q/${quality}|imageslim`;
-  // return `${src}-zip`
+  // For external images, use Image Resizing
+  const maxWidth = Math.min(width, CLOUDFLARE_MAX_DIMENSION);
+  const q = quality || 75;
+
+  // Qiniu-style resizing: imageView2/2/w/<width>/q/<quality>
+  // imageView2/2 is for width-limited resizing
+  return `${src}?imageView2/2/w/${maxWidth}/q/${q}|imageslim`;
 }

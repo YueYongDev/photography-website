@@ -1,37 +1,31 @@
 import { useState, useEffect } from "react";
-import { Feature, FeatureCollection, Point } from "geojson";
 
-export interface MapboxFeature extends Feature {
-  geometry: Point;
-  properties: {
-    full_address: string;
-    name: string;
-    place_formatted: string;
-    context: {
-      country: {
-        country_code: string;
-        name: string;
+export interface AddressData {
+  features: Array<{
+    properties: {
+      full_address: string;
+      place_formatted: string;
+      context: {
+        country: {
+          country_code: string;
+          name: string;
+        } | null;
+        locality: {
+          name: string;
+        } | null;
+        place: {
+          name: string;
+        } | null;
+        region: {
+          name: string;
+        } | null;
       };
-      locality: {
-        name: string;
-      } | null;
-      place: {
-        name: string;
-      } | null;
-      region: {
-        name: string;
-      } | null;
     };
-  };
-}
-
-export interface MapboxReverseGeocodingResponse extends FeatureCollection {
-  features: MapboxFeature[];
-  query: [number, number];
+  }>;
 }
 
 type LocationState = {
-  data: MapboxReverseGeocodingResponse | null;
+  data: AddressData | null;
   isLoading: boolean;
   error: string | null;
 };
@@ -54,15 +48,44 @@ export const useGetAddress = ({ lat, lng }: UseGetLocationProps) => {
 
       try {
         const response = await fetch(
-          `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${lng}&latitude=${lat}&language=en&access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}`
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=en&addressdetails=1`,
+          {
+            headers: {
+              "User-Agent": "PhotographyWebsite/1.0",
+            },
+          }
         );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: MapboxReverseGeocodingResponse = await response.json();
-        setState({ data, isLoading: false, error: null });
+        const data = await response.json();
+
+        // Map Nominatim to Mapbox-like structure for compatibility
+        const mappedData: AddressData = {
+          features: [
+            {
+              properties: {
+                full_address: data.display_name,
+                place_formatted: data.display_name,
+                context: {
+                  country: data.address.country ? {
+                    name: data.address.country,
+                    country_code: data.address.country_code?.toUpperCase(),
+                  } : null,
+                  region: data.address.state ? { name: data.address.state } : null,
+                  place: (data.address.city || data.address.town || data.address.village) ? {
+                    name: data.address.city || data.address.town || data.address.village
+                  } : null,
+                  locality: data.address.suburb ? { name: data.address.suburb } : null,
+                }
+              }
+            }
+          ]
+        };
+
+        setState({ data: mappedData, isLoading: false, error: null });
       } catch (error) {
         setState({
           data: null,

@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { Suspense, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { motion } from "framer-motion";
-import Mapbox from "@/components/map";
+import MapComponent from "@/components/map";
 import { BrandsLogo } from "@/components/brands-logo";
 
 interface Props {
@@ -300,8 +300,8 @@ const PhotographSectionSuspense = ({ id }: Props) => {
                     {Number(data.focalLength35mm) < 35
                       ? "Wide angle"
                       : Number(data.focalLength35mm) > 70
-                      ? "Telephoto"
-                      : "Standard"}
+                        ? "Telephoto"
+                        : "Standard"}
                   </p>
                 </div>
               </div>
@@ -344,7 +344,7 @@ const PhotographSectionSuspense = ({ id }: Props) => {
 
             {/* Location - Large panel on right */}
             <div className="md:col-span-2 rounded-3xl overflow-hidden flex flex-col justify-between group relative h-full">
-              <Mapbox
+              <MapComponent
                 markers={[
                   {
                     latitude: data.latitude || 0,

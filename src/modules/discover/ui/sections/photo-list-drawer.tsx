@@ -5,7 +5,7 @@ import { Photo } from "@/db/schema/photos";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
-import { useMap } from "react-map-gl";
+import { useMapStore } from "@/hooks/use-map-store";
 import type { RenderImageContext, RenderImageProps } from "react-photo-album";
 import PhotoAlbum from "react-photo-album";
 import "react-photo-album/styles.css";
@@ -33,7 +33,8 @@ export const PhotoListDrawer = ({
   photos,
   className,
 }: PhotoListDrawerProps) => {
-  const { discoverMap } = useMap();
+  const getMap = useMapStore((state) => state.getMap);
+  const discoverMap = getMap("discoverMap");
   const [isOpen, setIsOpen] = useState(false);
 
   const photoAlbumPhotos = useMemo(() => {

@@ -1,5 +1,5 @@
 import BlurImage from "@/components/blur-image";
-import Mapbox, { MapboxProps } from "@/components/map";
+import MapComponent, { MapProps } from "@/components/map";
 import type { DashboardTravelCitySet } from "./travel-types";
 
 interface TravelMapProps {
@@ -20,7 +20,7 @@ export const TravelMap = ({ data }: TravelMapProps) => {
     latitude: coverPhoto?.latitude ?? defaultCenter.latitude,
   };
 
-  const markers: MapboxProps["markers"] =
+  const markers: MapProps["markers"] =
     data
       .flatMap((citySet) =>
         citySet.photos.filter(
@@ -35,31 +35,20 @@ export const TravelMap = ({ data }: TravelMapProps) => {
         longitude: photo.longitude,
         latitude: photo.latitude,
         element: (
-          <div className="relative group cursor-pointer -translate-x-1/2 -translate-y-1/2">
-            <div className="size-5 rounded-full overflow-hidden bg-background/20 ring-1 ring-white/20">
-              <div
-                className="w-full h-full"
-                style={{ transform: "scale(1.2)" }}
-              >
-                <BlurImage
-                  src={photo.url}
-                  alt={photo.title}
-                  fill
-                  priority
-                  quality={5}
-                  blurhash={photo.blurData}
-                  sizes="75vw"
-                  className="object-cover"
-                />
+          <div className="relative cursor-pointer group -translate-y-[90%]">
+            <div className="relative w-5 h-7 bg-blue-500 rounded-t-full rounded-bl-full rotate-45 border-[1.5px] border-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-600">
+              <div className="-rotate-45 w-full h-full flex items-center justify-center">
+                <div className="size-3 rounded-full bg-white/40 border border-white/20 shadow-inner" />
               </div>
             </div>
+            <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-0.5 bg-black/20 rounded-full blur-[0.5px]" />
           </div>
         ),
       })) || [];
 
   return (
     <div className="size-full relative overflow-hidden min-h-[300px]">
-      <Mapbox
+      <MapComponent
         id="city"
         markers={markers}
         initialViewState={{

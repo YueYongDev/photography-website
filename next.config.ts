@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         hostname: "p.yueyong.fun",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.ytools.xyz",
+        port: "",
+      },
     ],
   },
 };

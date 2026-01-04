@@ -32,7 +32,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 
-const MapboxComponent = dynamic(() => import("@/components/map"), {
+const MapComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
   loading: () => (
     <div className="h-[300px] w-full rounded-md border flex items-center justify-center bg-muted">
@@ -51,33 +51,33 @@ interface PhotoFormProps {
 // 辅助函数：根据exif类型正确转换GPS坐标
 const convertExifLatitude = (exif: TExifData | TExifFormData | null) => {
   if (!exif) return undefined;
-  
+
   // 如果是TExifData类型（数组）
   if (Array.isArray(exif.latitude)) {
     return convertGPSCoordinate(exif.latitude);
   }
-  
+
   // 如果是TExifFormData类型（字符串）
   if (typeof exif.latitude === 'string') {
     return convertGPSCoordinateFromString(exif.latitude);
   }
-  
+
   return undefined;
 };
 
 const convertExifLongitude = (exif: TExifData | TExifFormData | null) => {
   if (!exif) return undefined;
-  
+
   // 如果是TExifData类型（数组）
   if (Array.isArray(exif.longitude)) {
     return convertGPSCoordinate(exif.longitude);
   }
-  
+
   // 如果是TExifFormData类型（字符串）
   if (typeof exif.longitude === 'string') {
     return convertGPSCoordinateFromString(exif.longitude);
   }
-  
+
   return undefined;
 };
 
@@ -148,7 +148,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
       region: address?.features[0].properties.context.region?.name,
       city:
         address?.features[0].properties.context.country?.country_code === "JP" ||
-        address?.features[0].properties.context.country?.country_code === "TW"
+          address?.features[0].properties.context.country?.country_code === "TW"
           ? address?.features[0].properties.context.region?.name
           : address?.features[0].properties.context.place?.name,
       district: address?.features[0].properties.context.locality?.name,
@@ -279,7 +279,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       name="model"
                       control={form.control}
@@ -297,7 +297,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       name="lensModel"
                       control={form.control}
@@ -318,7 +318,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                   </div>
                 </CollapsibleContent>
               </Collapsible>
-  
+
               {/* Exposure Info Collapsible */}
               <Collapsible open={exposureInfoOpen} onOpenChange={setExposureInfoOpen}>
                 <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
@@ -348,7 +348,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       name="fNumber"
                       control={form.control}
@@ -367,7 +367,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       name="iso"
                       control={form.control}
@@ -385,7 +385,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       name="exposureTime"
                       control={form.control}
@@ -403,7 +403,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       name="exposureCompensation"
                       control={form.control}
@@ -422,7 +422,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       name="dateTimeOriginal"
                       control={form.control}
@@ -560,7 +560,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
               <FormControl>
                 <div className="h-[300px] w-full rounded-md overflow-hidden border">
                   <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                    <MapboxComponent
+                    <MapComponent
                       draggableMarker
                       markers={[
                         { id: "location", longitude: currentLocation.lng, latitude: currentLocation.lat },

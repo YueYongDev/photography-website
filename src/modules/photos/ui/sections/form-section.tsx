@@ -48,7 +48,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 
-const MapboxComponent = dynamic(() => import("@/components/map"), {
+const MapComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
   loading: () => (
     <div className="h-[300px] w-full rounded-md border flex items-center justify-center bg-muted">
@@ -147,7 +147,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   useEffect(() => {
     const lat = form.watch("latitude");
     const lng = form.watch("longitude");
-    
+
     // 只有当 lat 和 lng 都有效时才更新 currentLocation
     if (lat !== undefined && lng !== undefined && lat !== null && lng !== null) {
       setCurrentLocation({ lat, lng });
@@ -174,9 +174,8 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     update.mutateAsync(data);
   };
 
-  const fullUrl = `${
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-  }/photograph/${photoId}`;
+  const fullUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    }/photograph/${photoId}`;
   const [isCopied, setIsCopied] = useState(false);
 
   const onCopy = async () => {
@@ -313,7 +312,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           </FormItem>
                         )}
                       />
-    
+
                       <FormField
                         name="model"
                         control={form.control}
@@ -331,7 +330,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           </FormItem>
                         )}
                       />
-    
+
                       <FormField
                         name="lensModel"
                         control={form.control}
@@ -352,7 +351,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
-    
+
                 {/* Exposure Info Collapsible */}
                 <Collapsible open={exposureInfoOpen} onOpenChange={setExposureInfoOpen}>
                   <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
@@ -382,7 +381,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           </FormItem>
                         )}
                       />
-    
+
                       <FormField
                         name="fNumber"
                         control={form.control}
@@ -401,7 +400,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           </FormItem>
                         )}
                       />
-    
+
                       <FormField
                         name="iso"
                         control={form.control}
@@ -419,7 +418,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           </FormItem>
                         )}
                       />
-    
+
                       <FormField
                         name="exposureTime"
                         control={form.control}
@@ -436,7 +435,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           </FormItem>
                         )}
                       />
-    
+
                       <FormField
                         name="exposureCompensation"
                         control={form.control}
@@ -455,7 +454,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           </FormItem>
                         )}
                       />
-    
+
                       <FormField
                         name="dateTimeOriginal"
                         control={form.control}
@@ -625,7 +624,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 <FormControl>
                   <div className="h-[200px] w-full rounded-md overflow-hidden border">
                     <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                      <MapboxComponent
+                      <MapComponent
                         draggableMarker
                         markers={mapValues.markers}
                         initialViewState={{
@@ -645,9 +644,9 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 <FormDescription>
                   {currentLocation.lat !== null && currentLocation.lng !== null
                     ? formatGPSCoordinates(
-                        currentLocation.lat,
-                        currentLocation.lng
-                      )
+                      currentLocation.lat,
+                      currentLocation.lng
+                    )
                     : "No GPS coordinates available"}
                 </FormDescription>
               </FormItem>

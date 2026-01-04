@@ -1,28 +1,21 @@
 "use client";
 
 // External dependencies
-import * as mapboxgl from "mapbox-gl";
-import { useCallback, useEffect, useRef, useState } from "react";
-import Map, {
-  GeolocateControl,
-  Layer,
-  LayerProps,
-  MapRef,
-  Marker,
-  NavigationControl,
-  Popup,
-  Source,
-} from "react-map-gl";
-// Hooks & Types
-import MapboxGeocoder, {
-  type GeocoderOptions,
-} from "@mapbox/mapbox-gl-geocoder";
+import { useEffect, useState } from "react";
+import {
+  Map,
+  MapMarker,
+  MapControls,
+  MarkerContent,
+  MarkerPopup,
+  useMap,
+} from "@/components/ui/map";
 import { useTheme } from "next-themes";
-// Styles
-import "mapbox-gl/dist/mapbox-gl.css";
-import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-export interface MapboxProps {
+export interface MapProps {
   id?: string;
   initialViewState?: {
     longitude: number;
@@ -43,12 +36,121 @@ export interface MapboxProps {
   showGeocoder?: boolean;
 }
 
-const MAP_STYLES = {
-  light: "mapbox://styles/ecarry/cldmhu6tr000001n33ujbxf7j",
-  dark: "mapbox://styles/ecarry/clp8hcmd300km01qx78rt0xaw",
-} as const;
+// GeoJSON layer component
+const GeoJsonLayer = ({
+  data,
+  onClick,
+}: {
+  data: GeoJSON.FeatureCollection;
+  onClick?: (feature: GeoJSON.Feature) => void;
+}) => {
+  const { map, isLoaded } = useMap();
 
-const Mapbox = ({
+  useEffect(() => {
+    if (!map || !isLoaded || !data) return;
+
+    const sourceId = "geojson-source";
+    const layerId = "geojson-layer";
+
+    const source = map.getSource(sourceId) as maplibregl.GeoJSONSource | undefined;
+    if (source) {
+      source.setData(data as GeoJSON.FeatureCollection);
+    } else {
+      map.addSource(sourceId, {
+        type: "geojson",
+        data: data,
+      });
+
+      map.addLayer({
+        id: layerId,
+        type: "fill",
+        source: sourceId,
+        paint: {
+          "fill-color": "#0080ff",
+          "fill-opacity": 0.5,
+        },
+      });
+    }
+
+    const handleLayerClick = (e: { features?: GeoJSON.Feature[] }) => {
+      if (onClick && e.features && e.features.length > 0) {
+        onClick(e.features[0]);
+      }
+    };
+
+    map.on("click", layerId, handleLayerClick);
+    map.on("mouseenter", layerId, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", layerId, () => {
+      map.getCanvas().style.cursor = "";
+    });
+
+    return () => {
+      map.off("click", layerId, handleLayerClick);
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    };
+  }, [map, isLoaded, data, onClick]);
+
+  return null;
+};
+
+// Simple Geocoder replacement using Nominatim
+const SimpleGeocoder = () => {
+  const { map, isLoaded } = useMap();
+  const [query, setQuery] = useState("");
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query || !map || !isLoaded) return;
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          query
+        )}&format=json&limit=1`,
+        {
+          headers: {
+            "User-Agent": "PhotographyWebsite/1.0",
+          },
+        }
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        map.flyTo({
+          center: [parseFloat(lon), parseFloat(lat)],
+          zoom: 14,
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSearch}
+      className="absolute top-2 left-2 z-20 flex gap-2"
+    >
+      <div className="relative group">
+        <Input
+          type="text"
+          placeholder="Search location..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="w-64 h-9 bg-background/80 backdrop-blur-sm border-muted-foreground/20 text-sm pl-9 focus-visible:ring-1"
+        />
+        <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+        <Button size="sm" type="submit" className="hidden">Search</Button>
+      </div>
+    </form>
+  );
+};
+
+const MapComponent = ({
   id,
   initialViewState = {
     longitude: -122.4,
@@ -61,163 +163,51 @@ const Mapbox = ({
   onGeoJsonClick,
   draggableMarker = false,
   showGeocoder = false,
-}: MapboxProps) => {
-  const mapRef = useRef<MapRef>(null);
-  const { theme } = useTheme();
-  const [popupInfo, setPopupInfo] = useState<{
-    id: string;
-    longitude: number;
-    latitude: number;
-    content: React.ReactNode;
-  } | null>(null);
-
-  // GeoJSON layer style
-  const layerStyle: LayerProps = {
-    id: "data",
-    type: "fill",
-    paint: {
-      "fill-color": "#0080ff",
-      "fill-opacity": 0.5,
-    },
-  };
-
-  // Add Geocoder control
-  useEffect(() => {
-    if (!showGeocoder || !mapRef.current) return;
-
-    const map = mapRef.current;
-    const geocoderOptions: GeocoderOptions = {
-      accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!,
-      mapboxgl: mapboxgl,
-    };
-    const geocoder = new MapboxGeocoder(geocoderOptions);
-
-    map.getMap().addControl(geocoder);
-
-    return () => {
-      if (map) {
-        map.getMap().removeControl(geocoder);
-      }
-    };
-  }, [showGeocoder]);
-
-  // Handle GeoJSON click
-  const onClick = useCallback(
-    (
-      event: mapboxgl.MapMouseEvent & {
-        features?: mapboxgl.GeoJSONFeature[];
-      }
-    ) => {
-      if (!onGeoJsonClick) return;
-
-      const feature = event.features?.[0];
-      if (feature) {
-        onGeoJsonClick(feature as GeoJSON.Feature);
-      }
-    },
-    [onGeoJsonClick]
-  );
-
-  // Fly to location
-  const flyToLocation = useCallback((longitude: number, latitude: number) => {
-    mapRef.current?.flyTo({
-      center: [longitude, latitude],
-      duration: 2000,
-      zoom: 14,
-    });
-  }, []);
+}: MapProps) => {
 
   return (
-    <Map
-      id={id}
-      ref={mapRef}
-      mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-      initialViewState={initialViewState}
-      style={{ width: "100%", height: "100%" }}
-      mapStyle={MAP_STYLES[theme === "dark" ? "dark" : "light"]}
-      interactiveLayerIds={geoJsonData ? ["data"] : undefined}
-      onClick={onClick}
-    >
-      {/* Navigation Controls */}
-      <NavigationControl position="bottom-left" />
-      <GeolocateControl
-        position="bottom-left"
-        trackUserLocation
-        onGeolocate={(e) => {
-          flyToLocation(e.coords.longitude, e.coords.latitude);
-        }}
-      />
+    <div className="relative w-full h-full min-h-[300px]" id={id}>
+      <Map
+        center={[initialViewState.longitude, initialViewState.latitude]}
+        zoom={initialViewState.zoom}
+      >
+        <MapControls
+          showLocate
+          showZoom
+          position="bottom-left"
+        />
 
-      {/* Markers */}
-      {markers.map((marker) => (
-        <Marker
-          key={marker.id}
-          longitude={marker.longitude}
-          latitude={marker.latitude}
-          draggable={draggableMarker}
-          style={{ cursor: draggableMarker ? "grab" : "pointer" }}
-          onDragEnd={
-            onMarkerDragEnd ? (e) => onMarkerDragEnd(e.lngLat) : undefined
-          }
-          onClick={() => {
-            if (marker.popupContent) {
-              setPopupInfo({
-                id: marker.id,
-                longitude: marker.longitude,
-                latitude: marker.latitude,
-                content: marker.popupContent,
-              });
-            }
-          }}
-        >
-          {marker.element}
-        </Marker>
-      ))}
+        {showGeocoder && <SimpleGeocoder />}
 
-      {/* Popup */}
-      {popupInfo && (
-        <Popup
-          longitude={popupInfo.longitude}
-          latitude={popupInfo.latitude}
-          anchor="bottom"
-          offset={15}
-          className="p-0! rounded-xl! overflow-hidden max-w-none"
-          closeButton={false}
-          closeOnClick={false}
-          onClose={() => setPopupInfo(null)}
-        >
-          <div className="relative">
-            <button
-              onClick={() => setPopupInfo(null)}
-              className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors"
-            >
-              <span className="sr-only">Close</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-5 h-5 text-white"
-              >
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-            {popupInfo.content}
-          </div>
-        </Popup>
-      )}
+        {markers.map((marker) => (
+          <MapMarker
+            key={marker.id}
+            longitude={marker.longitude}
+            latitude={marker.latitude}
+            draggable={draggableMarker}
+            onDragEnd={onMarkerDragEnd}
+          >
+            <MarkerContent>
+              {marker.element || (
+                <div className="size-6 bg-blue-500 rounded-full border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform" />
+              )}
+            </MarkerContent>
+            {marker.popupContent && (
+              <MarkerPopup className="p-0 border-none bg-transparent shadow-none overflow-visible">
+                <div className="relative">
+                  {marker.popupContent}
+                </div>
+              </MarkerPopup>
+            )}
+          </MapMarker>
+        ))}
 
-      {/* GeoJSON Layer */}
-      {geoJsonData && (
-        <Source type="geojson" data={geoJsonData}>
-          <Layer {...layerStyle} />
-        </Source>
-      )}
-    </Map>
+        {geoJsonData && (
+          <GeoJsonLayer data={geoJsonData} onClick={onGeoJsonClick} />
+        )}
+      </Map>
+    </div>
   );
 };
 
-export default Mapbox;
+export default MapComponent;
