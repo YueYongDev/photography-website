@@ -4,7 +4,7 @@ import { HomeView } from "@/modules/home/ui/views/home-view";
 export const dynamic = "force-dynamic";
 
 const page = async () => {
-  void trpc.photos.getCitySets.prefetch({
+  void trpc.photos.getCitySetsPreview.prefetchInfinite({
     limit: 12,
   });
   void trpc.photos.getLikedPhotos.prefetch({

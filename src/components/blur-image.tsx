@@ -68,7 +68,6 @@ const BlurImage = memo(function BlurImage({
           imageLoaded && !imageError ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setImageLoaded(true)}
-        onLoadingComplete={() => setImageLoaded(true)}
         onError={() => setImageError(true)}
         loading={props.priority ? undefined : "lazy"}
         {...props}

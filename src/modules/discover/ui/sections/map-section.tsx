@@ -45,15 +45,27 @@ const normalizeLocation = (value?: string | null) => {
 
 const MapSectionSuspense = () => {
   const router = useRouter();
-  const [data] = trpc.map.getMany.useSuspenseQuery();
+  const [data, query] = trpc.map.getMany.useSuspenseInfiniteQuery(
+    {
+      limit: 200,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
   const [activeLocation, setActiveLocation] = useState<{
     id?: string;
     city?: string;
     region?: string;
   } | null>(null);
 
+  const photos = useMemo(
+    () => data.pages.flatMap((page) => page.items),
+    [data.pages]
+  );
+
   const markers: MapProps["markers"] =
-    data
+    photos
       ?.filter(
         (
           photo
@@ -110,29 +122,28 @@ const MapSectionSuspense = () => {
       })) || [];
 
   const filteredPhotos = useMemo(() => {
-    if (!data) return [];
-    if (!activeLocation) return data;
+    if (!activeLocation) return photos;
     const cityKey = normalizeLocation(activeLocation.city);
     const regionKey = normalizeLocation(activeLocation.region);
-    let filtered = data;
+    let filtered = photos;
 
     if (cityKey) {
-      filtered = data.filter(
+      filtered = photos.filter(
         (photo) => normalizeLocation(photo.city) === cityKey
       );
     } else if (regionKey) {
-      filtered = data.filter(
+      filtered = photos.filter(
         (photo) => normalizeLocation(photo.region) === regionKey
       );
     }
 
     if (filtered.length === 0 && activeLocation.id) {
-      const selected = data.find((photo) => photo.id === activeLocation.id);
+      const selected = photos.find((photo) => photo.id === activeLocation.id);
       return selected ? [selected] : [];
     }
 
     return filtered;
-  }, [data, activeLocation]);
+  }, [photos, activeLocation]);
 
   const filterLabel =
     activeLocation?.city ?? activeLocation?.region ?? null;
@@ -148,7 +159,13 @@ const MapSectionSuspense = () => {
         }}
         markers={markers}
       />
-      <PhotoListDrawer photos={filteredPhotos} filterLabel={filterLabel} />
+      <PhotoListDrawer
+        photos={filteredPhotos}
+        filterLabel={filterLabel}
+        hasNextPage={query.hasNextPage || false}
+        isFetchingNextPage={query.isFetchingNextPage || false}
+        fetchNextPage={query.fetchNextPage}
+      />
     </div>
   );
 };

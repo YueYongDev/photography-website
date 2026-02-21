@@ -10,7 +10,9 @@ export const metadata = {
 };
 
 const DiscoverPage = async () => {
-  void trpc.map.getMany.prefetch();
+  void trpc.map.getMany.prefetchInfinite({
+    limit: 200,
+  });
 
   return (
     <HydrateClient>

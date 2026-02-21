@@ -18,7 +18,7 @@ export const CitySetsSection = () => {
 };
 
 const CitySetsSectionSuspense = () => {
-  const [data, query] = trpc.photos.getCitySets.useSuspenseInfiniteQuery(
+  const [data, query] = trpc.photos.getCitySetsPreview.useSuspenseInfiniteQuery(
     {
       limit: 12,
     },

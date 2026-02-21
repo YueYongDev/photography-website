@@ -360,6 +360,67 @@ export const photosRouter = createTRPCRouter({
       return { items, nextCursor };
     }),
 
+  getCitySetsPreview: baseProcedure
+    .input(
+      z.object({
+        cursor: z
+          .object({ id: z.string().uuid(), updatedAt: z.date() })
+          .nullish(),
+        limit: z.number().min(1).max(100).default(10),
+      })
+    )
+    .query(async ({ input }) => {
+      const { cursor, limit } = input;
+      const whereClause = cursor
+        ? or(
+          lt(citySets.updatedAt, cursor.updatedAt),
+          and(
+            eq(citySets.updatedAt, cursor.updatedAt),
+            lt(citySets.id, cursor.id)
+          )
+        )
+        : undefined;
+
+      const data = await db.query.citySets.findMany({
+        columns: {
+          id: true,
+          description: true,
+          country: true,
+          countryCode: true,
+          city: true,
+          coverPhotoId: true,
+          photoCount: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        where: whereClause,
+        orderBy: [desc(citySets.updatedAt)],
+        limit: limit + 1,
+        with: {
+          coverPhoto: {
+            columns: {
+              id: true,
+              url: true,
+              title: true,
+              blurData: true,
+              width: true,
+              height: true,
+              aspectRatio: true,
+            },
+          },
+        },
+      });
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
+        : null;
+
+      return { items, nextCursor };
+    }),
+
   getCitySetByCity: baseProcedure
     .input(z.object({ city: z.string() }))
     .query(async ({ input }) => {

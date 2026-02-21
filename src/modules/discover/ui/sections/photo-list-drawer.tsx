@@ -10,6 +10,7 @@ import type { RenderImageContext, RenderImageProps } from "react-photo-album";
 import PhotoAlbum from "react-photo-album";
 import "react-photo-album/styles.css";
 import { motion } from "motion/react";
+import { Button } from "@/components/ui/button";
 
 interface CustomPhotoType {
   src: string;
@@ -28,12 +29,18 @@ interface PhotoListDrawerProps {
   photos: Photo[];
   className?: string;
   filterLabel?: string | null;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => Promise<unknown>;
 }
 
 export const PhotoListDrawer = ({
   photos,
   className,
   filterLabel,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
 }: PhotoListDrawerProps) => {
   const getMap = useMapStore((state) => state.getMap);
   const discoverMap = getMap("discoverMap");
@@ -227,6 +234,18 @@ export const PhotoListDrawer = ({
               }}
               render={{ image: renderNextImage }}
             />
+            {hasNextPage && (
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isFetchingNextPage}
+                  onClick={() => void fetchNextPage()}
+                >
+                  {isFetchingNextPage ? "Loading..." : "Load more"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
