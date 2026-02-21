@@ -126,6 +126,34 @@ export function convertGPSCoordinateFromString(gpsCoordinateString: string | und
 }
 
 /**
+ * 解析类似 "41.34153572730956, 69.25888151100972" 的坐标字符串
+ * @param coordinates 坐标字符串
+ * @returns lat/lng 对象，解析失败则返回 null
+ */
+export function parseLatLngText(coordinates: string): { lat: number; lng: number } | null {
+  const matched = coordinates
+    .trim()
+    .match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+
+  if (!matched) {
+    return null;
+  }
+
+  const lat = Number.parseFloat(matched[1]);
+  const lng = Number.parseFloat(matched[2]);
+
+  if (Number.isNaN(lat) || Number.isNaN(lng)) {
+    return null;
+  }
+
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return null;
+  }
+
+  return { lat, lng };
+}
+
+/**
  * 将原始EXIF数据转换为表单数据
  * @param exifData 原始EXIF数据
  * @returns 用于表单的EXIF数据

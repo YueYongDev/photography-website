@@ -6,7 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { formatGPSCoordinates } from "@/lib/utils";
+import { formatGPSCoordinates, parseLatLngText } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/trpc/client";
 import {
@@ -79,10 +79,13 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   const [exposureInfoOpen, setExposureInfoOpen] = useState(false);
 
   const update = trpc.photos.update.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Photo updated");
-      utils.photos.getMany.invalidate();
-      utils.photos.getOne.invalidate({ id: photoId });
+      await Promise.all([
+        utils.photos.getMany.invalidate(),
+        utils.photos.getManyWithPrivate.invalidate(),
+        utils.photos.getOne.invalidate({ id: photoId }),
+      ]);
       // 保存成功后跳转回Photo页面
       router.push("/photos");
     },
@@ -90,9 +93,12 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   });
 
   const remove = trpc.photos.remove.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Photo removed");
-      utils.photos.getMany.invalidate();
+      await Promise.all([
+        utils.photos.getMany.invalidate(),
+        utils.photos.getManyWithPrivate.invalidate(),
+      ]);
       router.push("/photos");
     },
     onError: (error) => toast.error(error.message),
@@ -182,6 +188,25 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     await navigator.clipboard.writeText(fullUrl);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const onPasteCoordinates = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const coordinates = parseLatLngText(clipboardText);
+
+      if (!coordinates) {
+        toast.error("Invalid coordinates format. Use: latitude, longitude");
+        return;
+      }
+
+      form.setValue("latitude", coordinates.lat);
+      form.setValue("longitude", coordinates.lng);
+      setCurrentLocation({ lat: coordinates.lat, lng: coordinates.lng });
+      toast.success("Coordinates pasted");
+    } catch {
+      toast.error("Failed to read clipboard");
+    }
   };
 
   return (
@@ -424,7 +449,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Exposure Time (s)</FormLabel>
+                            <FormLabel>Shutter Speed</FormLabel>
                             <FormControl>
                               <ExposureTimeInput
                                 value={field.value}
@@ -593,7 +618,17 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 name="gpsCoordinates"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>GPS Coordinates</FormLabel>
+                    <div className="mb-2 flex items-center justify-between">
+                      <FormLabel className="mb-0">GPS Coordinates</FormLabel>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onPasteCoordinates}
+                      >
+                        Paste coordinates
+                      </Button>
+                    </div>
                     <FormControl>
                       <Input
                         {...field}

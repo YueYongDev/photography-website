@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ExposureTimeInput } from "@/components/ui/exposure-time-input";
 import { CopyCheckIcon, CopyIcon, ChevronDown, ChevronRight, SparklesIcon } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/trpc/client";
@@ -25,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetAddress } from "../hooks/use-get-address";
 import { photosInsertSchema } from "@/db/schema/photos";
 import type { TExifData, TExifFormData, TImageInfo } from "@/lib/utils";
-import { convertGPSCoordinate, convertGPSCoordinateFromString } from "@/lib/utils";
+import { convertGPSCoordinate, convertGPSCoordinateFromString, parseLatLngText } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -101,9 +102,12 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
 
   const utils = trpc.useUtils();
   const create = trpc.photos.create.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Photo created");
-      utils.photos.getMany.invalidate();
+      await Promise.all([
+        utils.photos.getMany.invalidate(),
+        utils.photos.getManyWithPrivate.invalidate(),
+      ]);
       onCreateSuccess?.();
     },
     onError: (error) => {
@@ -163,6 +167,25 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
     await navigator.clipboard.writeText(url);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const onPasteCoordinates = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const coordinates = parseLatLngText(clipboardText);
+
+      if (!coordinates) {
+        toast.error("Invalid coordinates format. Use: latitude, longitude");
+        return;
+      }
+
+      form.setValue("latitude", coordinates.lat);
+      form.setValue("longitude", coordinates.lng);
+      setCurrentLocation({ lat: coordinates.lat, lng: coordinates.lng });
+      toast.success("Coordinates pasted");
+    } catch {
+      toast.error("Failed to read clipboard");
+    }
   };
 
   // 创建一个新的mutation用于AI生成描述
@@ -391,12 +414,11 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                       control={form.control}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Exposure Time (s)</FormLabel>
+                          <FormLabel>Shutter Speed</FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              type="text"
-                              value={field.value ?? ""}
+                            <ExposureTimeInput
+                              value={field.value}
+                              onChange={field.onChange}
                             />
                           </FormControl>
                           <FormMessage />
@@ -581,6 +603,11 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
             </FormItem>
 
             <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 flex justify-end">
+                <Button type="button" variant="outline" size="sm" onClick={onPasteCoordinates}>
+                  Paste coordinates
+                </Button>
+              </div>
               {(["latitude", "longitude"] as const).map((key) => (
                 <FormField
                   key={key}

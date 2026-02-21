@@ -14,25 +14,25 @@ interface ExposureTimeInputProps {
 }
 
 const commonExposureTimes = [
-  { label: "1/8000", value: 0.000125 },
-  { label: "1/4000", value: 0.00025 },
-  { label: "1/2000", value: 0.0005 },
-  { label: "1/1000", value: 0.001 },
-  { label: "1/500", value: 0.002 },
-  { label: "1/250", value: 0.004 },
-  { label: "1/125", value: 0.008 },
-  { label: "1/60", value: 1/60 },
-  { label: "1/30", value: 1/30 },
-  { label: "1/15", value: 1/15 },
-  { label: "1/8", value: 0.125 },
-  { label: "1/4", value: 0.25 },
-  { label: "1/2", value: 0.5 },
-  { label: "1\"", value: 1 },
-  { label: "2\"", value: 2 },
-  { label: "4\"", value: 4 },
-  { label: "8\"", value: 8 },
-  { label: "15\"", value: 15 },
-  { label: "30\"", value: 30 },
+  { label: "1/8000s", value: 0.000125 },
+  { label: "1/4000s", value: 0.00025 },
+  { label: "1/2000s", value: 0.0005 },
+  { label: "1/1000s", value: 0.001 },
+  { label: "1/500s", value: 0.002 },
+  { label: "1/250s", value: 0.004 },
+  { label: "1/125s", value: 0.008 },
+  { label: "1/60s", value: 1 / 60 },
+  { label: "1/30s", value: 1 / 30 },
+  { label: "1/15s", value: 1 / 15 },
+  { label: "1/8s", value: 0.125 },
+  { label: "1/4s", value: 0.25 },
+  { label: "1/2s", value: 0.5 },
+  { label: "1s", value: 1 },
+  { label: "2s", value: 2 },
+  { label: "4s", value: 4 },
+  { label: "8s", value: 8 },
+  { label: "15s", value: 15 },
+  { label: "30s", value: 30 },
 ];
 
 export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
@@ -64,7 +64,16 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
   const getCurrentValueLabelText = () => {
     if (value === undefined || value === null) return "";
     const matched = commonExposureTimes.find(et => Math.abs(et.value - value) < 0.000001);
-    return matched ? matched.label : value.toString();
+    if (matched) return matched.label;
+
+    if (value > 0 && value < 1) {
+      const denominator = Math.round(1 / value);
+      if (Math.abs(1 / denominator - value) < 0.0005) {
+        return `1/${denominator}s`;
+      }
+    }
+
+    return `${value}s`;
   };
 
   const handleSelectChange = (selectedValue: string) => {
@@ -81,11 +90,13 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
 
   const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
+    const normalizedValue = inputValue.trim().toLowerCase().replace(/\s+/g, "").replace(/["”″]/g, "s");
+    const cleanValue = normalizedValue.endsWith("s") ? normalizedValue.slice(0, -1) : normalizedValue;
     setManualValue(inputValue);
     
     // 如果是分数形式 (例如: 1/1000)
-    if (inputValue.includes("/")) {
-      const [numerator, denominator] = inputValue.split("/").map(part => part.trim());
+    if (cleanValue.includes("/")) {
+      const [numerator, denominator] = cleanValue.split("/").map(part => part.trim());
       
       if (numerator && denominator && !isNaN(parseFloat(numerator)) && !isNaN(parseFloat(denominator))) {
         const fractionValue = parseFloat(numerator) / parseFloat(denominator);
@@ -93,11 +104,11 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
       } else {
         onChange(null);
       }
-    } else if (inputValue === "") {
+    } else if (cleanValue === "") {
       onChange(null);
     } else {
       // 直接的数字输入
-      const numericValue = parseFloat(inputValue);
+      const numericValue = parseFloat(cleanValue);
       if (!isNaN(numericValue)) {
         onChange(numericValue);
       } else {
@@ -124,14 +135,14 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
                 {et.label}
               </SelectItem>
             ))}
-            <SelectItem value="manual">手动输入</SelectItem>
+            <SelectItem value="manual">Manual input</SelectItem>
           </SelectContent>
         </Select>
       ) : (
         <div className="flex gap-2">
           <Input
             type="text"
-            placeholder="输入曝光时间 (如: 1/500 或 0.002)"
+            placeholder="e.g. 1/200s or 0.005"
             value={manualValue}
             onChange={handleManualChange}
           />
@@ -149,7 +160,7 @@ export function ExposureTimeInput({ value, onChange }: ExposureTimeInputProps) {
       )}
       {inputMode === "manual" && (
         <p className="text-xs text-muted-foreground">
-          支持分数形式输入，例如: 1/500, 1/4 等
+          Supports inputs like 1/200s, 1/2s, 2s, or 0.005
         </p>
       )}
     </div>
