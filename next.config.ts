@@ -21,6 +21,11 @@ const r2Pattern: RemotePattern | null = r2PublicUrl
     })()
   : null;
 
+const uzbekistanJourneyOrigin = (
+  process.env.UZBEKISTAN_JOURNEY_ORIGIN ||
+  "https://journey-uzbekistan-2026.vercel.app"
+).replace(/\/$/, "");
+
 const nextConfig: NextConfig = {
   images: {
     loader: "custom",
@@ -39,6 +44,18 @@ const nextConfig: NextConfig = {
       },
       ...(r2Pattern ? [r2Pattern] : []),
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/journeys/uzbekistan-2026",
+        destination: `${uzbekistanJourneyOrigin}/`,
+      },
+      {
+        source: "/journeys/uzbekistan-2026/:path*",
+        destination: `${uzbekistanJourneyOrigin}/:path*`,
+      },
+    ];
   },
 };
 

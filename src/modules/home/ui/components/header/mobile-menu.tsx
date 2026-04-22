@@ -16,7 +16,7 @@ const menuItems: MenuItem[] = [
   { label: "Home", href: "/" },
   { label: "Travel", href: "/travel" },
   { label: "Discover", href: "/discover" },
-  { label: "Blog", href: "/blog" },
+  { label: "Journeys", href: "/journeys" },
   { label: "About", href: "/about" },
 ];
 

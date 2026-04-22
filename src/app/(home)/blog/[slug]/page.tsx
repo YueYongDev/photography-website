@@ -1,6 +1,5 @@
 import { Metadata } from "next";
-import { HydrateClient, trpc } from "@/trpc/server";
-import { BlogSlugView } from "@/modules/blog/ui/views/blog-slug-view";
+import { redirect } from "next/navigation";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -16,19 +15,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .join(" ");
 
   return {
-    title: `${title} - Blog`,
+    title: `${title} - Journeys`,
   };
 }
 
 const BlogSlugPage = async ({ params }: Props) => {
-  const slug = (await params).slug;
-  void trpc.blog.getOne({ slug });
-
-  return (
-    <HydrateClient>
-      <BlogSlugView slug={slug} />
-    </HydrateClient>
-  );
+  await params;
+  redirect("/journeys");
 };
 
 export default BlogSlugPage;
