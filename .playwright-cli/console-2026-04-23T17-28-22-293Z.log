@@ -30,3 +30,17 @@
 [32402582ms] [LOG] [Fast Refresh] done in 164ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
 [32780657ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
 [32780671ms] [LOG] [Fast Refresh] done in 116ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[33828466ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: The operation couldn’t be completed. Socket is not connected @ :0
+[33829557ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33830645ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33831699ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33832764ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33833842ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33838895ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33843967ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33849070ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33854179ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33859207ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33864225ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33869337ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=rJLmYio4Y7SnvzNQINvvh' failed: Could not connect to the server. @ :0
+[33869345ms] [ERROR] Failed to load resource: Could not connect to the server. @ http://localhost:3000/journeys:0
