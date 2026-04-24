@@ -485,7 +485,10 @@ const FilmHero = ({
 
   return (
     <section className="relative w-full overflow-hidden bg-black text-white">
-      <div className="relative w-full pt-8" style={{ aspectRatio: tweaks.aspect }}>
+      <div
+        className="journeys-hero-stage relative w-full pt-24 md:pt-8"
+        style={{ "--journey-aspect": tweaks.aspect } as React.CSSProperties}
+      >
         <img
           src={prevRef.current.coverImage}
           alt=""
@@ -555,7 +558,7 @@ const FilmHero = ({
                 {cur.theme}
               </div>
               <div
-                className="font-display text-[62px] italic leading-[0.82] tracking-[-0.02em] sm:text-[96px] lg:text-[140px]"
+                className="font-display text-[56px] italic leading-[0.82] tracking-[-0.02em] min-[430px]:text-[62px] sm:text-[96px] lg:text-[140px]"
                 style={{ fontWeight: 500 }}
               >
                 {cur.title}
@@ -865,15 +868,19 @@ const FieldTicker = ({
 
   return (
     <section className="relative overflow-hidden border-y border-white/10 bg-black text-white">
-      <div className="flex items-center gap-3 border-b border-white/10 px-6 py-4 font-mono text-[10px] uppercase tracking-[0.28em]">
+      <div className="cc flex items-center gap-3 overflow-x-auto whitespace-nowrap border-b border-white/10 px-6 py-4 font-mono text-[10px] uppercase tracking-[0.28em]">
         <span
-          className="size-2 animate-pulse rounded-full"
+          className="size-2 shrink-0 animate-pulse rounded-full"
           style={{ background: tweaks.accent }}
         />
-        <span>Live Feed</span>
-        <span className="opacity-50">· broadcasting from {liveOne.title}</span>
+        <span className="shrink-0">Live Feed</span>
+        <span className="shrink-0 opacity-50">
+          · broadcasting from {liveOne.title}
+        </span>
         <span className="flex-1" />
-        <span className="hidden opacity-60 sm:inline">auto · refresh 1s</span>
+        <span className="hidden shrink-0 opacity-60 sm:inline">
+          auto · refresh 1s
+        </span>
       </div>
       <div className="relative overflow-hidden py-5">
         <div
@@ -1057,6 +1064,17 @@ const JourneysStyles = () => (
       font-variant-numeric: tabular-nums;
     }
 
+    .journeys-film .journeys-hero-stage {
+      min-height: min(720px, calc(100svh - 24px));
+    }
+
+    @media (min-width: 768px) {
+      .journeys-film .journeys-hero-stage {
+        min-height: 0;
+        aspect-ratio: var(--journey-aspect);
+      }
+    }
+
     .journeys-film .noise-film {
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
     }
@@ -1107,6 +1125,40 @@ const JourneysStyles = () => (
 
     body:has(.journeys-film) header {
       position: absolute !important;
+    }
+
+    @media (max-width: 1023px) {
+      body:has(.journeys-film) header {
+        top: 12px !important;
+        right: 12px !important;
+        left: 12px !important;
+        width: auto !important;
+        background: transparent !important;
+        pointer-events: none;
+      }
+
+      body:has(.journeys-film) header > div:first-child,
+      body:has(.journeys-film) header > button {
+        background: hsl(var(--background));
+        pointer-events: auto;
+      }
+
+      body:has(.journeys-film) header > div:first-child {
+        width: max-content;
+        border-bottom-right-radius: 18px;
+      }
+
+      body:has(.journeys-film) header > button.fixed {
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+      }
+
+      body:has(.journeys-film) header > div:first-child > div.fixed {
+        position: absolute !important;
+        top: -12px !important;
+        left: -12px !important;
+      }
     }
   `}</style>
 );
