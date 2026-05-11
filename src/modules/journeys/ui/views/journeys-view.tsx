@@ -13,6 +13,13 @@ import {
   type JourneyStatus,
 } from "@/modules/journeys/data/journeys";
 
+type JourneyThemeKey =
+  | "alpine"
+  | "silkRoad"
+  | "coastal"
+  | "anatolia"
+  | "nordic";
+
 type FilmJourney = {
   slug: string;
   title: string;
@@ -32,6 +39,7 @@ type FilmJourney = {
   href: string;
   featured: boolean;
   accent: string;
+  themeKey: JourneyThemeKey;
   coords: [number, number];
   exif: {
     iso: number;
@@ -45,7 +53,6 @@ type FilmJourney = {
 };
 
 type FilmTweaks = {
-  accent: string;
   grain: number;
   aspect: string;
   stripPos: "top" | "bottom";
@@ -56,6 +63,172 @@ type FilmScrollState = {
   canLeft: boolean;
   canRight: boolean;
   remaining: number;
+};
+
+type JourneyTheme = {
+  page: string;
+  surface: string;
+  surfaceAlt: string;
+  ink: string;
+  muted: string;
+  line: string;
+  hover: string;
+  chipActive: string;
+  chipText: string;
+  heroText: string;
+  heroMuted: string;
+  heroBottom: string;
+  heroMid: string;
+  heroTop: string;
+  heroSide: string;
+  heroVignette: string;
+  strip: string;
+  sprocketBase: string;
+  sprocketDot: string;
+  shadow: string;
+};
+
+const journeyThemes: Record<JourneyThemeKey, JourneyTheme> = {
+  alpine: {
+    page: "#efe6d4",
+    surface: "#fbf4e4",
+    surfaceAlt: "#e5d7bd",
+    ink: "#252820",
+    muted: "rgba(37, 40, 32, 0.62)",
+    line: "rgba(65, 66, 51, 0.18)",
+    hover: "rgba(88, 103, 77, 0.1)",
+    chipActive: "#293322",
+    chipText: "#fff5df",
+    heroText: "#fff7ee",
+    heroMuted: "rgba(255, 247, 238, 0.74)",
+    heroBottom: "rgba(43, 31, 21, 0.62)",
+    heroMid: "rgba(29, 49, 52, 0.18)",
+    heroTop: "rgba(241, 227, 198, 0.08)",
+    heroSide: "rgba(33, 28, 22, 0.42)",
+    heroVignette: "inset 0 0 180px 36px rgba(30, 22, 14, 0.34)",
+    strip: "#ded0b5",
+    sprocketBase: "#d0bc98",
+    sprocketDot: "#f8efd9",
+    shadow: "0 28px 80px rgba(42, 34, 20, 0.24)",
+  },
+  silkRoad: {
+    page: "#e8d5ae",
+    surface: "#f8ecd0",
+    surfaceAlt: "#dec28c",
+    ink: "#162f3a",
+    muted: "rgba(22, 47, 58, 0.64)",
+    line: "rgba(22, 47, 58, 0.18)",
+    hover: "rgba(38, 101, 116, 0.1)",
+    chipActive: "#163842",
+    chipText: "#f8ecd0",
+    heroText: "#fff8e8",
+    heroMuted: "rgba(255, 248, 232, 0.74)",
+    heroBottom: "rgba(8, 28, 39, 0.68)",
+    heroMid: "rgba(30, 68, 78, 0.22)",
+    heroTop: "rgba(210, 172, 104, 0.12)",
+    heroSide: "rgba(10, 35, 50, 0.54)",
+    heroVignette: "inset 0 0 190px 40px rgba(9, 27, 36, 0.42)",
+    strip: "#d8b874",
+    sprocketBase: "#caa45b",
+    sprocketDot: "#f7e9c6",
+    shadow: "0 28px 80px rgba(36, 55, 54, 0.24)",
+  },
+  coastal: {
+    page: "#e5e5dc",
+    surface: "#f7f6ed",
+    surfaceAlt: "#d6d8ce",
+    ink: "#293135",
+    muted: "rgba(41, 49, 53, 0.62)",
+    line: "rgba(41, 49, 53, 0.16)",
+    hover: "rgba(88, 102, 103, 0.1)",
+    chipActive: "#39484c",
+    chipText: "#f7f6ed",
+    heroText: "#f7f8f3",
+    heroMuted: "rgba(247, 248, 243, 0.72)",
+    heroBottom: "rgba(30, 38, 40, 0.66)",
+    heroMid: "rgba(68, 82, 80, 0.2)",
+    heroTop: "rgba(223, 224, 214, 0.08)",
+    heroSide: "rgba(30, 38, 40, 0.5)",
+    heroVignette: "inset 0 0 180px 36px rgba(28, 35, 37, 0.38)",
+    strip: "#d1d2c6",
+    sprocketBase: "#bec2b4",
+    sprocketDot: "#f5f5ea",
+    shadow: "0 28px 80px rgba(41, 49, 53, 0.2)",
+  },
+  anatolia: {
+    page: "#ecd8c2",
+    surface: "#fff0df",
+    surfaceAlt: "#e0b995",
+    ink: "#40291e",
+    muted: "rgba(64, 41, 30, 0.62)",
+    line: "rgba(91, 51, 33, 0.18)",
+    hover: "rgba(181, 106, 62, 0.12)",
+    chipActive: "#5a2f22",
+    chipText: "#fff0df",
+    heroText: "#fff8ee",
+    heroMuted: "rgba(255, 248, 238, 0.74)",
+    heroBottom: "rgba(67, 34, 20, 0.66)",
+    heroMid: "rgba(122, 65, 44, 0.2)",
+    heroTop: "rgba(243, 192, 130, 0.1)",
+    heroSide: "rgba(67, 34, 20, 0.48)",
+    heroVignette: "inset 0 0 185px 38px rgba(62, 32, 20, 0.36)",
+    strip: "#ddb28a",
+    sprocketBase: "#c9936f",
+    sprocketDot: "#fff0df",
+    shadow: "0 28px 80px rgba(90, 47, 34, 0.22)",
+  },
+  nordic: {
+    page: "#e4ebee",
+    surface: "#f6faf9",
+    surfaceAlt: "#cbd9df",
+    ink: "#243139",
+    muted: "rgba(36, 49, 57, 0.62)",
+    line: "rgba(36, 49, 57, 0.16)",
+    hover: "rgba(75, 107, 122, 0.1)",
+    chipActive: "#263e4a",
+    chipText: "#f6faf9",
+    heroText: "#f6fbff",
+    heroMuted: "rgba(246, 251, 255, 0.72)",
+    heroBottom: "rgba(21, 36, 48, 0.68)",
+    heroMid: "rgba(60, 89, 101, 0.2)",
+    heroTop: "rgba(222, 235, 240, 0.08)",
+    heroSide: "rgba(21, 36, 48, 0.5)",
+    heroVignette: "inset 0 0 185px 40px rgba(21, 34, 45, 0.38)",
+    strip: "#c5d4da",
+    sprocketBase: "#aebfc7",
+    sprocketDot: "#f6faf9",
+    shadow: "0 28px 80px rgba(36, 49, 57, 0.2)",
+  },
+};
+
+type JourneyThemeVars = React.CSSProperties & Record<`--${string}`, string>;
+
+const journeyThemeVars = (journey: FilmJourney): JourneyThemeVars => {
+  const theme = journeyThemes[journey.themeKey];
+
+  return {
+    "--journey-accent": journey.accent,
+    "--journey-page": theme.page,
+    "--journey-surface": theme.surface,
+    "--journey-surface-alt": theme.surfaceAlt,
+    "--journey-ink": theme.ink,
+    "--journey-muted": theme.muted,
+    "--journey-line": theme.line,
+    "--journey-hover": theme.hover,
+    "--journey-chip-active": theme.chipActive,
+    "--journey-chip-text": theme.chipText,
+    "--journey-hero-text": theme.heroText,
+    "--journey-hero-muted": theme.heroMuted,
+    "--journey-hero-bottom": theme.heroBottom,
+    "--journey-hero-mid": theme.heroMid,
+    "--journey-hero-top": theme.heroTop,
+    "--journey-hero-side": theme.heroSide,
+    "--journey-hero-vignette": theme.heroVignette,
+    "--journey-strip": theme.strip,
+    "--journey-sprocket-base": theme.sprocketBase,
+    "--journey-sprocket-dot": theme.sprocketDot,
+    "--journey-shadow": theme.shadow,
+  };
 };
 
 const bySlug = Object.fromEntries(
@@ -99,6 +272,7 @@ const filmJourneys: FilmJourney[] = [
     href: href("newzealand-2026"),
     featured: true,
     accent: "#C84E1F",
+    themeKey: "alpine",
     coords: [170.5, -44.0],
     exif: {
       iso: 100,
@@ -130,6 +304,7 @@ const filmJourneys: FilmJourney[] = [
     href: href("uzbekistan-2026"),
     featured: true,
     accent: "#C8894A",
+    themeKey: "silkRoad",
     coords: [64.5, 40.5],
     exif: {
       iso: 200,
@@ -161,6 +336,7 @@ const filmJourneys: FilmJourney[] = [
     href: href("saga-2025"),
     featured: false,
     accent: "#6E7F86",
+    themeKey: "coastal",
     coords: [130.3, 33.2],
     exif: {
       iso: 400,
@@ -192,6 +368,7 @@ const filmJourneys: FilmJourney[] = [
     href: href("turkiye-2025"),
     featured: false,
     accent: "#B56A3E",
+    themeKey: "anatolia",
     coords: [32.9, 39.1],
     exif: {
       iso: 100,
@@ -223,6 +400,7 @@ const filmJourneys: FilmJourney[] = [
     href: href("iceland-2025"),
     featured: false,
     accent: "#6B8A95",
+    themeKey: "nordic",
     coords: [-19.0, 64.9],
     exif: {
       iso: 800,
@@ -254,6 +432,7 @@ const filmJourneys: FilmJourney[] = [
     href: href("norway-2025"),
     featured: false,
     accent: "#7A8E9E",
+    themeKey: "nordic",
     coords: [8.5, 64.0],
     exif: {
       iso: 320,
@@ -268,7 +447,6 @@ const filmJourneys: FilmJourney[] = [
 ];
 
 const filmTweaks: FilmTweaks = {
-  accent: "#C8894A",
   grain: 0.4,
   aspect: "16/9",
   stripPos: "bottom",
@@ -365,17 +543,22 @@ const CornerBracket = ({
 );
 
 const StripTop = ({
-  tweaks,
   journeys,
   idx,
   setIdx,
 }: {
-  tweaks: FilmTweaks;
   journeys: FilmJourney[];
   idx: number;
   setIdx: Dispatch<SetStateAction<number>>;
 }) => (
-  <div className="border-b border-white/10 bg-[#0a0a0a] py-3">
+  <div
+    className="border-b py-3"
+    style={{
+      background: "var(--journey-strip)",
+      borderColor: "var(--journey-line)",
+      color: "var(--journey-ink)",
+    }}
+  >
     <div className="sprocket h-2 opacity-40" />
     <div className="cc flex items-center gap-3 overflow-x-auto px-6 py-2 sm:px-10">
       {journeys.map((journey, index) => (
@@ -393,7 +576,7 @@ const StripTop = ({
             }`}
             style={
               index === idx
-                ? { boxShadow: `0 0 0 2px ${tweaks.accent}` }
+                ? { boxShadow: "0 0 0 2px var(--journey-accent)" }
                 : undefined
             }
           >
@@ -421,8 +604,8 @@ const FilmHero = ({
   setIdx: Dispatch<SetStateAction<number>>;
   journeys: FilmJourney[];
 }) => {
-  const accent = tweaks.accent;
   const cur = journeys[idx];
+  const accent = cur.accent;
   const prevRef = useRef(cur);
   const stripRef = useRef<HTMLDivElement | null>(null);
   const [fading, setFading] = useState(false);
@@ -527,7 +710,13 @@ const FilmHero = ({
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-black text-white">
+    <section
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "var(--journey-page)",
+        color: "var(--journey-hero-text)",
+      }}
+    >
       <div
         className="journeys-hero-stage relative w-full pt-24 md:pt-8"
         style={{ "--journey-aspect": tweaks.aspect } as React.CSSProperties}
@@ -548,12 +737,24 @@ const FilmHero = ({
           }`}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-transparent to-transparent" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, var(--journey-hero-bottom), var(--journey-hero-mid), var(--journey-hero-top))",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to right, var(--journey-hero-side), transparent 68%)",
+          }}
+        />
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            boxShadow: "inset 0 0 240px 60px rgba(0,0,0,0.75)",
+            boxShadow: "var(--journey-hero-vignette)",
           }}
         />
         <div
@@ -562,7 +763,10 @@ const FilmHero = ({
         />
 
         {tweaks.showExif ? (
-          <div className="absolute left-5 right-5 top-16 z-10 hidden items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-white/75 md:flex lg:left-10 lg:right-10 lg:top-20">
+          <div
+            className="absolute left-5 right-5 top-16 z-10 hidden items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] md:flex lg:left-10 lg:right-10 lg:top-20"
+            style={{ color: "var(--journey-hero-muted)" }}
+          >
             <div className="flex items-center gap-5">
               <span>{cur.exif.focal}</span>
               <span className="opacity-40">·</span>
@@ -681,18 +885,30 @@ const FilmHero = ({
       </div>
 
       {years.length > 1 ? (
-        <div className="cc flex items-center gap-3 overflow-x-auto border-y border-white/10 bg-black/90 px-5 py-3 sm:px-10">
+        <div
+          className="cc flex items-center gap-3 overflow-x-auto border-y px-5 py-3 sm:px-10"
+          style={{
+            background: "var(--journey-surface)",
+            borderColor: "var(--journey-line)",
+            color: "var(--journey-ink)",
+          }}
+        >
           <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] opacity-50">
             year
           </span>
           <button
             type="button"
             onClick={() => setYearFilter("all")}
-            className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] transition ${
+            className="shrink-0 rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] transition"
+            style={
               yearFilter === "all"
-                ? "border-white bg-white text-black"
-                : "border-white/20 hover:border-white/60"
-            }`}
+                ? {
+                    background: "var(--journey-chip-active)",
+                    borderColor: "var(--journey-chip-active)",
+                    color: "var(--journey-chip-text)",
+                  }
+                : { borderColor: "var(--journey-line)" }
+            }
           >
             all · {journeys.length}
           </button>
@@ -704,11 +920,16 @@ const FilmHero = ({
                 key={year}
                 type="button"
                 onClick={() => setYearFilter(year)}
-                className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] transition ${
+                className="shrink-0 rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] transition"
+                style={
                   yearFilter === year
-                    ? "border-white bg-white text-black"
-                    : "border-white/20 hover:border-white/60"
-                }`}
+                    ? {
+                        background: "var(--journey-chip-active)",
+                        borderColor: "var(--journey-chip-active)",
+                        color: "var(--journey-chip-text)",
+                      }
+                    : { borderColor: "var(--journey-line)" }
+                }
               >
                 {year} · {count}
               </button>
@@ -721,7 +942,13 @@ const FilmHero = ({
         </div>
       ) : null}
 
-      <div className="relative bg-[#0a0a0a] py-4">
+      <div
+        className="relative py-4"
+        style={{
+          background: "var(--journey-strip)",
+          color: "var(--journey-ink)",
+        }}
+      >
         <div className="sprocket h-3 opacity-40" />
         <div
           ref={stripRef}
@@ -765,11 +992,23 @@ const FilmHero = ({
                           alt=""
                           className="h-full w-full object-cover"
                         />
-                        <div className="absolute left-1 top-1 bg-black/70 px-1.5 py-0.5 font-mono text-[9px] tracking-[0.2em]">
+                        <div
+                          className="absolute left-1 top-1 px-1.5 py-0.5 font-mono text-[9px] tracking-[0.2em]"
+                          style={{
+                            background: "var(--journey-chip-active)",
+                            color: "var(--journey-chip-text)",
+                          }}
+                        >
                           {String(index + 1).padStart(2, "0")}
                         </div>
                         {journey.status === "live" ? (
-                          <div className="absolute bottom-1 right-1 bg-[var(--journey-accent)] px-1.5 py-0.5 font-mono text-[8px] tracking-[0.2em] text-black">
+                          <div
+                            className="absolute bottom-1 right-1 px-1.5 py-0.5 font-mono text-[8px] tracking-[0.2em]"
+                            style={{
+                              background: journey.accent,
+                              color: "#17130d",
+                            }}
+                          >
                             OPEN
                           </div>
                         ) : null}
@@ -798,7 +1037,7 @@ const FilmHero = ({
           }`}
           style={{
             background:
-              "linear-gradient(to right, #0a0a0a 15%, rgba(10,10,10,0) 100%)",
+              "linear-gradient(to right, var(--journey-strip) 15%, rgba(10,10,10,0) 100%)",
           }}
         />
         <div
@@ -807,7 +1046,7 @@ const FilmHero = ({
           }`}
           style={{
             background:
-              "linear-gradient(to left, #0a0a0a 15%, rgba(10,10,10,0) 100%)",
+              "linear-gradient(to left, var(--journey-strip) 15%, rgba(10,10,10,0) 100%)",
           }}
         />
 
@@ -815,9 +1054,15 @@ const FilmHero = ({
           type="button"
           onClick={() => nudge(-1)}
           aria-label="Scroll filmstrip left"
-          className={`absolute left-3 top-1/2 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black/60 backdrop-blur transition hover:border-white/70 hover:bg-black/90 ${
+          className={`absolute left-3 top-1/2 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full border backdrop-blur transition ${
             scroll.canLeft ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
+          style={{
+            background:
+              "color-mix(in srgb, var(--journey-surface) 82%, transparent)",
+            borderColor: "var(--journey-line)",
+            color: "var(--journey-ink)",
+          }}
         >
           <svg
             width="14"
@@ -838,23 +1083,28 @@ const FilmHero = ({
           }`}
         >
           <div
-            className="nudge-right hidden items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/80 backdrop-blur md:flex"
+            className="nudge-right hidden items-center gap-2 rounded-full border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] backdrop-blur md:flex"
             style={{
-              boxShadow: `0 0 0 1px ${accent}22, 0 6px 24px rgba(0,0,0,.5)`,
+              background:
+                "color-mix(in srgb, var(--journey-surface) 86%, transparent)",
+              borderColor: "var(--journey-line)",
+              boxShadow: `0 0 0 1px ${accent}22, 0 10px 26px rgba(30, 24, 18, .18)`,
+              color: "var(--journey-ink)",
             }}
           >
             <span className="text-[var(--journey-accent)]">
               +{scroll.remaining || "..."}
             </span>
             <span className="opacity-70">more reels</span>
-            <span className="text-white/40">→</span>
+            <span className="opacity-40">→</span>
           </div>
           <button
             type="button"
             onClick={() => nudge(1)}
             aria-label="Scroll filmstrip right"
-            className="flex size-11 items-center justify-center rounded-full border bg-black/70 backdrop-blur transition hover:bg-black"
+            className="flex size-11 items-center justify-center rounded-full border backdrop-blur transition"
             style={{
+              background: "var(--journey-surface)",
               borderColor: accent,
               color: accent,
               boxShadow: `0 0 24px ${accent}33`,
@@ -875,7 +1125,10 @@ const FilmHero = ({
         </div>
       </div>
 
-      <div className="relative h-1 bg-white/10">
+      <div
+        className="relative h-1"
+        style={{ background: "var(--journey-line)" }}
+      >
         <div
           className="absolute bottom-0 left-0 top-0 bg-[var(--journey-accent)] transition-[width] duration-500"
           style={{ width: `${((idx + 1) / journeys.length) * 100}%` }}
@@ -886,39 +1139,48 @@ const FilmHero = ({
 };
 
 const FieldTicker = ({
-  tweaks,
+  journey,
   journeys,
 }: {
-  tweaks: FilmTweaks;
+  journey: FilmJourney;
   journeys: FilmJourney[];
 }) => {
   const time = useTick(1000);
-  const liveOne = journeys.find((journey) => journey.status === "live") ?? journeys[0];
   const now = new Date(time);
   const timeLabel =
     now.toISOString().replace("T", " · ").slice(0, 19) + " UTC";
   const items = [
-    `IN FIELD · ${liveOne.country.toUpperCase()}`,
-    `${liveOne.coords[1].toFixed(4)}° N / ${liveOne.coords[0].toFixed(4)}° E`,
-    "FRAME 412 / 000",
-    `${liveOne.exif.focal} · ${liveOne.exif.aperture} · ${liveOne.exif.shutter}`,
-    `ROLL 03 · ${liveOne.locations.join(" → ")}`,
+    `${journey.status === "live" ? "ON VIEW" : "IN PRODUCTION"} · ${journey.country.toUpperCase()}`,
+    `${formatCoordinate(journey.coords[1], "lat")} / ${formatCoordinate(journey.coords[0], "lon")}`,
+    `FRAME ${String(journey.frames || 0).padStart(3, "0")} / ${String(journeys.length).padStart(3, "0")}`,
+    `${journey.exif.focal} · ${journey.exif.aperture} · ${journey.exif.shutter}`,
+    `ROLL ${journey.year} · ${journey.locations.join(" → ")}`,
     timeLabel,
-    "FILE DSC00614.DNG",
+    `FILE ${journey.slug.toUpperCase()}.HTML`,
     "BATTERY 72%",
   ];
   const repeated = [...items, ...items, ...items];
 
   return (
-    <section className="relative overflow-hidden border-y border-white/10 bg-black text-white">
-      <div className="cc flex items-center gap-3 overflow-x-auto whitespace-nowrap border-b border-white/10 px-6 py-4 font-mono text-[10px] uppercase tracking-[0.28em]">
+    <section
+      className="relative overflow-hidden border-y"
+      style={{
+        background: "var(--journey-surface-alt)",
+        borderColor: "var(--journey-line)",
+        color: "var(--journey-ink)",
+      }}
+    >
+      <div
+        className="cc flex items-center gap-3 overflow-x-auto whitespace-nowrap border-b px-6 py-4 font-mono text-[10px] uppercase tracking-[0.28em]"
+        style={{ borderColor: "var(--journey-line)" }}
+      >
         <span
           className="size-2 shrink-0 animate-pulse rounded-full"
-          style={{ background: tweaks.accent }}
+          style={{ background: "var(--journey-accent)" }}
         />
-        <span className="shrink-0">Live Feed</span>
+        <span className="shrink-0">Field Feed</span>
         <span className="shrink-0 opacity-50">
-          · broadcasting from {liveOne.title}
+          · tuned to {journey.title}
         </span>
         <span className="flex-1" />
         <span className="hidden shrink-0 opacity-60 sm:inline">
@@ -937,7 +1199,7 @@ const FieldTicker = ({
             >
               <span
                 style={{
-                  color: index % 3 === 0 ? tweaks.accent : undefined,
+                  color: index % 3 === 0 ? "var(--journey-accent)" : undefined,
                 }}
               >
                 {item}
@@ -952,19 +1214,26 @@ const FieldTicker = ({
 };
 
 const JourneyIndex = ({
-  tweaks,
   journeys,
   setIdx,
 }: {
-  tweaks: FilmTweaks;
   journeys: FilmJourney[];
   setIdx: Dispatch<SetStateAction<number>>;
 }) => {
   const total = totals(journeys);
 
   return (
-    <section className="relative bg-black px-5 py-16 text-white sm:px-10">
-      <div className="flex flex-col gap-6 border-b border-white/10 pb-6 md:flex-row md:items-end md:justify-between">
+    <section
+      className="relative px-5 py-16 sm:px-10"
+      style={{
+        background: "var(--journey-surface)",
+        color: "var(--journey-ink)",
+      }}
+    >
+      <div
+        className="flex flex-col gap-6 border-b pb-6 md:flex-row md:items-end md:justify-between"
+        style={{ borderColor: "var(--journey-line)" }}
+      >
         <div>
           <div className="font-mono text-[10px] uppercase tracking-[0.32em] opacity-60">
             Index
@@ -978,7 +1247,8 @@ const JourneyIndex = ({
         </div>
         <div className="flex flex-wrap items-center gap-5 font-mono text-[10px] uppercase tracking-[0.24em] opacity-60">
           <span>
-            <span style={{ color: tweaks.accent }}>{total.live}</span> open
+            <span style={{ color: "var(--journey-accent)" }}>{total.live}</span>{" "}
+            open
           </span>
           <span className="opacity-30">·</span>
           <span>{total.planning} in production</span>
@@ -987,7 +1257,7 @@ const JourneyIndex = ({
         </div>
       </div>
 
-      <div className="divide-y divide-white/10">
+      <div className="journey-index-list">
         {journeys.map((journey, index) => {
           const isLive = journey.status === "live";
           const row = (
@@ -1026,11 +1296,11 @@ const JourneyIndex = ({
                 {isLive ? (
                   <span
                     className="inline-flex items-center gap-1.5"
-                    style={{ color: tweaks.accent }}
+                    style={{ color: journey.accent }}
                   >
                     <span
                       className="size-1.5 animate-pulse rounded-full"
-                      style={{ background: tweaks.accent }}
+                      style={{ background: journey.accent }}
                     />{" "}
                     open
                   </span>
@@ -1040,15 +1310,15 @@ const JourneyIndex = ({
               </div>
               <div className="text-right font-mono text-lg md:col-span-1">
                 {isLive ? (
-                  <span style={{ color: tweaks.accent }}>↗</span>
+                  <span style={{ color: journey.accent }}>↗</span>
                 ) : (
                   <span className="opacity-30">-</span>
                 )}
               </div>
             </>
           );
-          const className = `group grid items-center gap-6 py-5 transition md:grid-cols-12 ${
-            isLive ? "cursor-pointer hover:bg-white/5" : "cursor-default"
+          const className = `journey-index-row group grid items-center gap-6 py-5 transition md:grid-cols-12 ${
+            isLive ? "cursor-pointer" : "cursor-default"
           }`;
 
           if (isLive) {
@@ -1085,9 +1355,10 @@ const JourneysStyles = () => (
 
     .journeys-film {
       --journey-accent: #c8894a;
-      background: #000;
-      color: #f4f3ee;
+      background: var(--journey-page);
+      color: var(--journey-ink);
       font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+      box-shadow: var(--journey-shadow);
     }
 
     .journeys-film .font-display {
@@ -1123,8 +1394,11 @@ const JourneysStyles = () => (
     }
 
     .journeys-film .sprocket {
-      background-color: #111;
-      background-image: radial-gradient(#0a0a0a 42%, transparent 44%);
+      background-color: var(--journey-sprocket-base);
+      background-image: radial-gradient(
+        var(--journey-sprocket-dot) 42%,
+        transparent 44%
+      );
       background-repeat: repeat-x;
       background-size: 40px 40px;
     }
@@ -1139,8 +1413,42 @@ const JourneysStyles = () => (
     }
 
     .journeys-film .cc::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
+      background: var(--journey-muted);
       border-radius: 3px;
+    }
+
+    .journeys-film .journey-index-list {
+      border-top: 1px solid var(--journey-line);
+    }
+
+    .journeys-film .journey-index-row {
+      border-bottom: 1px solid var(--journey-line);
+    }
+
+    .journeys-film .journey-index-row:hover {
+      background: var(--journey-hover);
+    }
+
+    body:has(.journeys-film) {
+      background: var(--journey-page) !important;
+      transition: background 420ms ease;
+    }
+
+    body:has(.journeys-film) header > div:first-child,
+    body:has(.journeys-film) header > button {
+      background: color-mix(
+        in srgb,
+        var(--journey-surface) 92%,
+        transparent
+      ) !important;
+      border-color: var(--journey-line) !important;
+      color: var(--journey-ink) !important;
+      backdrop-filter: blur(18px);
+    }
+
+    body:has(.journeys-film) header a,
+    body:has(.journeys-film) header button {
+      color: var(--journey-ink) !important;
     }
 
     @keyframes journeys-marq {
@@ -1213,17 +1521,31 @@ export const JourneysView = () => {
       filmJourneys.findIndex((journey) => journey.status === "live"),
     ),
   );
+  const currentJourney = filmJourneys[idx] ?? filmJourneys[0];
+
+  useEffect(() => {
+    const vars = journeyThemeVars(currentJourney);
+
+    for (const [key, value] of Object.entries(vars)) {
+      document.body.style.setProperty(key, String(value));
+    }
+
+    return () => {
+      for (const key of Object.keys(vars)) {
+        document.body.style.removeProperty(key);
+      }
+    };
+  }, [currentJourney]);
 
   return (
     <>
       <JourneysStyles />
       <div
         className="journeys-film min-h-screen overflow-hidden rounded-xl rounded-tl-none"
-        style={{ "--journey-accent": filmTweaks.accent } as React.CSSProperties}
+        style={journeyThemeVars(currentJourney)}
       >
         {filmTweaks.stripPos === "top" ? (
           <StripTop
-            tweaks={filmTweaks}
             journeys={filmJourneys}
             idx={idx}
             setIdx={setIdx}
@@ -1235,9 +1557,8 @@ export const JourneysView = () => {
           setIdx={setIdx}
           journeys={filmJourneys}
         />
-        <FieldTicker tweaks={filmTweaks} journeys={filmJourneys} />
+        <FieldTicker journey={currentJourney} journeys={filmJourneys} />
         <JourneyIndex
-          tweaks={filmTweaks}
           journeys={filmJourneys}
           setIdx={setIdx}
         />
