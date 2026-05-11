@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   type Dispatch,
   type SetStateAction,
@@ -66,7 +65,51 @@ const bySlug = Object.fromEntries(
 const cover = (slug: string) => bySlug[slug]?.coverImage ?? "";
 const href = (slug: string) => bySlug[slug]?.href ?? `/journeys/${slug}`;
 
+const formatCoordinate = (value: number, axis: "lat" | "lon") => {
+  const suffix =
+    axis === "lat" ? (value < 0 ? "S" : "N") : value < 0 ? "W" : "E";
+
+  return `${Math.abs(value).toFixed(4)}° ${suffix}`;
+};
+
 const filmJourneys: FilmJourney[] = [
+  {
+    slug: "newzealand-2026",
+    title: "New Zealand",
+    year: "2026",
+    subtitle: "Aotearoa Express",
+    description:
+      "Queenstown, Glenorchy, Wanaka, Tekapo and Aoraki / Mt Cook - a vintage bulletin from the South Island in autumn.",
+    status: "live",
+    startDate: "2026-04-26",
+    endDate: "2026-05-02",
+    locations: [
+      "Queenstown",
+      "Glenorchy",
+      "Wanaka",
+      "Tekapo",
+      "Aoraki / Mt Cook",
+    ],
+    country: "New Zealand",
+    region: "South Pacific",
+    theme: "Autumn bulletin · Southern Alps · open road",
+    frames: 7,
+    km: 1184,
+    coverImage: cover("newzealand-2026"),
+    href: href("newzealand-2026"),
+    featured: true,
+    accent: "#C84E1F",
+    coords: [170.5, -44.0],
+    exif: {
+      iso: 100,
+      aperture: "f/1.8",
+      shutter: "1/120",
+      focal: "24mm",
+      wb: "5200K",
+    },
+    gear: ["iPhone 17 Pro", "Sony A7R V", "Hyundai Tucson"],
+    fieldStatus: "PUBLISHED · TEKAPO",
+  },
   {
     slug: "uzbekistan-2026",
     title: "Uzbekistan",
@@ -532,8 +575,8 @@ const FilmHero = ({
               <span>WB {cur.exif.wb}</span>
             </div>
             <div className="flex items-center gap-5">
-              <span>{cur.coords[1].toFixed(4)}° N</span>
-              <span>{cur.coords[0].toFixed(4)}° E</span>
+              <span>{formatCoordinate(cur.coords[1], "lat")}</span>
+              <span>{formatCoordinate(cur.coords[0], "lon")}</span>
               <span className="opacity-40">·</span>
               <span>{cur.country}</span>
             </div>
@@ -588,7 +631,7 @@ const FilmHero = ({
         <div className="absolute inset-x-5 bottom-8 z-10 flex items-center justify-between lg:inset-x-10 lg:bottom-10">
           <div className="flex items-center gap-5">
             {cur.status === "live" ? (
-              <Link
+              <a
                 href={cur.href}
                 className="group inline-flex items-center gap-3 border-y border-white/30 py-3 pr-8 transition hover:border-white"
               >
@@ -596,7 +639,7 @@ const FilmHero = ({
                   Open the reel
                 </span>
                 <span className="text-[var(--journey-accent)]">↗</span>
-              </Link>
+              </a>
             ) : (
               <div className="inline-flex items-center gap-5 border-y border-white/30 py-3 pr-2">
                 <span className="hidden font-mono text-[10px] uppercase tracking-[0.24em] opacity-60 sm:inline">
@@ -1010,14 +1053,14 @@ const JourneyIndex = ({
 
           if (isLive) {
             return (
-              <Link
+              <a
                 key={journey.slug}
                 href={journey.href}
                 onMouseEnter={() => setIdx(index)}
                 className={className}
               >
                 {row}
-              </Link>
+              </a>
             );
           }
 

@@ -17,6 +17,27 @@ export type JourneyMeta = {
 
 export const journeys: JourneyMeta[] = [
   {
+    slug: "newzealand-2026",
+    title: "New Zealand 2026",
+    subtitle: "Aotearoa Express",
+    description:
+      "A vintage travel bulletin across Queenstown, Glenorchy, Wanaka, Tekapo and Aoraki / Mt Cook.",
+    status: "live",
+    startDate: "2026-04-26",
+    endDate: "2026-05-02",
+    locations: [
+      "Queenstown",
+      "Glenorchy",
+      "Wanaka",
+      "Tekapo",
+      "Aoraki / Mt Cook",
+    ],
+    theme: "Vintage bulletin, autumn gold, Southern Alps",
+    coverImage: "/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg",
+    href: "/journeys/newzealand-2026",
+    featured: true,
+  },
+  {
     slug: "uzbekistan-2026",
     title: "Uzbekistan 2026",
     subtitle: "A Silk Road field notebook",
