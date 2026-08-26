@@ -71,6 +71,7 @@ const definitions = [
     target: "photo_site_account",
     columns: {
       id: "default",
+      issuer: "default",
       account_id: "default",
       provider_id: "default",
       user_id: "default",
@@ -83,6 +84,15 @@ const definitions = [
       password: "default",
       created_at: "date",
       updated_at: "date",
+    },
+    transform(row) {
+      return {
+        ...row,
+        issuer:
+          row.provider_id === "credential"
+            ? "local:credential"
+            : `local:oauth:${encodeURIComponent(row.provider_id)}`,
+      };
     },
   },
   {

@@ -13,6 +13,7 @@ CREATE TABLE photo_site_user (
 
 CREATE TABLE photo_site_account (
   id VARCHAR(64) NOT NULL,
+  issuer VARCHAR(255) NOT NULL,
   account_id VARCHAR(255) NOT NULL,
   provider_id VARCHAR(255) NOT NULL,
   user_id VARCHAR(64) NOT NULL,
@@ -27,6 +28,7 @@ CREATE TABLE photo_site_account (
   updated_at DATETIME(3) NOT NULL,
   _openid VARCHAR(64) NOT NULL DEFAULT '',
   PRIMARY KEY (id),
+  UNIQUE KEY photo_site_account_issuer_account_uq (issuer, account_id),
   KEY photo_site_account_user_idx (user_id),
   KEY photo_site_account_provider_idx (provider_id, account_id),
   CONSTRAINT photo_site_account_user_fk

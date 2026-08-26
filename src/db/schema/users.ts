@@ -37,6 +37,7 @@ export const session = mysqlTable("photo_site_session", {
 
 export const account = mysqlTable("photo_site_account", {
   id: authId("id").primaryKey(),
+  issuer: varchar("issuer", { length: 255 }).notNull(),
   accountId: varchar("account_id", { length: 255 }).notNull(),
   providerId: varchar("provider_id", { length: 255 }).notNull(),
   userId: authId("user_id")
