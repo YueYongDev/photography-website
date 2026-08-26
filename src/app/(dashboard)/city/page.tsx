@@ -1,5 +1,5 @@
 import { TravelView } from "@/modules/travel/ui/views/travel-view";
-import { HydrateClient, trpc } from "@/trpc/server";
+import { trpc } from "@/trpc/server";
 
 export const metadata = {
   title: "City Sets",
@@ -9,15 +9,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 const CityPage = async () => {
-  void trpc.photos.getCitySets.prefetchInfinite({
-    limit: 10,
-  });
+  const archive = await trpc.travel.getArchive({ limit: 60 });
 
-  return (
-    <HydrateClient>
-      <TravelView />
-    </HydrateClient>
-  );
+  return <TravelView archive={archive} />;
 };
 
 export default CityPage;

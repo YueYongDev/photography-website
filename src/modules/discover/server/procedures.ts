@@ -19,12 +19,18 @@ export const mapRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
-      const whereClause = cursor
-        ? or(
-            lt(photos.updatedAt, cursor.updatedAt),
-            and(eq(photos.updatedAt, cursor.updatedAt), lt(photos.id, cursor.id))
-          )
-        : undefined;
+      const whereClause = and(
+        eq(photos.visibility, "public"),
+        cursor
+          ? or(
+              lt(photos.updatedAt, cursor.updatedAt),
+              and(
+                eq(photos.updatedAt, cursor.updatedAt),
+                lt(photos.id, cursor.id)
+              )
+            )
+          : undefined
+      );
 
       const data = await db
         .select()

@@ -21,7 +21,11 @@ import {
 import { usePathname } from "next/navigation";
 import { DashboardSidebarHeader } from "./dashboard-siderbar-header";
 
-export const DashboardSidebar = () => {
+export const DashboardSidebar = ({
+  user,
+}: {
+  user: { name: string; image?: string | null };
+}) => {
   const pathname = usePathname();
 
   return (
@@ -30,7 +34,7 @@ export const DashboardSidebar = () => {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <DashboardSidebarHeader />
+              <DashboardSidebarHeader user={user} />
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Dashboard"

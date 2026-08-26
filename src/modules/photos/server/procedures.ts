@@ -6,27 +6,118 @@ import {
   photosUpdateSchema,
   photosInsertSchema,
 } from "@/db/schema/photos";
-import { and, eq, lt, or, desc, sql } from "drizzle-orm";
+import { and, desc, eq, lt, ne, or, sql } from "drizzle-orm";
 import {
   baseProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { createS3Client } from "@/lib/s3-client";
+import { deletePhotoObjectByUrl } from "@/lib/cloudbase-media";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { PUBLIC_PHOTOS_CACHE_TAG } from "@/lib/cache-tags";
+
+type CitySetsCursor =
+  | {
+      id: string;
+      updatedAt: Date;
+    }
+  | null
+  | undefined;
+
+const getCachedLikedPhotos = unstable_cache(
+  async (limit: number) =>
+    db
+      .select({
+        id: photos.id,
+        url: photos.url,
+        title: photos.title,
+        blurData: photos.blurData,
+      })
+      .from(photos)
+      .where(
+        and(eq(photos.isFavorite, true), eq(photos.visibility, "public"))
+      )
+      .orderBy(desc(photos.updatedAt))
+      .limit(limit),
+  ["liked-photos-v2"],
+  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
+);
+
+const getCachedCitySetsPreview = unstable_cache(
+  async (cursor: CitySetsCursor, limit: number) => {
+    const whereClause = cursor
+      ? or(
+          lt(citySets.updatedAt, cursor.updatedAt),
+          and(
+            eq(citySets.updatedAt, cursor.updatedAt),
+            lt(citySets.id, cursor.id)
+          )
+        )
+      : undefined;
+
+    const data = await db.query.citySets.findMany({
+      columns: {
+        id: true,
+        description: true,
+        country: true,
+        countryCode: true,
+        city: true,
+        coverPhotoId: true,
+        photoCount: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      where: whereClause,
+      orderBy: [desc(citySets.updatedAt)],
+      limit: limit + 1,
+      with: {
+        coverPhoto: {
+          columns: {
+            id: true,
+            url: true,
+            title: true,
+            blurData: true,
+            width: true,
+            height: true,
+            aspectRatio: true,
+          },
+        },
+      },
+    });
+
+    const hasMore = data.length > limit;
+    const items = hasMore ? data.slice(0, -1) : data;
+    const lastItem = items[items.length - 1];
+    const nextCursor =
+      hasMore && lastItem
+        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
+        : null;
+
+    return { items, nextCursor };
+  },
+  ["city-set-previews-v2"],
+  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
+);
 
 export const photosRouter = createTRPCRouter({
   create: protectedProcedure
     .input(photosInsertSchema)
     .mutation(async ({ input }) => {
-      const values = input;
+      const id = input.id ?? crypto.randomUUID();
+      const values = { ...input, id };
 
       try {
+        await db.insert(photos).values(values);
         const [insertedPhoto] = await db
-          .insert(photos)
-          .values(values)
-          .returning();
+          .select()
+          .from(photos)
+          .where(eq(photos.id, id))
+          .limit(1);
+
+        if (!insertedPhoto) {
+          throw new Error("Inserted photo could not be read back");
+        }
 
         const cityName =
           values.countryCode === "JP" || values.countryCode === "TW"
@@ -43,8 +134,7 @@ export const photosRouter = createTRPCRouter({
               photoCount: 1,
               coverPhotoId: insertedPhoto.id,
             })
-            .onConflictDoUpdate({
-              target: [citySets.country, citySets.city],
+            .onDuplicateKeyUpdate({
               set: {
                 countryCode: insertedPhoto.countryCode,
                 photoCount: sql`${citySets.photoCount} + 1`,
@@ -71,6 +161,7 @@ export const photosRouter = createTRPCRouter({
           );
         }
 
+        revalidateTag(PUBLIC_PHOTOS_CACHE_TAG, { expire: 0 });
         return insertedPhoto;
       } catch {
         throw new TRPCError({
@@ -115,7 +206,7 @@ export const photosRouter = createTRPCRouter({
                   and(
                     eq(photos.country, photo.country),
                     eq(photos.city, photo.city),
-                    sql`${photos.id} != ${photo.id}`
+                    ne(photos.id, photo.id)
                   )
                 );
 
@@ -150,19 +241,13 @@ export const photosRouter = createTRPCRouter({
         }
 
         try {
-          const key = new URL(photo.url).pathname.slice(1);
-          const s3Client = createS3Client();
-          await s3Client.send(
-            new DeleteObjectCommand({
-              Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-              Key: key,
-            })
-          );
+          await deletePhotoObjectByUrl(photo.url);
         } catch (error) {
-          console.error("S3 delete failed", error);
+          console.error("CloudBase media delete failed", error);
         }
 
         await db.delete(photos).where(eq(photos.id, id));
+        revalidateTag(PUBLIC_PHOTOS_CACHE_TAG, { expire: 0 });
         return photo;
       } catch (error) {
         console.error("Photo deletion error:", error);
@@ -179,13 +264,15 @@ export const photosRouter = createTRPCRouter({
       const { id } = input;
       if (!id) throw new TRPCError({ code: "BAD_REQUEST" });
 
+      await db.update(photos).set(input).where(eq(photos.id, id));
       const [updatedPhoto] = await db
-        .update(photos)
-        .set(input)
+        .select()
+        .from(photos)
         .where(eq(photos.id, id))
-        .returning();
+        .limit(1);
 
       if (!updatedPhoto) throw new TRPCError({ code: "NOT_FOUND" });
+      revalidateTag(PUBLIC_PHOTOS_CACHE_TAG, { expire: 0 });
       return updatedPhoto;
     }),
 
@@ -195,7 +282,9 @@ export const photosRouter = createTRPCRouter({
       const [photo] = await db
         .select()
         .from(photos)
-        .where(eq(photos.id, input.id));
+        .where(
+          and(eq(photos.id, input.id), eq(photos.visibility, "public"))
+        );
       return photo;
     }),
 
@@ -210,16 +299,18 @@ export const photosRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
-      const whereClause = cursor
-        ? or(
-          lt(photos.updatedAt, cursor.updatedAt),
-          and(
-            eq(photos.updatedAt, cursor.updatedAt),
-            eq(photos.visibility, "public"),
-            lt(photos.id, cursor.id)
-          )
-        )
-        : undefined;
+      const whereClause = and(
+        eq(photos.visibility, "public"),
+        cursor
+          ? or(
+              lt(photos.updatedAt, cursor.updatedAt),
+              and(
+                eq(photos.updatedAt, cursor.updatedAt),
+                lt(photos.id, cursor.id)
+              )
+            )
+          : undefined
+      );
 
       const data = await db
         .select({
@@ -308,16 +399,7 @@ export const photosRouter = createTRPCRouter({
 
   getLikedPhotos: baseProcedure
     .input(z.object({ limit: z.number().min(1).max(100).default(10) }))
-    .query(async ({ input }) => {
-      return await db
-        .select()
-        .from(photos)
-        .where(
-          and(eq(photos.isFavorite, true), eq(photos.visibility, "public"))
-        )
-        .orderBy(desc(photos.updatedAt))
-        .limit(input.limit);
-    }),
+    .query(async ({ input }) => getCachedLikedPhotos(input.limit)),
 
   getCitySets: baseProcedure
     .input(
@@ -346,7 +428,9 @@ export const photosRouter = createTRPCRouter({
         limit: limit + 1,
         with: {
           coverPhoto: true,
-          photos: true,
+          photos: {
+            where: eq(photos.visibility, "public"),
+          },
         },
       });
 
@@ -369,57 +453,9 @@ export const photosRouter = createTRPCRouter({
         limit: z.number().min(1).max(100).default(10),
       })
     )
-    .query(async ({ input }) => {
-      const { cursor, limit } = input;
-      const whereClause = cursor
-        ? or(
-          lt(citySets.updatedAt, cursor.updatedAt),
-          and(
-            eq(citySets.updatedAt, cursor.updatedAt),
-            lt(citySets.id, cursor.id)
-          )
-        )
-        : undefined;
-
-      const data = await db.query.citySets.findMany({
-        columns: {
-          id: true,
-          description: true,
-          country: true,
-          countryCode: true,
-          city: true,
-          coverPhotoId: true,
-          photoCount: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-        where: whereClause,
-        orderBy: [desc(citySets.updatedAt)],
-        limit: limit + 1,
-        with: {
-          coverPhoto: {
-            columns: {
-              id: true,
-              url: true,
-              title: true,
-              blurData: true,
-              width: true,
-              height: true,
-              aspectRatio: true,
-            },
-          },
-        },
-      });
-
-      const hasMore = data.length > limit;
-      const items = hasMore ? data.slice(0, -1) : data;
-      const lastItem = items[items.length - 1];
-      const nextCursor = hasMore
-        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
-        : null;
-
-      return { items, nextCursor };
-    }),
+    .query(async ({ input }) =>
+      getCachedCitySetsPreview(input.cursor, input.limit)
+    ),
 
   getCitySetByCity: baseProcedure
     .input(z.object({ city: z.string() }))
@@ -429,7 +465,9 @@ export const photosRouter = createTRPCRouter({
           where: eq(citySets.city, input.city),
           with: {
             coverPhoto: true,
-            photos: true,
+            photos: {
+              where: eq(photos.visibility, "public"),
+            },
           },
         })) ?? null
       );
@@ -464,7 +502,15 @@ export const photosRouter = createTRPCRouter({
 直接以JSON格式返回，只包含"title"和"description"字段。请确保输出合法的 JSON，不要包含 Markdown 代码块。字段内容必须是中文。`;
 
         try {
-          const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+          const apiKey = process.env.ZHIPU_AI_API_KEY;
+          if (!apiKey) {
+            return {
+              title: photo.make || photo.model
+                ? `使用${photo.make || ""} ${photo.model || ""}拍摄`.trim()
+                : "未命名照片",
+              description: "一个美好的瞬间被永远定格。",
+            };
+          }
 
           const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
             method: 'POST',

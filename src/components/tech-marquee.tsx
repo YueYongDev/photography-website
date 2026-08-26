@@ -7,11 +7,11 @@ import {
   SiTrpc,
   SiReactquery,
   SiShadcnui,
-  SiAdobelightroomclassic,
   SiVercel,
   SiCloudflare,
   SiDrizzle,
 } from "react-icons/si";
+import { TbBrandAdobe } from "react-icons/tb";
 
 const technologies = [
   {
@@ -55,7 +55,7 @@ const technologies = [
     name: "Cloudflare",
   },
   {
-    icon: SiAdobelightroomclassic,
+    icon: TbBrandAdobe,
     name: "Lightroom Classic",
   },
 ];

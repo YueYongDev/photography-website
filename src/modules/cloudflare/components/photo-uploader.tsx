@@ -6,18 +6,15 @@ import { UploadZone } from "./upload-zone";
 
 interface PhotoUploaderProps {
   onUploadSuccess?: (url: string) => void;
-  folder?: string;
   onCreateSuccess?: () => void;
 }
 
 export function PhotoUploader({
   onUploadSuccess,
-  folder,
   onCreateSuccess,
 }: PhotoUploaderProps) {
   const { isUploading, uploadedImageUrl, exif, imageInfo, handleUpload } =
     usePhotoUpload({
-      folder,
       onUploadSuccess,
     });
 

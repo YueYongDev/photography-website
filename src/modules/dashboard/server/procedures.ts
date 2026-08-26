@@ -2,7 +2,7 @@ import { db } from "@/db/drizzle";
 import { citySets, photos } from "@/db/schema/photos";
 import { posts } from "@/db/schema/posts";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
 
 export const summaryRouter = createTRPCRouter({
   getSummary: protectedProcedure.query(async () => {
@@ -18,33 +18,36 @@ export const summaryRouter = createTRPCRouter({
       topCities,
     ] = await Promise.all([
       db
-        .select({ count: sql<number>`COUNT(*)::integer` })
+        .select({ count: count() })
         .from(photos)
         .limit(1),
       db
-        .select({ count: sql<number>`COUNT(*)::integer` })
+        .select({ count: count() })
         .from(citySets)
         .limit(1),
       db
-        .select({ count: sql<number>`COUNT(*)::integer` })
+        .select({ count: count() })
         .from(posts)
         .limit(1),
       db
-        .select({ count: sql<number>`COUNT(*)::integer` })
+        .select({ count: count() })
         .from(photos)
         .where(eq(photos.isFavorite, true))
         .limit(1),
       db
         .select({
-          year: sql<number>`EXTRACT(YEAR FROM ${photos.dateTimeOriginal})::integer`,
-          count: sql<number>`COUNT(*)::integer`,
+          year: sql<number>`YEAR(${photos.dateTimeOriginal})`,
+          count: count(),
         })
         .from(photos)
         .where(
-          sql`${photos.dateTimeOriginal} IS NOT NULL AND EXTRACT(YEAR FROM ${photos.dateTimeOriginal}) >= ${startYear}`
+          and(
+            isNotNull(photos.dateTimeOriginal),
+            gte(sql<number>`YEAR(${photos.dateTimeOriginal})`, startYear)
+          )
         )
-        .groupBy(sql`EXTRACT(YEAR FROM ${photos.dateTimeOriginal})`)
-        .orderBy(sql`EXTRACT(YEAR FROM ${photos.dateTimeOriginal}) DESC`),
+        .groupBy(sql`YEAR(${photos.dateTimeOriginal})`)
+        .orderBy(desc(sql`YEAR(${photos.dateTimeOriginal})`)),
       db
         .select({
           city: citySets.city,
@@ -52,7 +55,7 @@ export const summaryRouter = createTRPCRouter({
           countryCode: citySets.countryCode,
         })
         .from(citySets)
-        .orderBy(sql`${citySets.photoCount} DESC`)
+        .orderBy(desc(citySets.photoCount))
         .limit(5),
     ]);
 
@@ -68,7 +71,7 @@ export const summaryRouter = createTRPCRouter({
 
     yearlyStats.forEach(({ year, count }) => {
       if (year >= startYear && year <= currentYear) {
-        yearCounts[year] = count;
+        yearCounts[year] = Number(count);
       }
     });
 

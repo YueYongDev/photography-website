@@ -1,53 +1,50 @@
 import { InferSelectModel, relations, sql } from "drizzle-orm";
 import {
   boolean,
-  timestamp,
-  pgTable,
-  text,
-  real,
-  varchar,
-  integer,
-  uuid,
-  uniqueIndex,
+  datetime,
+  double,
   index,
-  pgEnum,
-} from "drizzle-orm/pg-core";
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-zod";
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 import { z } from "zod";
 
 export const timestamps = {
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: datetime("created_at", { mode: "date", fsp: 3 })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP(3)`),
+  updatedAt: datetime("updated_at", { mode: "date", fsp: 3 })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP(3)`),
 };
 
-export const photoVisibility = pgEnum("photo_visibility", [
-  "public",
-  "private",
-]);
-
-export const photos = pgTable(
-  "photos",
+export const photos = mysqlTable(
+  "photo_site_photos",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: varchar("id", { length: 36 })
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     url: text("url").notNull(),
     title: text("title").notNull(),
     description: text("description").notNull(),
     isFavorite: boolean("is_favorite").default(false).notNull(),
-    visibility: photoVisibility("visibility").default("private").notNull(),
-    aspectRatio: real("aspect_ratio").notNull(),
-    width: real("width").notNull(),
-    height: real("height").notNull(),
+    visibility: mysqlEnum("visibility", ["public", "private"])
+      .default("private")
+      .notNull(),
+    aspectRatio: double("aspect_ratio").notNull(),
+    width: double("width").notNull(),
+    height: double("height").notNull(),
     blurData: text("blur_data").notNull(),
 
-    country: text("country"),
-    countryCode: text("country_code"),
-    region: text("region"),
-    city: text("city"),
-    district: text("district"),
+    country: varchar("country", { length: 128 }),
+    countryCode: varchar("country_code", { length: 2 }),
+    region: varchar("region", { length: 128 }),
+    city: varchar("city", { length: 255 }),
+    district: varchar("district", { length: 255 }),
 
     fullAddress: text("full_address"),
     placeFormatted: text("place_formatted"),
@@ -55,39 +52,46 @@ export const photos = pgTable(
     make: varchar("make", { length: 255 }),
     model: varchar("model", { length: 255 }),
     lensModel: varchar("lens_model", { length: 255 }),
-    focalLength: real("focal_length"),
-    focalLength35mm: real("focal_length_35mm"),
-    fNumber: real("f_number"),
-    iso: integer("iso"),
-    exposureTime: real("exposure_time"),
-    exposureCompensation: real("exposure_compensation"),
-    latitude: real("latitude"),
-    longitude: real("longitude"),
-    gpsAltitude: real("gps_altitude"),
-    dateTimeOriginal: timestamp("datetime_original"),
+    focalLength: double("focal_length"),
+    focalLength35mm: double("focal_length_35mm"),
+    fNumber: double("f_number"),
+    iso: int("iso"),
+    exposureTime: double("exposure_time"),
+    exposureCompensation: double("exposure_compensation"),
+    latitude: double("latitude"),
+    longitude: double("longitude"),
+    gpsAltitude: double("gps_altitude"),
+    dateTimeOriginal: datetime("datetime_original", {
+      mode: "date",
+      fsp: 3,
+    }),
 
     ...timestamps,
+    openId: varchar("_openid", { length: 64 }).notNull().default(""),
   },
   (t) => [
-    index("year_idx").on(sql`DATE_TRUNC('year', ${t.dateTimeOriginal})`),
+    index("datetime_original_idx").on(t.dateTimeOriginal),
     index("city_idx").on(t.city),
     index("photos_updated_at_idx").on(t.updatedAt),
   ]
 );
 
-export const citySets = pgTable(
-  "city_sets",
+export const citySets = mysqlTable(
+  "photo_site_city_sets",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: varchar("id", { length: 36 })
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     description: text("description"),
-    country: text("country").notNull(),
-    countryCode: text("country_code").notNull(),
-    city: text("city").notNull(),
-    coverPhotoId: uuid("cover_photo_id")
+    country: varchar("country", { length: 128 }).notNull(),
+    countryCode: varchar("country_code", { length: 2 }).notNull(),
+    city: varchar("city", { length: 255 }).notNull(),
+    coverPhotoId: varchar("cover_photo_id", { length: 36 })
       .references(() => photos.id)
       .notNull(),
-    photoCount: integer("photo_count").default(0).notNull(),
+    photoCount: int("photo_count").default(0).notNull(),
     ...timestamps,
+    openId: varchar("_openid", { length: 64 }).notNull().default(""),
   },
   (t) => [
     uniqueIndex("unique_city_set").on(t.country, t.city),
@@ -110,69 +114,64 @@ export const photosRelations = relations(photos, ({ one }) => ({
   }),
 }));
 
-export const photosInsertSchema = createInsertSchema(photos).extend({
+const optionalNumber = z
+  .union([z.string(), z.number(), z.null()])
+  .optional()
+  .transform((value) => {
+    if (value === null) return null;
+    if (value === "" || value === undefined) return undefined;
+    return Number(value);
+  });
+
+const optionalDate = z
+  .union([z.string(), z.date(), z.null()])
+  .optional()
+  .transform((value) => {
+    if (value === null) return null;
+    if (!value || value === "") return undefined;
+    return typeof value === "string" ? new Date(value) : value;
+  });
+
+export const photosInsertSchema = z.object({
+  id: z.string().uuid().optional(),
+  url: z.string().min(1),
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().min(1, { message: "Description is required" }),
-  focalLength: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  focalLength35mm: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  fNumber: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  iso: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  exposureTime: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  exposureCompensation: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  latitude: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  longitude: z
-    .union([z.string(), z.number()])
-    .optional()
-    .transform((val) =>
-      val === "" || val === undefined ? undefined : Number(val)
-    ),
-  dateTimeOriginal: z
-    .union([z.string(), z.date()])
-    .optional()
-    .transform((val) => {
-      if (!val || val === "") return undefined;
-      return typeof val === "string" ? new Date(val) : val;
-    }),
+  isFavorite: z.boolean().default(false),
+  visibility: z.enum(["public", "private"]).default("private"),
+  aspectRatio: z.number(),
+  width: z.number(),
+  height: z.number(),
+  blurData: z.string(),
+  country: z.string().nullish(),
+  countryCode: z.string().max(2).nullish(),
+  region: z.string().nullish(),
+  city: z.string().nullish(),
+  district: z.string().nullish(),
+  fullAddress: z.string().nullish(),
+  placeFormatted: z.string().nullish(),
+  make: z.string().nullish(),
+  model: z.string().nullish(),
+  lensModel: z.string().nullish(),
+  focalLength: optionalNumber,
+  focalLength35mm: optionalNumber,
+  fNumber: optionalNumber,
+  iso: optionalNumber,
+  exposureTime: optionalNumber,
+  exposureCompensation: optionalNumber,
+  latitude: optionalNumber,
+  longitude: optionalNumber,
+  gpsAltitude: optionalNumber,
+  dateTimeOriginal: optionalDate,
 });
 
-export const photosSelectSchema = createSelectSchema(photos);
+export const photosSelectSchema = photosInsertSchema.extend({
+  id: z.string().uuid(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
 
-export const photosUpdateSchema = createUpdateSchema(photos)
+export const photosUpdateSchema = photosInsertSchema
   .pick({
     id: true,
     title: true,
@@ -200,64 +199,7 @@ export const photosUpdateSchema = createUpdateSchema(photos)
     placeFormatted: true,
     gpsAltitude: true,
   })
-  .partial()
-  .extend({
-    focalLength: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    focalLength35mm: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    fNumber: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    iso: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    exposureTime: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    exposureCompensation: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    latitude: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    longitude: z
-      .union([z.string(), z.number()])
-      .optional()
-      .transform((val) =>
-        val === "" || val === undefined ? undefined : Number(val)
-      ),
-    dateTimeOriginal: z
-      .union([z.string(), z.date()])
-      .optional()
-      .transform((val) => {
-        if (!val || val === "") return undefined;
-        return typeof val === "string" ? new Date(val) : val;
-      }),
-  });
+  .partial();
 
 export type Photo = InferSelectModel<typeof photos>;
 export type CitySet = InferSelectModel<typeof citySets>;

@@ -42,8 +42,7 @@ const CityCard = ({ title, coverPhoto }: Props) => {
           alt={coverPhoto?.title || ""}
           fill
           quality={25}
-          priority
-          sizes="(min-width: 1536px) calc(100vw / 3), (min-width: 768px) 50vw, 100vw"
+          sizes="(min-width: 1536px) 16vw, (min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
           className="object-cover lg:group-hover:blur-xs lg:transition-[filter] lg:duration-300 lg:ease-out"
           blurhash={coverPhoto?.blurData || ""}
         />

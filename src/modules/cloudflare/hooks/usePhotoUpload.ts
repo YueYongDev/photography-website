@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "@/trpc/client";
-import { cloudflareR2 } from "@/lib/cloudflare-r2";
+import { uploadPhoto } from "@/lib/photo-upload";
 import {
   type TExifFormData,
   type TImageInfo,
@@ -9,11 +8,9 @@ import {
   getImageInfo,
   convertExifToFormData,
 } from "@/lib/utils";
-import { DEFAULT_FOLDER } from "@/constants";
 import imageCompression from "browser-image-compression";
 
 interface UsePhotoUploadProps {
-  folder?: string;
   onUploadSuccess?: (url: string) => void;
   compressionOptions?: {
     maxSizeMB?: number;
@@ -23,7 +20,6 @@ interface UsePhotoUploadProps {
 }
 
 export function usePhotoUpload({
-  folder = DEFAULT_FOLDER,
   onUploadSuccess,
   compressionOptions = {},
 }: UsePhotoUploadProps) {
@@ -31,9 +27,6 @@ export function usePhotoUpload({
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [exif, setExif] = useState<TExifFormData | null>(null);
   const [imageInfo, setImageInfo] = useState<TImageInfo | null>(null);
-
-  const { mutateAsync: getUploadUrl } =
-    trpc.cloudflare.createPresignedUrl.useMutation();
 
   const handleUpload = async (file: File) => {
     try {
@@ -59,10 +52,8 @@ export function usePhotoUpload({
       console.log(`Original file size: ${file.size / 1024 / 1024} MB`);
       console.log(`Compressed file size: ${compressedFile.size / 1024 / 1024} MB`);
 
-      const { publicUrl } = await cloudflareR2.upload({
+      const { publicUrl } = await uploadPhoto({
         file: compressedFile,
-        folder,
-        getUploadUrl,
       });
 
       setUploadedImageUrl(publicUrl);

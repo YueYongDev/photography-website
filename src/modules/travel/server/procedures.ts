@@ -1,14 +1,56 @@
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
+import {
+  baseProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from "@/trpc/init";
 import { db } from "@/db/drizzle";
 import { and, desc, eq, lt, or } from "drizzle-orm";
 import { citySets } from "@/db/schema/photos";
 import { z } from "zod";
+import { unstable_cache } from "next/cache";
+import { PUBLIC_PHOTOS_CACHE_TAG } from "@/lib/cache-tags";
+
+const getCachedTravelArchive = unstable_cache(
+  async (limit: number) => {
+    const items = await db.query.citySets.findMany({
+      columns: {
+        id: true,
+        description: true,
+        country: true,
+        countryCode: true,
+        city: true,
+        photoCount: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      with: {
+        coverPhoto: {
+          columns: {
+            id: true,
+            url: true,
+            title: true,
+            blurData: true,
+            width: true,
+            height: true,
+            aspectRatio: true,
+            dateTimeOriginal: true,
+          },
+        },
+      },
+      orderBy: [desc(citySets.updatedAt)],
+      limit,
+    });
+
+    return { items };
+  },
+  ["travel-archive-v1"],
+  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
+);
 
 export const travelRouter = createTRPCRouter({
   getLatestTravel: baseProcedure.query(async () => {
     const [latestTravel] = await db.query.citySets.findMany({
       with: {
-        photos: true,
         coverPhoto: true,
       },
       orderBy: desc(citySets.createdAt),
@@ -17,7 +59,14 @@ export const travelRouter = createTRPCRouter({
 
     return latestTravel;
   }),
-  getCitySets: baseProcedure
+  getArchive: baseProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(60).default(48),
+      })
+    )
+    .query(async ({ input }) => getCachedTravelArchive(input.limit)),
+  getCitySets: protectedProcedure
     .input(
       z.object({
         cursor: z
@@ -59,12 +108,10 @@ export const travelRouter = createTRPCRouter({
           photos: {
             columns: {
               id: true,
-              url: true,
-              title: true,
-              blurData: true,
               longitude: true,
               latitude: true,
             },
+            limit: 24,
           },
         },
         where: cursor
@@ -85,7 +132,7 @@ export const travelRouter = createTRPCRouter({
       const items = hasMore ? data.slice(0, -1) : data;
       // Set the next cursor to the last item if there is more data
       const lastItem = items[items.length - 1];
-      const nextCursor = hasMore
+      const nextCursor = hasMore && lastItem
         ? {
             id: lastItem.id,
             updatedAt: lastItem.updatedAt,

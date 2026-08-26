@@ -1,6 +1,8 @@
 import { trpc } from "@/trpc/server";
 import PhotoScreensaver from "@/components/photo-screensaver";
 
+export const dynamic = "force-dynamic";
+
 export default async function ScreensaverPage() {
   const data = await trpc.photos.getMany({
     limit: 32,

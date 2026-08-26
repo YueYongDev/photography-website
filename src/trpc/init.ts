@@ -1,23 +1,12 @@
 import { initTRPC } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
-import { auth } from "@/modules/auth/lib/auth";
-import { headers } from "next/headers";
-
-// Types
-import type { Session } from "@/modules/auth/lib/auth-types";
+import { getCurrentSession } from "@/modules/auth/lib/auth";
 
 export const createTRPCContext = cache(async () => {
-  /**
-   * @see: https://trpc.io/docs/server/context
-   */
-  const session: Session | null = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  const userId = session?.user.id ?? null;
-
-  return { userId };
+  // Public procedures should not pay for an authentication database lookup.
+  // Protected procedures invoke this lazy request-cached function below.
+  return { getSession: getCurrentSession };
 });
 
 // Types
@@ -42,14 +31,17 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(
   opts
 ) {
   const { ctx } = opts;
+  const session = await ctx.getSession();
 
-  if (!ctx.userId) {
+  if (!session?.user.id) {
     throw new Error("Not authenticated");
   }
 
   return opts.next({
     ctx: {
       ...ctx,
+      userId: session.user.id,
+      session,
     },
   });
 });

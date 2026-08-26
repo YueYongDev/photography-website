@@ -1,10 +1,18 @@
 "use client";
 
 import { ErrorBoundary } from "react-error-boundary";
-import { TravelMap } from "../components/travel-map";
 import { TravelPhotos } from "../components/travel-photos";
 import { trpc } from "@/trpc/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
+
+const TravelMap = dynamic(
+  () => import("../components/travel-map").then((module) => module.TravelMap),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="min-h-[300px] size-full rounded-none" />,
+  }
+);
 
 export const TravelSection = () => {
   return (

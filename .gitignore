@@ -45,3 +45,14 @@ next-env.d.ts
 .idea
 package-lock.json
 bun.lock
+
+# Local migration exports contain Better Auth password hashes and session
+# tokens. Never commit them.
+/.migration/
+/.cloudbase-deploy/
+
+# Local browser automation artifacts
+/.playwright-mcp/
+
+# Cloud function dependencies are installed during deployment
+/cloudfunctions/**/node_modules/

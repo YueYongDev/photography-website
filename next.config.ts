@@ -1,19 +1,16 @@
 import type { NextConfig } from "next";
 import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
-const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
-const r2Pattern: RemotePattern | null = r2PublicUrl
+const cloudBaseStaticUrl = process.env.CLOUDBASE_STATIC_PUBLIC_URL;
+const cloudBaseStaticPattern: RemotePattern | null = cloudBaseStaticUrl
   ? (() => {
       try {
-        const parsed = new URL(r2PublicUrl);
-        const protocol =
-          parsed.protocol === "https:" || parsed.protocol === "http:"
-            ? (parsed.protocol.replace(":", "") as "https" | "http")
-            : undefined;
+        const parsed = new URL(cloudBaseStaticUrl);
         return {
-          protocol,
+          protocol: "https" as const,
           hostname: parsed.hostname,
           port: parsed.port,
+          pathname: "/photo-site/photos/**",
         };
       } catch {
         return null;
@@ -22,6 +19,7 @@ const r2Pattern: RemotePattern | null = r2PublicUrl
   : null;
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   images: {
     loader: "custom",
     loaderFile: "./image-loader.ts",
@@ -37,7 +35,7 @@ const nextConfig: NextConfig = {
         hostname: "cdn.ytools.xyz",
         port: "",
       },
-      ...(r2Pattern ? [r2Pattern] : []),
+      ...(cloudBaseStaticPattern ? [cloudBaseStaticPattern] : []),
     ],
   },
   async rewrites() {

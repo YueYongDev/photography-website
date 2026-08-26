@@ -180,11 +180,11 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     update.mutateAsync(data);
   };
 
-  const fullUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    }/photograph/${photoId}`;
   const [isCopied, setIsCopied] = useState(false);
+  const photoPath = `/photograph/${photoId}`;
 
   const onCopy = async () => {
+    const fullUrl = `${window.location.origin}${photoPath}`;
     await navigator.clipboard.writeText(fullUrl);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
@@ -285,9 +285,9 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         Photo link
                       </p>
                       <div className="flex items-center gap-x-2">
-                        <Link href={`/photograph/${photoId}`}>
+                        <Link href={photoPath}>
                           <p className="line-clamp-1 text-sm text-blue-500">
-                            {fullUrl}
+                            {photoPath}
                           </p>
                         </Link>
                         <Button

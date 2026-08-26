@@ -12,10 +12,16 @@ export const postsRouter = createTRPCRouter({
       // 如果slug为空，则使用id作为slug
       const values = {
         ...input,
+        id: input.id ?? crypto.randomUUID(),
         slug: input.slug || crypto.randomUUID(), // 使用随机ID作为默认slug
       };
 
-      const [newPost] = await db.insert(posts).values(values).returning();
+      await db.insert(posts).values(values);
+      const [newPost] = await db
+        .select()
+        .from(posts)
+        .where(eq(posts.id, values.id))
+        .limit(1);
 
       return newPost;
     }),
@@ -28,13 +34,18 @@ export const postsRouter = createTRPCRouter({
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
 
-      const [updatedPost] = await db
+      await db
         .update(posts)
         .set({
           ...input,
         })
+        .where(eq(posts.id, id));
+
+      const [updatedPost] = await db
+        .select()
+        .from(posts)
         .where(eq(posts.id, id))
-        .returning();
+        .limit(1);
 
       if (!updatedPost) {
         throw new TRPCError({ code: "NOT_FOUND" });
@@ -56,13 +67,16 @@ export const postsRouter = createTRPCRouter({
       }
 
       const [deletedPost] = await db
-        .delete(posts)
+        .select()
+        .from(posts)
         .where(eq(posts.id, id))
-        .returning();
+        .limit(1);
 
       if (!deletedPost) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
+
+      await db.delete(posts).where(eq(posts.id, id));
 
       return deletedPost;
     }),

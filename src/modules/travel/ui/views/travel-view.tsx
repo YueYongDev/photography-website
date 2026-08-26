@@ -1,10 +1,14 @@
-import { PageTransitionContainer } from "@/components/page-transition";
 import { TravelSection } from "../sections/travel-section";
+import type { inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "@/trpc/routers/_app";
 
-export const TravelView = () => {
+export type TravelArchive =
+  inferRouterOutputs<AppRouter>["travel"]["getArchive"];
+
+export const TravelView = ({ archive }: { archive: TravelArchive }) => {
   return (
-    <PageTransitionContainer className="flex flex-col lg:flex-row min-h-screen w-full">
-      <TravelSection />
-    </PageTransitionContainer>
+    <div className="min-h-screen w-full">
+      <TravelSection archive={archive} />
+    </div>
   );
 };

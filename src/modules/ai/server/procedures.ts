@@ -2,6 +2,17 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
+const getZhipuApiKey = () => {
+  const apiKey = process.env.ZHIPU_AI_API_KEY;
+  if (!apiKey) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "AI service is not configured",
+    });
+  }
+  return apiKey;
+};
+
 /**
  * AI内容生成模块
  * 提供通用的AI内容生成服务，支持多种内容类型并返回中文结果
@@ -26,7 +37,7 @@ export const aiRouter = createTRPCRouter({
 最大长度: ${maxLength} 字符`;
 
       try {
-        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+        const apiKey = getZhipuApiKey();
         const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
           headers: {
@@ -114,7 +125,7 @@ ${exifText}
 请用中文回复，并以JSON格式返回，只包含"title"和"description"字段。请确保直接输出合法的 JSON，不要包含 Markdown 代码块。`;
 
       try {
-        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+        const apiKey = getZhipuApiKey();
         const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
           headers: {
@@ -178,7 +189,7 @@ ${exifText}
 直接以JSON格式返回，只包含"title"和"description"字段。请确保输出合法的 JSON，不要包含 Markdown 代码块。字段内容必须是中文。`;
 
       try {
-        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+        const apiKey = getZhipuApiKey();
 
         const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
@@ -270,7 +281,7 @@ ${exifText}
 请确保输出合法的 JSON，不要包含 Markdown 代码块。`;
 
       try {
-        const apiKey = process.env.ZHIPU_AI_API_KEY || '0fc9188d1ace1150638a2da89b43783b.b5fbixiaIsbVJUD3';
+        const apiKey = getZhipuApiKey();
         const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
           method: 'POST',
           headers: {

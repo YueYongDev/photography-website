@@ -1,8 +1,7 @@
 import { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardLayout } from "@/modules/dashboard/ui/layouts/dashboard-layout";
-import { auth } from "@/modules/auth/lib/auth";
+import { getCurrentSession } from "@/modules/auth/lib/auth";
 
 export const metadata: Metadata = {
   title: {
@@ -17,9 +16,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
   let session = null;
 
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getCurrentSession();
   } catch {
     session = null;
   }
@@ -28,7 +25,16 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
     redirect("/sign-in");
   }
 
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return (
+    <DashboardLayout
+      user={{
+        name: session.user.name,
+        image: session.user.image,
+      }}
+    >
+      {children}
+    </DashboardLayout>
+  );
 };
 
 export default Layout;

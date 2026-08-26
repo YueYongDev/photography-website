@@ -9,7 +9,7 @@ A modern, open-source photography blog platform built with the latest web techno
 - 📱 Responsive design for all devices
 - 🖼️ Automatic EXIF data extraction from photos
 - 🔐 Secure authentication with Better Auth
-- ☁️ Cloud storage with Cloudflare R2
+- ☁️ Cloud storage with Tencent CloudBase static hosting
 - 🎨 Beautiful UI with Shadcn/ui components
 - 🚀 Lightning-fast performance
 - 📍 Location-based photo organization
@@ -33,14 +33,14 @@ A modern, open-source photography blog platform built with the latest web techno
 
 ## 🛠️ Tech Stack
 
-- **Framework:** [Next.js 15](https://nextjs.org/)
-- **Database:** [Neon](https://neon.tech/) (Serverless Postgres)
+- **Framework:** [Next.js 16](https://nextjs.org/)
+- **Database:** CloudBase MySQL 8.0
 - **ORM:** [Drizzle](https://orm.drizzle.team/)
 - **Authentication:** [Better Auth](https://better-auth.com/)
 - **UI Components:** [Shadcn/ui](https://ui.shadcn.com/)
 - **API Layer:** [tRPC](https://trpc.io/)
-- **Storage:** [Cloudflare R2](https://www.cloudflare.com/products/r2/)
-- **Deployment:** [Vercel](https://vercel.com)
+- **Storage:** Tencent CloudBase static hosting with a least-privilege media gateway
+- **Deployment:** Tencent CloudBase Run
 
 ## 🚀 Getting Started
 
@@ -48,8 +48,8 @@ A modern, open-source photography blog platform built with the latest web techno
 
 - Node.js 20+
 - bun (recommended) or npm
-- [Neon Database](https://neon.tech/)
-- [Cloudflare R2 Account](https://www.cloudflare.com/products/r2/)
+- A CloudBase environment with MySQL and CloudBase Run
+- A CloudBase environment with static hosting enabled
 - [Mapbox Account](https://console.mapbox.com/)
 
 ### Environment Variables
@@ -57,28 +57,41 @@ A modern, open-source photography blog platform built with the latest web techno
 Create a `.env.local` file in the root directory:
 
 ```bash
-# Database
-DATABASE_URL=your_database_url
+# CloudBase MySQL private connection URL
+DATABASE_URL=mysql://photo_site_app:password@private-host:3306/database
+DATABASE_POOL_SIZE=4
+CLOUDBASE_ENV_ID=ytools-d8gboj3ce7caccb14
+CLOUDBASE_REGION=ap-shanghai
+CLOUDBASE_STATIC_PUBLIC_URL=https://your-env-id.tcloudbaseapp.com
+CLOUDBASE_MEDIA_GATEWAY_URL=https://your-env-id.ap-shanghai.app.tcloudbase.com/photo-site-media
+CLOUDBASE_MEDIA_GATEWAY_SECRET=
 
 # Auth
 # You can generate a random secret using `openssl rand -base64 32`
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000 #Base URL of your app
+BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:3000
 
 NEXT_PUBLIC_APP_URL='http://localhost:3000'
-
-# Cloudflare R2
-CLOUDFLARE_R2_ENDPOINT=
-CLOUDFLARE_R2_ACCESS_KEY_ID=
-CLOUDFLARE_R2_SECRET_ACCESS_KEY=
-CLOUDFLARE_R2_BUCKET_NAME=
-CLOUDFLARE_R2_PUBLIC_URL=
 
 # Mapbox
 NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=
 ```
 
 Replace `your-domain.com` with your actual domain name. This is required for Cloudflare Image Optimization to work correctly.
+
+### Production routing
+
+The production site uses `https://p.yueyong.fun` as a Cloudflare Worker custom
+domain in front of CloudBase Run. The checked-in Worker at
+`workers/cloudbase-proxy.js` preserves the public host, rewrites upstream
+redirects, and bridges Better Auth's origin check only for `/api/auth/*`
+requests arriving from the exact production origin.
+
+CloudBase Run must retain its private VPC connection to CloudBase MySQL. Before
+deploying a new CloudBase Run revision or changing its environment variables,
+verify that the resulting revision still has access to the private database
+address.
 
 ### Installation
 

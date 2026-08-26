@@ -1,8 +1,7 @@
 import { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import SignUp from "@/modules/auth/components/sign-up";
-import { auth } from "@/modules/auth/lib/auth";
+import { getCurrentSession } from "@/modules/auth/lib/auth";
 import { db } from "@/db/drizzle";
 import { user } from "@/db/schema/users";
 
@@ -10,19 +9,24 @@ export const metadata: Metadata = {
   title: "Sign Up",
 };
 
+// This route checks live account state and must never run its database query
+// during the production build.
+export const dynamic = "force-dynamic";
+
 const SignUpPage = async () => {
-  const existingUser = await db.select().from(user);
-
-  if (existingUser.length > 0) {
-    return redirect("/sign-in");
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCurrentSession();
 
   if (session) {
     return redirect("/dashboard");
+  }
+
+  const existingUser = await db
+    .select({ id: user.id })
+    .from(user)
+    .limit(1);
+
+  if (existingUser.length > 0) {
+    return redirect("/sign-in");
   }
 
   return <SignUp />;

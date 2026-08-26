@@ -1,5 +1,5 @@
 import SecurityAccessCard from "@/modules/auth/components/security-access-card";
-import { auth } from "@/modules/auth/lib/auth";
+import { auth, getCurrentSession } from "@/modules/auth/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -9,9 +9,7 @@ export const metadata = {
 
 const ProfilePage = async () => {
   const [session, activeSessions] = await Promise.all([
-    auth.api.getSession({
-      headers: await headers(),
-    }),
+    getCurrentSession(),
     auth.api.listSessions({
       headers: await headers(),
     }),

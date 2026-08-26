@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut, useSession } from "@/modules/auth/lib/auth-client";
+import { signOut } from "@/modules/auth/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -12,21 +12,24 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogOut, Loader2 } from "lucide-react";
 
-const UserButton = () => {
+const UserButton = ({
+  user,
+}: {
+  user: { name: string; image?: string | null };
+}) => {
   const router = useRouter();
   const [isSignOut, setIsSignOut] = useState<boolean>(false);
-  const { data: session } = useSession();
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Avatar className="size-9 hover:opacity-80 transition-opacity cursor-pointer">
           <AvatarImage
-            src={session?.user.image || "#"}
+            src={user.image || undefined}
             alt="Avatar"
             className="object-cover"
           />
-          <AvatarFallback>{session?.user.name.charAt(0)}</AvatarFallback>
+          <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
