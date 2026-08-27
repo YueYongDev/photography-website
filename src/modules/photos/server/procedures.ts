@@ -328,6 +328,9 @@ export const photosRouter = createTRPCRouter({
           countryCode: photos.countryCode,
           isFavorite: photos.isFavorite,
           blurData: photos.blurData,
+          width: photos.width,
+          height: photos.height,
+          aspectRatio: photos.aspectRatio,
           updatedAt: photos.updatedAt,
         })
         .from(photos)
@@ -381,6 +384,9 @@ export const photosRouter = createTRPCRouter({
           countryCode: photos.countryCode,
           isFavorite: photos.isFavorite,
           blurData: photos.blurData,
+          width: photos.width,
+          height: photos.height,
+          aspectRatio: photos.aspectRatio,
           updatedAt: photos.updatedAt,
         })
         .from(photos)

@@ -10,22 +10,31 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const fallbackPhotos: WorkPhoto[] = [
-  ["08-tekapo-quiet.jpg", "Quiet Distances", "Tekapo", "NZ"],
-  ["03-lindis-road.jpg", "Passing Through", "Lindis Pass", "NZ"],
-  ["06-tekapo-portrait.jpg", "The Observer", "Tekapo", "NZ"],
-  ["04-glenorchy-peak.jpg", "Roadside Study", "Glenorchy", "NZ"],
-  ["05-tekapo-pano.jpg", "Southern Light", "Tekapo", "NZ"],
-  ["07-wanaka-camera.jpg", "Field Tools", "Wānaka", "NZ"],
-].map(([file, title, city, countryCode], index) => ({
-  id: null,
-  url: `/journeys/newzealand-2026/photos/${file}`,
-  title,
-  city,
-  countryCode,
-  dateTimeOriginal: null,
-  sequence: index + 1,
-}));
+const fallbackPhotoData: Array<
+  [string, string, string, string, number, number]
+> = [
+  ["08-tekapo-quiet.jpg", "Quiet Distances", "Tekapo", "NZ", 1360, 2400],
+  ["03-lindis-road.jpg", "Passing Through", "Lindis Pass", "NZ", 2400, 1350],
+  ["06-tekapo-portrait.jpg", "The Observer", "Tekapo", "NZ", 2400, 1359],
+  ["04-glenorchy-peak.jpg", "Roadside Study", "Glenorchy", "NZ", 1800, 2400],
+  ["05-tekapo-pano.jpg", "Southern Light", "Tekapo", "NZ", 2400, 1349],
+  ["07-wanaka-camera.jpg", "Field Tools", "Wānaka", "NZ", 1800, 2400],
+];
+
+const fallbackPhotos: WorkPhoto[] = fallbackPhotoData.map(
+  ([file, title, city, countryCode, width, height], index) => ({
+    id: null,
+    url: `/journeys/newzealand-2026/photos/${file}`,
+    title,
+    city,
+    countryCode,
+    dateTimeOriginal: null,
+    width,
+    height,
+    aspectRatio: width / height,
+    sequence: index + 1,
+  })
+);
 
 const WorkPage = async () => {
   let photos = fallbackPhotos;
@@ -40,6 +49,9 @@ const WorkPage = async () => {
         city: photo.city,
         countryCode: photo.countryCode,
         dateTimeOriginal: photo.dateTimeOriginal,
+        width: photo.width,
+        height: photo.height,
+        aspectRatio: photo.aspectRatio,
         sequence: index + 1,
       }));
     }

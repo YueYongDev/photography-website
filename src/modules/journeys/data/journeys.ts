@@ -78,6 +78,7 @@ export const journeys: JourneyMeta[] = [
           alt: "Mountain light above Glenorchy",
           caption: "Evening light on the edge of the range.",
           location: "Glenorchy",
+          format: "portrait",
         },
       },
       {
@@ -110,14 +111,14 @@ export const journeys: JourneyMeta[] = [
         alt: "A person photographing the landscape at Lake Tekapo",
         caption: "The observer enters the frame.",
         location: "Lake Tekapo",
-        format: "portrait",
+        format: "landscape",
       },
       {
         src: "/journeys/newzealand-2026/photos/07-wanaka-camera.jpg",
         alt: "A camera and notebook beside Lake Wanaka",
         caption: "A working pause by the water.",
         location: "Wānaka",
-        format: "landscape",
+        format: "portrait",
       },
     ],
     closing:

@@ -25,7 +25,16 @@ type StudioPhoto = {
   countryCode: string | null;
   isFavorite: boolean;
   blurData: string;
+  width: number;
+  height: number;
+  aspectRatio: number;
   updatedAt: Date;
+};
+
+const getOrientation = (aspectRatio: number) => {
+  if (aspectRatio < 0.92) return "portrait";
+  if (aspectRatio > 1.12) return "landscape";
+  return "square";
 };
 
 export const PhotosSection = () => (
@@ -43,18 +52,35 @@ const PhotosSectionSkeleton = () => (
       <span>Private + public</span>
     </div>
     <div className={styles.photoGrid} aria-hidden="true">
-      {Array.from({ length: 9 }).map((_, index) => (
-        <div key={index}>
-          <div className={`${styles.photoImage} ${styles.skeletonBlock}`} />
-          <div className={styles.photoMeta}>
-            <span className={styles.photoNumber}>{String(index + 1).padStart(2, "0")}</span>
-            <div className={styles.photoCopy}>
-              <div className={`${styles.skeletonBlock} h-5 w-2/3`} />
-              <div className={`${styles.skeletonBlock} mt-2 h-2.5 w-1/2`} />
+      {Array.from({ length: 9 }).map((_, index) => {
+        const orientation = ["landscape", "portrait", "square"][index % 3];
+        const cardClass =
+          orientation === "portrait"
+            ? styles.photoCardPortrait
+            : orientation === "square"
+              ? styles.photoCardSquare
+              : styles.photoCardLandscape;
+        const ratio =
+          orientation === "portrait" ? 0.75 : orientation === "square" ? 1 : 1.5;
+
+        return (
+          <div key={index} className={cardClass}>
+            <div
+              className={`${styles.photoImage} ${styles.skeletonBlock}`}
+              style={{ aspectRatio: ratio }}
+            />
+            <div className={styles.photoMeta}>
+              <span className={styles.photoNumber}>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div className={styles.photoCopy}>
+                <div className={`${styles.skeletonBlock} h-5 w-2/3`} />
+                <div className={`${styles.skeletonBlock} mt-2 h-2.5 w-1/2`} />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   </>
 );
@@ -106,6 +132,19 @@ const PhotosSectionContent = () => {
 };
 
 const PhotoCard = memo(({ photo, index }: { photo: StudioPhoto; index: number }) => {
+  const aspectRatio =
+    photo.width > 0 && photo.height > 0
+      ? photo.width / photo.height
+      : photo.aspectRatio > 0
+        ? photo.aspectRatio
+        : 1.3;
+  const orientation = getOrientation(aspectRatio);
+  const orientationClass =
+    orientation === "portrait"
+      ? styles.photoCardPortrait
+      : orientation === "square"
+        ? styles.photoCardSquare
+        : styles.photoCardLandscape;
   const captured = photo.dateTimeOriginal
     ? new Date(photo.dateTimeOriginal).toLocaleDateString("en-US", {
         year: "numeric",
@@ -120,14 +159,17 @@ const PhotoCard = memo(({ photo, index }: { photo: StudioPhoto; index: number })
     .join(" · ");
 
   return (
-    <Link href={`/photos/${photo.id}`} className={styles.photoCard}>
-      <div className={styles.photoImage}>
+    <Link
+      href={`/photos/${photo.id}`}
+      className={`${styles.photoCard} ${orientationClass}`}
+    >
+      <div className={styles.photoImage} style={{ aspectRatio }}>
         <BlurImage
           src={photo.url}
           alt={photo.title || "Untitled photograph"}
           fill
           quality={35}
-          className="object-cover"
+          className="object-contain"
           blurhash={photo.blurData}
           sizes="(max-width: 620px) 100vw, (max-width: 1100px) 50vw, 33vw"
         />

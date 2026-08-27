@@ -72,6 +72,12 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   const router = useRouter();
   const utils = trpc.useUtils();
   const [photo] = trpc.photos.getOne.useSuspenseQuery({ id: photoId });
+  const photoAspectRatio =
+    photo.width > 0 && photo.height > 0
+      ? photo.width / photo.height
+      : photo.aspectRatio > 0
+        ? photo.aspectRatio
+        : 1.5;
   const [currentLocation, setCurrentLocation] = useState({
     lat: photo.latitude,
     lng: photo.longitude,
@@ -273,15 +279,23 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
             <div className="lg:col-span-2 space-y-6">
               {/* Preview Image */}
               <div className={`${styles.editorMediaCard} flex h-fit flex-col gap-4`}>
-                <div className="aspect-video overflow-hidden relative">
-                  <BlurImage
-                    src={photo.url}
-                    alt={photo.title}
-                    fill
-                    quality={20}
-                    className="object-cover"
-                    blurhash={photo.blurData}
-                  />
+                <div className={styles.editorPhotoStage}>
+                  <div
+                    className={styles.editorPhotoPreview}
+                    style={{
+                      aspectRatio: photoAspectRatio,
+                      width: `min(100%, ${Math.round(68 * photoAspectRatio)}vh)`,
+                    }}
+                  >
+                    <BlurImage
+                      src={photo.url}
+                      alt={photo.title}
+                      fill
+                      quality={35}
+                      className="object-contain"
+                      blurhash={photo.blurData}
+                    />
+                  </div>
                 </div>
                 <div className="p-4 flex flex-col gap-y-6">
                   <div className="flex justify-between items-center gap-x-2">

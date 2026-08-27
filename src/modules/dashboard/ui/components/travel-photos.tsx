@@ -49,12 +49,20 @@ export const TravelPhotos = ({ data }: TravelPhotosProps) => {
             <span>{citySet.photoCount} frames</span>
           </div>
 
-          <div className={styles.travelThumb}>
+          <div
+            className={styles.travelThumb}
+            style={{
+              aspectRatio:
+                citySet.coverPhoto.width > 0 && citySet.coverPhoto.height > 0
+                  ? citySet.coverPhoto.width / citySet.coverPhoto.height
+                  : citySet.coverPhoto.aspectRatio,
+            }}
+          >
             <BlurImage
               src={citySet.coverPhoto.url || "/placeholder.svg"}
               alt={citySet.city}
               fill
-              className="object-cover"
+              className="object-contain"
               blurhash={citySet.coverPhoto.blurData}
             />
           </div>

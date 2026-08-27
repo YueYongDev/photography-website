@@ -42,7 +42,10 @@ export const CitySection = ({ city, countryCode }: Props) => {
 };
 
 const CitySectionSuspense = ({ city, countryCode }: Props) => {
-  const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({ city, countryCode });
+  const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({
+    city,
+    countryCode,
+  });
 
   if (!cityData) return <ErrorState />;
 
@@ -53,13 +56,20 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
   const year = cityData.coverPhoto?.dateTimeOriginal
     ? new Date(cityData.coverPhoto.dateTimeOriginal).getFullYear()
     : "Archive";
+  const coverAspectRatio =
+    cityData.coverPhoto?.width && cityData.coverPhoto?.height
+      ? cityData.coverPhoto.width / cityData.coverPhoto.height
+      : cityData.coverPhoto?.aspectRatio || 3 / 2;
 
   return (
     <section className={styles.page}>
       <div className={styles.cityHero}>
         <div>
           <p className={styles.eyebrow}>
-            <Link href="/travel">Travel</Link> / <Link href={`/travel/${cityData.countryCode.toLowerCase()}`}>{cityData.country}</Link>
+            <Link href="/travel">Travel</Link> /{" "}
+            <Link href={`/travel/${cityData.countryCode.toLowerCase()}`}>
+              {cityData.country}
+            </Link>
           </p>
           <h1 className={styles.displayTitle}>{decodedCityName}</h1>
         </div>
@@ -69,8 +79,13 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
         </p>
 
         <Link
-          href={cityData.coverPhoto?.id ? `/photograph/${cityData.coverPhoto.id}` : "#"}
+          href={
+            cityData.coverPhoto?.id
+              ? `/photograph/${cityData.coverPhoto.id}`
+              : "#"
+          }
           className={styles.cityCover}
+          style={{ aspectRatio: coverAspectRatio }}
         >
           <BlurImage
             src={cityData.coverPhoto?.url || "/placeholder.svg"}
@@ -80,36 +95,60 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
             quality={75}
             blurhash={cityData.coverPhoto?.blurData || ""}
             sizes="90vw"
-            className={styles.imageCover}
+            className={styles.imageContain}
           />
         </Link>
       </div>
 
       <div className={styles.cityMeta}>
-        <div><span>Country</span><strong>{cityData.country}</strong></div>
-        <div><span>Place</span><strong>{cityData.city}</strong></div>
-        <div><span>Year</span><strong>{year}</strong></div>
-        <div><span>Frames</span><strong>{cityData.photoCount}</strong></div>
+        <div>
+          <span>Country</span>
+          <strong>{cityData.country}</strong>
+        </div>
+        <div>
+          <span>Place</span>
+          <strong>{cityData.city}</strong>
+        </div>
+        <div>
+          <span>Year</span>
+          <strong>{year}</strong>
+        </div>
+        <div>
+          <span>Frames</span>
+          <strong>{cityData.photoCount}</strong>
+        </div>
       </div>
 
       <div className={styles.cityGrid}>
-        {cityPhotos.map((photo, index) => (
-          <Link href={`/photograph/${photo.id}`} className={styles.cityPhoto} key={photo.id}>
-            <BlurImage
-              src={photo.url}
-              alt={photo.title || `${decodedCityName} photograph`}
-              fill
-              quality={50}
-              blurhash={photo.blurData}
-              sizes="(min-width: 900px) 48vw, 92vw"
-              className={styles.imageCover}
-            />
-            <div className={styles.cityPhotoCaption}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <span>{photo.title || "Untitled"}</span>
-            </div>
-          </Link>
-        ))}
+        {cityPhotos.map((photo, index) => {
+          const aspectRatio =
+            photo.width && photo.height
+              ? photo.width / photo.height
+              : photo.aspectRatio || 3 / 2;
+
+          return (
+            <Link
+              href={`/photograph/${photo.id}`}
+              className={styles.cityPhoto}
+              key={photo.id}
+              style={{ aspectRatio }}
+            >
+              <BlurImage
+                src={photo.url}
+                alt={photo.title || `${decodedCityName} photograph`}
+                fill
+                quality={50}
+                blurhash={photo.blurData}
+                sizes="(min-width: 900px) 48vw, 92vw"
+                className={styles.imageContain}
+              />
+              <div className={styles.cityPhotoCaption}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <span>{photo.title || "Untitled"}</span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

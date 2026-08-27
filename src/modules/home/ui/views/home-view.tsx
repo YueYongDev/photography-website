@@ -10,18 +10,24 @@ const workEntries = [
     title: "Quiet Distances",
     description: "Scale, weather, and the measured silence between a person and the horizon.",
     image: "/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg",
+    width: 1360,
+    height: 2400,
   },
   {
     number: "02",
     title: "Passing Through",
     description: "Roads, windows, borrowed viewpoints, and the landscape seen in transit.",
     image: "/journeys/newzealand-2026/photos/03-lindis-road.jpg",
+    width: 2400,
+    height: 1350,
   },
   {
     number: "03",
     title: "The Observer",
     description: "People looking, making, and becoming part of the scene they came to witness.",
     image: "/journeys/newzealand-2026/photos/06-tekapo-portrait.jpg",
+    width: 2400,
+    height: 1359,
   },
 ];
 
@@ -41,7 +47,7 @@ export const HomeView = () => {
         </p>
 
         <figure>
-          <div className={styles.heroImage}>
+          <div className={styles.heroImage} style={{ aspectRatio: 1360 / 2400 }}>
             <Image
               src="/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg"
               alt="A solitary figure beside Lake Tekapo"
@@ -49,7 +55,7 @@ export const HomeView = () => {
               unoptimized
               priority
               sizes="(min-width: 900px) 60vw, 87vw"
-              className={styles.imageCover}
+              className={styles.imageContain}
             />
           </div>
           <figcaption
@@ -74,14 +80,17 @@ export const HomeView = () => {
         <div className={styles.homeWorkGrid}>
           {workEntries.map((entry) => (
             <Link href="/work" className={styles.homeWorkCard} key={entry.number}>
-              <div className={styles.homeWorkImage}>
+              <div
+                className={styles.homeWorkImage}
+                style={{ aspectRatio: entry.width / entry.height }}
+              >
                 <Image
                   src={entry.image}
                   alt={entry.title}
                   fill
                   unoptimized
                   sizes="(min-width: 900px) 45vw, 90vw"
-                  className={styles.imageCover}
+                  className={styles.imageContain}
                 />
               </div>
               <div className={styles.homeWorkMeta}>

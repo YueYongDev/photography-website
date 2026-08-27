@@ -10,7 +10,16 @@ export type WorkPhoto = {
   city: string | null;
   countryCode: string | null;
   dateTimeOriginal: Date | string | null;
+  width: number | null;
+  height: number | null;
+  aspectRatio: number | null;
   sequence: number;
+};
+
+const getOrientation = (aspectRatio: number) => {
+  if (aspectRatio < 0.92) return "portrait";
+  if (aspectRatio > 1.12) return "landscape";
+  return "square";
 };
 
 const photoYear = (value: WorkPhoto["dateTimeOriginal"]) => {
@@ -35,16 +44,29 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
 
       <div className={styles.workGrid}>
         {photos.map((photo) => {
+          const aspectRatio =
+            photo.width && photo.height
+              ? photo.width / photo.height
+              : photo.aspectRatio && photo.aspectRatio > 0
+                ? photo.aspectRatio
+                : 1.5;
+          const orientation = getOrientation(aspectRatio);
+          const orientationClass =
+            orientation === "portrait"
+              ? styles.workFramePortrait
+              : orientation === "square"
+                ? styles.workFrameSquare
+                : styles.workFrameLandscape;
           const frame = (
             <>
-              <div className={styles.workFrameImage}>
+              <div className={styles.workFrameImage} style={{ aspectRatio }}>
                 <Image
                   src={photo.url}
                   alt={photo.title || "Selected photograph"}
                   fill
                   unoptimized
                   sizes="(min-width: 900px) 46vw, 92vw"
-                  className={styles.imageCover}
+                  className={styles.imageContain}
                 />
               </div>
               <div className={styles.workFrameMeta}>
@@ -55,11 +77,18 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
           );
 
           return photo.id ? (
-            <Link href={`/photograph/${photo.id}`} className={styles.workFrame} key={photo.id}>
+            <Link
+              href={`/photograph/${photo.id}`}
+              className={`${styles.workFrame} ${orientationClass}`}
+              key={photo.id}
+            >
               {frame}
             </Link>
           ) : (
-            <div className={styles.workFrame} key={`${photo.url}-${photo.sequence}`}>
+            <div
+              className={`${styles.workFrame} ${orientationClass}`}
+              key={`${photo.url}-${photo.sequence}`}
+            >
               {frame}
             </div>
           );

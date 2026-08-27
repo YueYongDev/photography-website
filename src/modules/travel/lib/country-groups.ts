@@ -1,5 +1,12 @@
 import type { TravelArchive } from "@/modules/travel/ui/views/travel-view";
 
+export type TravelImage = {
+  url: string;
+  width: number;
+  height: number;
+  aspectRatio: number;
+};
+
 export type TravelCityEntry = {
   id: string;
   city: string;
@@ -7,7 +14,7 @@ export type TravelCityEntry = {
   countryCode: string;
   photoCount: number;
   year: string;
-  image: string;
+  image: TravelImage;
 };
 
 export type TravelCountryGroup = {
@@ -16,7 +23,7 @@ export type TravelCountryGroup = {
   cities: TravelCityEntry[];
   frames: number;
   years: string[];
-  images: string[];
+  images: TravelImage[];
 };
 
 const fallbackEntries: TravelCityEntry[] = [
@@ -27,7 +34,12 @@ const fallbackEntries: TravelCityEntry[] = [
     countryCode: "NZ",
     photoCount: 5,
     year: "2026",
-    image: "/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg",
+    image: {
+      url: "/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg",
+      width: 1360,
+      height: 2400,
+      aspectRatio: 1360 / 2400,
+    },
   },
   {
     id: "fallback-wanaka",
@@ -36,7 +48,12 @@ const fallbackEntries: TravelCityEntry[] = [
     countryCode: "NZ",
     photoCount: 4,
     year: "2026",
-    image: "/journeys/newzealand-2026/photos/07-wanaka-camera.jpg",
+    image: {
+      url: "/journeys/newzealand-2026/photos/07-wanaka-camera.jpg",
+      width: 1800,
+      height: 2400,
+      aspectRatio: 1800 / 2400,
+    },
   },
   {
     id: "fallback-aoraki",
@@ -45,7 +62,12 @@ const fallbackEntries: TravelCityEntry[] = [
     countryCode: "NZ",
     photoCount: 3,
     year: "2026",
-    image: "/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg",
+    image: {
+      url: "/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg",
+      width: 2400,
+      height: 1350,
+      aspectRatio: 2400 / 1350,
+    },
   },
   {
     id: "fallback-sydney",
@@ -54,7 +76,12 @@ const fallbackEntries: TravelCityEntry[] = [
     countryCode: "AU",
     photoCount: 8,
     year: "2026",
-    image: "/about-yueyong.jpg",
+    image: {
+      url: "/about-yueyong.jpg",
+      width: 1800,
+      height: 2400,
+      aspectRatio: 1800 / 2400,
+    },
   },
   {
     id: "fallback-samarkand",
@@ -63,8 +90,12 @@ const fallbackEntries: TravelCityEntry[] = [
     countryCode: "UZ",
     photoCount: 1,
     year: "2026",
-    image:
-      "https://cdn.ytools.xyz/photos/DSC00614-1771667465746.jpg?imageView2/2/w/3840/q/75|imageslim",
+    image: {
+      url: "https://cdn.ytools.xyz/photos/DSC00614-1771667465746.jpg?imageView2/2/w/3840/q/75|imageslim",
+      width: 3,
+      height: 2,
+      aspectRatio: 3 / 2,
+    },
   },
 ];
 
@@ -92,7 +123,15 @@ export const getTravelEntries = (archive: TravelArchive): TravelCityEntry[] => {
       countryCode: item.countryCode.toUpperCase(),
       photoCount: item.photoCount,
       year: toYear(item.coverPhoto?.dateTimeOriginal ?? item.updatedAt),
-      image: item.coverPhoto!.url,
+      image: {
+        url: item.coverPhoto!.url,
+        width: item.coverPhoto!.width,
+        height: item.coverPhoto!.height,
+        aspectRatio:
+          item.coverPhoto!.width && item.coverPhoto!.height
+            ? item.coverPhoto!.width / item.coverPhoto!.height
+            : item.coverPhoto!.aspectRatio || 3 / 2,
+      },
     }));
 
   return remoteEntries.length > 0 ? remoteEntries : fallbackEntries;
@@ -115,7 +154,10 @@ export const getCountryGroups = (archive: TravelArchive): TravelCountryGroup[] =
     current.cities.push(entry);
     current.frames += entry.photoCount;
     if (!current.years.includes(entry.year)) current.years.push(entry.year);
-    if (!current.images.includes(entry.image) && current.images.length < 3) {
+    if (
+      !current.images.some((image) => image.url === entry.image.url) &&
+      current.images.length < 3
+    ) {
       current.images.push(entry.image);
     }
     groups.set(key, current);

@@ -78,15 +78,15 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
 
             <div className={styles.countryArchiveImages}>
               {country.images.map((image, imageIndex) => (
-                <div key={image}>
+                <div key={image.url} style={{ aspectRatio: image.aspectRatio }}>
                   <Image
-                    src={image}
+                    src={image.url}
                     alt={`${country.name} photograph ${imageIndex + 1}`}
                     fill
                     unoptimized
                     priority={index === 0}
                     sizes="(min-width: 900px) 22vw, 45vw"
-                    className={styles.imageCover}
+                    className={styles.imageContain}
                   />
                 </div>
               ))}

@@ -49,15 +49,18 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
             key={city.id}
           >
             <span>{String(index + 1).padStart(2, "0")}</span>
-            <div className={styles.countryCityImage}>
+            <div
+              className={styles.countryCityImage}
+              style={{ aspectRatio: city.image.aspectRatio }}
+            >
               <Image
-                src={city.image}
+                src={city.image.url}
                 alt={city.city}
                 fill
                 unoptimized
                 priority={index === 0}
                 sizes="(min-width: 900px) 34vw, 92vw"
-                className={styles.imageCover}
+                className={styles.imageContain}
               />
             </div>
             <div className={styles.countryCityCopy}>
