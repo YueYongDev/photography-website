@@ -77,7 +77,7 @@ export default function SignUp() {
       email: values.email,
       password: values.password,
       name: values.username,
-      callbackURL: "/dashboard",
+      callbackURL: "/profile",
       fetchOptions: {
         onResponse: () => {
           setLoading(false);
@@ -87,9 +87,6 @@ export default function SignUp() {
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);
-        },
-        onSuccess: async () => {
-          router.push("/profile");
         },
       },
     });

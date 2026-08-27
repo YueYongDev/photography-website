@@ -29,7 +29,6 @@ import {
 // Internal dependencies - Hooks
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -39,7 +38,6 @@ const formSchema = z.object({
 });
 
 export default function SignIn() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,12 +55,15 @@ export default function SignIn() {
       {
         email: values.email,
         password: values.password,
+        // Let Better Auth perform a full document navigation after the
+        // session cookie has been committed. A client-side router transition
+        // can reuse the unauthenticated RSC response and bounce between the
+        // sign-in and dashboard routes.
+        callbackURL: "/dashboard",
       },
       {
         onSuccess: () => {
           toast.success("Login successful");
-          setLoading(false);
-          router.push("/dashboard");
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);
