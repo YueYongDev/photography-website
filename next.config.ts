@@ -19,7 +19,11 @@ const cloudBaseStaticPattern: RemotePattern | null = cloudBaseStaticUrl
   : null;
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Vercel supplies its own Next.js build adapter and does not consume the
+  // self-hosting bundle. Next.js 16.3 currently fails when that adapter and
+  // `output: "standalone"` are enabled together because the adapter omits the
+  // root NFT trace that the standalone copier still expects.
+  output: process.env.VERCEL ? undefined : "standalone",
   images: {
     loader: "custom",
     loaderFile: "./image-loader.ts",
