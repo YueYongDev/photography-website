@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowLeft, ArrowUpRight, Map } from "lucide-react";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
@@ -12,12 +13,15 @@ import {
 } from "@/modules/site/i18n/site-locale";
 import {
   toPlaceSlug,
+  type TravelCityEntry,
   type TravelCountryGroup,
 } from "@/modules/travel/lib/country-groups";
+import { CountryGalleryViewer } from "@/modules/travel/ui/components/country-gallery-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
 
 export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
   const { copy, locale } = useSiteLocale();
+  const [selectedCity, setSelectedCity] = useState<TravelCityEntry | null>(null);
   const countryName = localizeCountryName(country.name, country.code, locale);
   const fallbackHref =
     country.code === "NZ"
@@ -58,44 +62,55 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
         </div>
       </div>
 
-      <div className={styles.countryCityList}>
-        {country.cities.map((city, index) => (
-          <Link
-            href={
-              city.id.startsWith("fallback-")
-                ? fallbackHref
-                : `/travel/${country.code.toLowerCase()}/${toPlaceSlug(city.city)}`
-            }
-            className={styles.countryCityRow}
-            key={city.id}
-          >
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <div
-              className={styles.countryCityImage}
-              style={{
-                aspectRatio:
-                  city.image.width > 0 && city.image.height > 0
-                    ? city.image.width / city.image.height
-                    : city.image.aspectRatio,
-              }}
-            >
-              <Image
-                src={city.image.url}
-                alt={localizePlaceName(city.city, locale)}
-                fill
-                loader={getArchiveImageLoader(city.image.url)}
-                priority={index === 0}
-                sizes="(min-width: 900px) 34vw, 92vw"
-                className={styles.imageContain}
+      <div className={styles.countryGalleryHead}>
+        <p>{copy.common.places}</p>
+        <span>{copy.country.galleryPrompt}</span>
+      </div>
+
+      <div className={styles.countryGalleryGrid}>
+        {country.cities.map((city, index) => {
+          const cityName = localizePlaceName(city.city, locale);
+          const cardContents = (
+            <>
+              <div className={styles.countryGalleryImage}>
+                <Image
+                  src={city.image.url}
+                  alt={cityName}
+                  fill
+                  loader={getArchiveImageLoader(city.image.url)}
+                  priority={index < 3}
+                  sizes="(max-width: 600px) 92vw, (max-width: 900px) 46vw, 31vw"
+                  className={styles.imageCover}
+                />
+                <div className={styles.countryGalleryShade} />
+              </div>
+              <span className={styles.countryGalleryNumber}>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div className={styles.countryGalleryCopy}>
+                <p>{copy.country.cityFrames(city.year, city.photoCount)}</p>
+                <h2>{cityName}</h2>
+              </div>
+              <ArrowUpRight
+                className={styles.countryGalleryArrow}
+                size={17}
+                strokeWidth={1.3}
               />
-            </div>
-            <div className={styles.countryCityCopy}>
-              <p>{copy.country.cityFrames(city.year, city.photoCount)}</p>
-              <h2>{localizePlaceName(city.city, locale)}</h2>
-            </div>
-            <ArrowUpRight size={17} strokeWidth={1.3} />
-          </Link>
-        ))}
+            </>
+          );
+
+          return (
+            <button
+              type="button"
+              className={styles.countryGalleryCard}
+              onClick={() => setSelectedCity(city)}
+              aria-label={copy.country.openGallery(cityName, city.photoCount)}
+              key={city.id}
+            >
+              {cardContents}
+            </button>
+          );
+        })}
       </div>
 
       <Link href="/discover" className={styles.countryMapLink}>
@@ -103,6 +118,22 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
         <span>{copy.country.mapLink}</span>
         <ArrowUpRight size={16} strokeWidth={1.4} />
       </Link>
+
+      {selectedCity && (
+        <CountryGalleryViewer
+          city={selectedCity}
+          cityName={localizePlaceName(selectedCity.city, locale)}
+          countryCode={country.code}
+          countryName={countryName}
+          detailsHref={
+            selectedCity.id.startsWith("fallback-")
+              ? fallbackHref
+              : `/travel/${country.code.toLowerCase()}/${toPlaceSlug(selectedCity.city)}`
+          }
+          locale={locale}
+          onClose={() => setSelectedCity(null)}
+        />
+      )}
     </section>
   );
 };
