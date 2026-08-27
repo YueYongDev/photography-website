@@ -17,9 +17,10 @@ export const SiteFooter = () => {
         <Link href="/">Home</Link>
         <Link href="/work">Work</Link>
         <Link href="/journeys">Journeys</Link>
-        <Link href="/travel">Atlas</Link>
+        <Link href="/travel">Travel</Link>
         <Link href="/discover">Map</Link>
         <Link href="/about">About</Link>
+        <Link href="/dashboard">Studio</Link>
       </nav>
 
       <div className={styles.footerMeta}>

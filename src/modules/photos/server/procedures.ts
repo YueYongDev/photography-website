@@ -458,11 +458,16 @@ export const photosRouter = createTRPCRouter({
     ),
 
   getCitySetByCity: baseProcedure
-    .input(z.object({ city: z.string() }))
+    .input(z.object({ city: z.string(), countryCode: z.string().length(2).optional() }))
     .query(async ({ input }) => {
       return (
         (await db.query.citySets.findFirst({
-          where: eq(citySets.city, input.city),
+          where: input.countryCode
+            ? and(
+                eq(citySets.city, input.city),
+                eq(citySets.countryCode, input.countryCode.toUpperCase())
+              )
+            : eq(citySets.city, input.city),
           with: {
             coverPhoto: true,
             photos: {

@@ -1,25 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import MapComponent, { MapProps } from "@/components/map";
-import { trpc } from "@/trpc/client";
-import BlurImage from "@/components/blur-image";
 import { useRouter } from "next/navigation";
-import { PhotoListDrawer } from "./photo-list-drawer";
-import styles from "@/modules/site/ui/public-site.module.css";
-// removed react-map-gl import
 
-export const MapSection = () => {
-  return <MapSectionContent />;
-};
+import BlurImage from "@/components/blur-image";
+import MapComponent, { type MapProps } from "@/components/map";
+import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
+import styles from "@/modules/site/ui/public-site.module.css";
+import { trpc } from "@/trpc/client";
+import { PhotoListDrawer } from "./photo-list-drawer";
+
+export const MapSection = () => <MapSectionContent />;
 
 const MapFallback = () => (
   <div className={styles.mapFallback}>
     <div className={styles.mapFallbackNote}>
       <span>Live archive temporarily unavailable</span>
-      <p>The geographic index remains visible while the coordinate service reconnects.</p>
+      <p>The city index remains visible while the coordinate service reconnects.</p>
     </div>
-    <svg viewBox="0 0 1000 520" role="img" aria-label="A quiet coordinate study of the current archive">
+    <svg viewBox="0 0 1000 520" role="img" aria-label="A quiet city map of the current archive">
       <path d="M0 120 H1000 M0 260 H1000 M0 400 H1000 M180 0 V520 M500 0 V520 M820 0 V520" />
       <path className={styles.mapFallbackRoute} d="M150 360 C280 140 410 180 520 330 S730 390 850 150" />
       {[
@@ -43,21 +42,24 @@ const normalizeLocation = (value?: string | null) => {
   return value.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
 };
 
+const getCityLevelLocation = (photo: {
+  countryCode?: string | null;
+  city?: string | null;
+  region?: string | null;
+}) =>
+  photo.countryCode?.toUpperCase() === "JP" || photo.countryCode?.toUpperCase() === "TW"
+    ? photo.region ?? photo.city
+    : photo.city ?? photo.region;
+
 const MapSectionContent = () => {
   const router = useRouter();
   const { data, ...query } = trpc.map.getMany.useInfiniteQuery(
-    {
-      limit: 200,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      retry: false,
-    }
+    { limit: 200 },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor, retry: false }
   );
   const [activeLocation, setActiveLocation] = useState<{
-    id?: string;
-    city?: string;
-    region?: string;
+    key: string;
+    label: string;
   } | null>(null);
 
   const photos = useMemo(
@@ -65,108 +67,95 @@ const MapSectionContent = () => {
     [data?.pages]
   );
 
-  const markers: MapProps["markers"] =
-    photos
-      ?.filter(
-        (
-          photo
-        ): photo is typeof photo & { longitude: number; latitude: number } =>
-          photo.longitude !== null && photo.latitude !== null
-      )
-      .map((photo) => ({
-        id: photo.id,
-        longitude: photo.longitude,
-        latitude: photo.latitude,
-        onClick: () =>
-          setActiveLocation({
-            id: photo.id,
-            city: photo.city ?? undefined,
-            region: photo.city ? undefined : photo.region ?? undefined,
-          }),
-        element: (
-          <div className="relative cursor-pointer group -translate-y-1/2">
-            <div
-              className="size-4 rounded-full border border-white shadow-md transition-all duration-200 group-hover:scale-125"
-              style={{
-                background: "#6e8085",
-                boxShadow: "0 6px 14px -6px rgba(0,0,0,0.45)",
-              }}
-            />
-          </div>
-        ),
-        popupContent: (
-          <div
-            className="group/popup min-w-[200px] max-w-[280px] bg-background/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl border border-white/20 transition-all duration-300 hover:scale-[1.02]"
-            onClick={() => router.push(`/photograph/${photo.id}`)}
-          >
-            <div className="relative aspect-[4/3] overflow-hidden">
-              <BlurImage
-                src={photo.url}
-                alt={photo.title}
-                fill
-                quality={50}
-                priority
-                blurhash={photo.blurData}
-                className="object-cover transition-transform duration-500 group-hover/popup:scale-110"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 pt-6">
-                <h3 className="text-white text-sm font-semibold truncate leading-tight">
-                  {photo.title || "Untitled"}
-                </h3>
-                <p className="text-white/80 text-[10px] truncate mt-0.5">
-                  {photo.city || photo.region || "Unknown Location"}
-                </p>
-              </div>
-            </div>
-          </div>
-        ),
-      })) || [];
+  const cityGroups = useMemo(() => {
+    const groups = new Map<string, typeof photos>();
+
+    photos.forEach((photo) => {
+      if (photo.latitude === null || photo.longitude === null) return;
+      const location = getCityLevelLocation(photo);
+      if (!location) return;
+      const key = `${photo.countryCode ?? "xx"}:${normalizeLocation(location)}`;
+      groups.set(key, [...(groups.get(key) ?? []), photo]);
+    });
+
+    return Array.from(groups.entries()).map(([key, groupPhotos]) => {
+      const representative = groupPhotos[0];
+      const location = getCityLevelLocation(representative) ?? "Unknown place";
+      const latitude = groupPhotos.reduce((sum, photo) => sum + (photo.latitude ?? 0), 0) / groupPhotos.length;
+      const longitude = groupPhotos.reduce((sum, photo) => sum + (photo.longitude ?? 0), 0) / groupPhotos.length;
+      return {
+        key,
+        photos: groupPhotos,
+        representative,
+        city: location,
+        countryCode: representative.countryCode,
+        latitude,
+        longitude,
+      };
+    });
+  }, [photos]);
+
+  const markers: MapProps["markers"] = cityGroups.map((group) => ({
+    id: group.key,
+    longitude: group.longitude,
+    latitude: group.latitude,
+    onClick: () => setActiveLocation({ key: group.key, label: group.city }),
+    element: (
+      <button
+        type="button"
+        className={styles.cityMapMarker}
+        aria-label={`Open ${group.city}, ${group.photos.length} photographs`}
+      >
+        <span>{group.photos.length}</span>
+      </button>
+    ),
+    popupContent: (
+      <button
+        type="button"
+        className={styles.cityMapPopup}
+        onClick={() => {
+          if (group.countryCode && group.city !== "Unknown place") {
+            router.push(`/travel/${group.countryCode.toLowerCase()}/${toPlaceSlug(group.city)}`);
+          } else {
+            router.push(`/photograph/${group.representative.id}`);
+          }
+        }}
+      >
+        <div>
+          <BlurImage
+            src={group.representative.url}
+            alt={group.representative.title || group.city}
+            fill
+            quality={50}
+            priority
+            blurhash={group.representative.blurData}
+            className={styles.imageCover}
+          />
+        </div>
+        <span>{group.countryCode ?? "—"} · {group.photos.length} frames</span>
+        <strong>{group.city}</strong>
+        <small>Open city ↗</small>
+      </button>
+    ),
+  }));
 
   const filteredPhotos = useMemo(() => {
     if (!activeLocation) return photos;
-    const cityKey = normalizeLocation(activeLocation.city);
-    const regionKey = normalizeLocation(activeLocation.region);
-    let filtered = photos;
+    return cityGroups.find((group) => group.key === activeLocation.key)?.photos ?? [];
+  }, [photos, cityGroups, activeLocation]);
 
-    if (cityKey) {
-      filtered = photos.filter(
-        (photo) => normalizeLocation(photo.city) === cityKey
-      );
-    } else if (regionKey) {
-      filtered = photos.filter(
-        (photo) => normalizeLocation(photo.region) === regionKey
-      );
-    }
-
-    if (filtered.length === 0 && activeLocation.id) {
-      const selected = photos.find((photo) => photo.id === activeLocation.id);
-      return selected ? [selected] : [];
-    }
-
-    return filtered;
-  }, [photos, activeLocation]);
-
-  const filterLabel =
-    activeLocation?.city ?? activeLocation?.region ?? null;
-
-  if (!data || query.isError) {
-    return <MapFallback />;
-  }
+  if (!data || query.isError) return <MapFallback />;
 
   return (
     <div className="relative size-full">
       <MapComponent
         id="discoverMap"
-        initialViewState={{
-          longitude: 121.2816980216146,
-          latitude: 31.31395498607465,
-          zoom: 3,
-        }}
+        initialViewState={{ longitude: 121.2816980216146, latitude: 31.31395498607465, zoom: 3 }}
         markers={markers}
       />
       <PhotoListDrawer
         photos={filteredPhotos}
-        filterLabel={filterLabel}
+        filterLabel={activeLocation?.label ?? null}
         hasNextPage={query.hasNextPage || false}
         isFetchingNextPage={query.isFetchingNextPage || false}
         fetchNextPage={query.fetchNextPage}

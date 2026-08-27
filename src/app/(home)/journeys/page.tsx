@@ -5,7 +5,7 @@ import { JourneysView } from "@/modules/journeys/ui/views/journeys-view";
 export const metadata: Metadata = {
   title: "Journeys",
   description:
-    "A hub for YueYong's standalone visual journeys, served from the main domain.",
+    "Long-form photographic stories by YueYong, kept together in one archive.",
 };
 
 const JourneysPage = () => {

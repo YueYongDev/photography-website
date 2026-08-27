@@ -6,12 +6,12 @@ export const DiscoverView = () => {
     <section className={styles.mapPage}>
       <div className={styles.mapIntro}>
         <div>
-          <p className={styles.eyebrow}>Atlas / Map</p>
-          <h1>Coordinates of the archive.</h1>
+          <p className={styles.eyebrow}>04 / Map</p>
+          <h1>Cities of the archive.</h1>
         </div>
         <p>
-          A geographic view of public photographs. Select a point to return to
-          the image or open the nearby group.
+          One point for each city in the public archive. Select a point to see
+          its photographs, or open the city inside its country.
         </p>
       </div>
       <div className={styles.mapFrame}>

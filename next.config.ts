@@ -24,18 +24,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: "/journeys/uzbekistan-2026",
-        destination: "/journeys/uzbekistan-2026/index.html",
-      },
-      {
-        source: "/journeys/newzealand-2026",
-        destination: "/journeys/newzealand-2026/index.html",
-      },
-    ];
-  },
 };
 
 export default nextConfig;

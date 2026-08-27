@@ -2,8 +2,8 @@ import { TravelView, type TravelArchive } from "@/modules/travel/ui/views/travel
 import { trpc } from "@/trpc/server";
 
 export const metadata = {
-  title: "Atlas",
-  description: "A geographic index of YueYong's photographic archive.",
+  title: "Travel",
+  description: "YueYong's photographic travel archive, organized by country.",
 };
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ const TravelPage = async () => {
   try {
     archive = await trpc.travel.getArchive({ limit: 60 });
   } catch {
-    // The Atlas view provides a local fallback when the remote archive is unavailable.
+    // The Travel view provides a local fallback when the remote archive is unavailable.
   }
 
   return <TravelView archive={archive} />;

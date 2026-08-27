@@ -14,18 +14,18 @@ const AboutPage = () => {
       <div className={styles.aboutHero}>
         <div className={styles.aboutPortrait}>
           <Image
-            src="https://cdn.ytools.xyz/photos/IMG_9251.jpg"
-            alt="YueYong"
+            src="/about-yueyong.jpg"
+            alt="YueYong standing in front of the University of Sydney Quadrangle"
             fill
             unoptimized
             priority
             sizes="(min-width: 900px) 38vw, 90vw"
-            className={styles.imageCover}
+            className={`${styles.imageCover} ${styles.aboutPortraitImage}`}
           />
         </div>
 
         <div className={styles.aboutCopy}>
-          <p className={styles.eyebrow}>04 / About</p>
+          <p className={styles.eyebrow}>05 / About</p>
           <h1>A life observed through photographs.</h1>
           <p>
             I&apos;m YueYong, a photographer and software engineer. I make images

@@ -50,13 +50,13 @@ export const DashboardSidebar = ({
 
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  tooltip="Photos"
+                  tooltip="Photo Library"
                   isActive={pathname.startsWith("/photos")}
                   asChild
                 >
                   <Link href="/photos" className="flex items-center gap-4">
                     <ImageIcon className="size-4" />
-                    <span className="text-sm">Photos</span>
+                    <span className="text-sm">Photo Library</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

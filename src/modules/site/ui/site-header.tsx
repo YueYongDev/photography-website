@@ -9,7 +9,8 @@ import styles from "./public-site.module.css";
 const navigation = [
   { label: "Work", href: "/work" },
   { label: "Journeys", href: "/journeys" },
-  { label: "Atlas", href: "/travel" },
+  { label: "Travel", href: "/travel" },
+  { label: "Map", href: "/discover" },
   { label: "About", href: "/about" },
 ];
 

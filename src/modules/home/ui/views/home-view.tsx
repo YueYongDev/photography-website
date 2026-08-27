@@ -129,21 +129,25 @@ export const HomeView = () => {
 
       <section className={`${styles.section} ${styles.sectionWhite}`}>
         <div className={styles.sectionHead}>
-          <p className={styles.eyebrow}>03 / Atlas</p>
-          <h2>A quiet index of place.</h2>
+          <p className={styles.eyebrow}>03 / Travel</p>
+          <h2>Countries first. Places within.</h2>
           <p>
-            The geographic way back into the archive — compact, factual, and
-            secondary to the photographs themselves.
+            Travel is kept at the scale of a country, while individual cities
+            remain available inside each archive and on the map.
           </p>
         </div>
 
         <div className={styles.atlasTeaser}>
-          <h3>Every place, kept in reach.</h3>
+          <h3>A broader view of where the work began.</h3>
           <div className={styles.atlasLines}>
-            {["Kyoto, Japan", "Samarkand, Uzbekistan", "Tekapo, New Zealand"].map((place, index) => (
-              <Link href="/travel" className={styles.atlasLine} key={place}>
-                <span>A{String(index + 1).padStart(2, "0")}</span>
-                <strong>{place}</strong>
+            {[
+              { name: "New Zealand", href: "/travel/nz" },
+              { name: "Uzbekistan", href: "/travel/uz" },
+              { name: "Australia", href: "/travel/au" },
+            ].map((country, index) => (
+              <Link href={country.href} className={styles.atlasLine} key={country.name}>
+                <span>T{String(index + 1).padStart(2, "0")}</span>
+                <strong>{country.name}</strong>
                 <ArrowUpRight size={15} strokeWidth={1.4} />
               </Link>
             ))}

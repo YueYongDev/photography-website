@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 export const metadata: Metadata = {
   title: "Journeys",
   description:
-    "Blog has moved to Journeys, the hub for standalone visual travel stories.",
+    "Blog has moved to Journeys, the long-form stories inside YueYong's photography archive.",
 };
 
 const BlogPage = () => {

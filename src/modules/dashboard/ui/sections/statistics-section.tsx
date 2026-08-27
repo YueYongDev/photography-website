@@ -41,7 +41,7 @@ export const StatisticsSection = () => {
         percentage={growthPercentage}
       />
       <StatisticsCard
-        title="Total travel cities"
+        title="Mapped places"
         value={summary?.data?.cityCount || 0}
       />
       <StatisticsCard

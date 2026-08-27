@@ -13,21 +13,24 @@ const PhotosView = () => {
   return (
     <div className="flex flex-col gap-y-6 pt-2.5">
       <PageTransitionItem className="px-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Photos</h1>
-            <p className="text-xs text-muted-foreground">Manage your photos</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Studio / Archive</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">Photo Library</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Every uploaded photograph is listed here, including private drafts.
+            </p>
           </div>
           <Button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-1">
             <ImagePlus size={16} />
-            Upload
+            Upload photo
           </Button>
         </div>
       </PageTransitionItem>
       <PageTransitionItem>
         <PhotosSection />
       </PageTransitionItem>
-      
+
       <PhotoUploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
     </div>
   );

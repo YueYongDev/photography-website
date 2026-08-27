@@ -10,6 +10,7 @@ import { trpc } from "@/trpc/client";
 
 interface Props {
   city: string;
+  countryCode: string;
 }
 
 const LoadingState = () => (
@@ -25,23 +26,23 @@ const ErrorState = () => (
   <div className={styles.state}>
     <div>
       <h1>This place is temporarily out of reach.</h1>
-      <p>The archive could not be loaded. Return to Atlas and try again shortly.</p>
+      <p>The archive could not be loaded. Return to Travel and try again shortly.</p>
     </div>
   </div>
 );
 
-export const CitySection = ({ city }: Props) => {
+export const CitySection = ({ city, countryCode }: Props) => {
   return (
     <Suspense fallback={<LoadingState />}>
       <ErrorBoundary fallback={<ErrorState />}>
-        <CitySectionSuspense city={city} />
+        <CitySectionSuspense city={city} countryCode={countryCode} />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-const CitySectionSuspense = ({ city }: Props) => {
-  const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({ city });
+const CitySectionSuspense = ({ city, countryCode }: Props) => {
+  const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({ city, countryCode });
 
   if (!cityData) return <ErrorState />;
 
@@ -57,7 +58,9 @@ const CitySectionSuspense = ({ city }: Props) => {
     <section className={styles.page}>
       <div className={styles.cityHero}>
         <div>
-          <p className={styles.eyebrow}>Atlas / {cityData.countryCode}</p>
+          <p className={styles.eyebrow}>
+            <Link href="/travel">Travel</Link> / <Link href={`/travel/${cityData.countryCode.toLowerCase()}`}>{cityData.country}</Link>
+          </p>
           <h1 className={styles.displayTitle}>{decodedCityName}</h1>
         </div>
         <p className={styles.lede} style={{ margin: 0 }}>

@@ -14,6 +14,9 @@ import Script from "next/script";
 const readex = Readex_Pro({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://p.yueyong.fun"
+  ),
   title: {
     template: "%s - YueYong Photography",
     default: "YueYong Photography",
