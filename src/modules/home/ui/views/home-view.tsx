@@ -40,7 +40,7 @@ export const HomeView = ({
         </h1>
         <p className={styles.lede}>{copy.home.lede}</p>
 
-        <figure>
+        <figure className={styles.heroFeature}>
           <div
             className={styles.heroImage}
             style={{ aspectRatio: 1360 / 2400 }}
@@ -62,6 +62,40 @@ export const HomeView = ({
               {locale === "zh-CN" ? "蒂卡普 · 2026" : "Tekapo · 2026"}
             </span>
           </figcaption>
+
+          <aside
+            className={styles.heroFieldNote}
+            aria-label={copy.home.heroNoteLabel}
+          >
+            <div className={styles.heroFieldNoteHead}>
+              <span>{copy.home.heroNoteLabel}</span>
+              <span aria-hidden="true">04 / 12</span>
+            </div>
+
+            <p className={styles.heroFieldNoteText}>
+              {copy.home.heroNoteText}
+            </p>
+
+            <dl className={styles.heroFieldNoteMeta}>
+              <div>
+                <dt>{copy.home.heroSeriesLabel}</dt>
+                <dd>{copy.home.workEntries[0].title}</dd>
+              </div>
+              <div>
+                <dt>{copy.common.place}</dt>
+                <dd>{locale === "zh-CN" ? "蒂卡普" : "Tekapo"}</dd>
+              </div>
+              <div>
+                <dt>{copy.common.year}</dt>
+                <dd>2026</dd>
+              </div>
+            </dl>
+
+            <Link href="/work" className={styles.textLink}>
+              {copy.home.workLink}
+              <ArrowUpRight size={15} strokeWidth={1.4} />
+            </Link>
+          </aside>
         </figure>
       </section>
 

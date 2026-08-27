@@ -401,10 +401,21 @@
   transform: translate(0.2rem, -0.2rem);
 }
 
+.heroFeature {
+  display: grid;
+  width: min(100%, 104rem);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1rem, 1.5vw, 1.75rem);
+  row-gap: 0;
+  align-items: center;
+  margin: clamp(5rem, 8vw, 8rem) auto 0;
+}
+
 .heroImage {
   position: relative;
-  width: min(60vw, 53rem);
-  margin: clamp(5rem, 8vw, 8rem) 0 0 auto;
+  grid-column: 2 / 8;
+  grid-row: 1;
+  width: 100%;
   aspect-ratio: 0.82;
   overflow: hidden;
   background: var(--site-mist);
@@ -430,8 +441,65 @@
 }
 
 .heroCaption {
-  width: min(60vw, 53rem);
-  margin-left: auto;
+  grid-column: 2 / 8;
+  grid-row: 2;
+  width: 100%;
+}
+
+.heroFieldNote {
+  grid-column: 9 / 12;
+  grid-row: 1;
+  align-self: center;
+  padding-left: clamp(1.4rem, 2.5vw, 3rem);
+  border-left: 1px solid var(--site-line);
+}
+
+.heroFieldNoteHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--site-line);
+  color: var(--site-accent);
+  font-size: 0.66rem;
+  font-weight: 580;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.heroFieldNoteText {
+  margin: clamp(2rem, 3vw, 3.2rem) 0;
+  font-family: var(--site-serif);
+  font-size: clamp(1.25rem, 1.75vw, 1.75rem);
+  line-height: 1.45;
+}
+
+.heroFieldNoteMeta {
+  margin: 0 0 clamp(2.25rem, 3.5vw, 3.5rem);
+}
+
+.heroFieldNoteMeta > div {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, 0.65fr) 1fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--site-line);
+}
+
+.heroFieldNoteMeta > div:last-child {
+  border-bottom: 1px solid var(--site-line);
+}
+
+.heroFieldNoteMeta dt,
+.heroFieldNoteMeta dd {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.heroFieldNoteMeta dt {
+  color: var(--site-muted);
+  text-transform: uppercase;
 }
 
 .homeWorkGrid {
@@ -2628,6 +2696,25 @@
     grid-row: auto;
   }
 
+  .heroFeature {
+    grid-template-columns: minmax(0, 1.2fr) minmax(15rem, 0.8fr);
+    column-gap: clamp(2rem, 5vw, 4rem);
+  }
+
+  .heroImage,
+  .heroCaption {
+    grid-column: 1;
+  }
+
+  .heroFieldNote {
+    grid-column: 2;
+    padding-left: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .heroFieldNoteText {
+    font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+  }
+
   .homeWorkCard:nth-child(1),
   .homeWorkCard:nth-child(2),
   .homeWorkCard:nth-child(3) {
@@ -2778,13 +2865,35 @@
     font-size: 1rem;
   }
 
-  .heroImage {
-    width: 87vw;
+  .heroFeature {
+    display: block;
+    width: 100%;
     margin-top: 4.5rem;
   }
 
+  .heroImage {
+    width: 100%;
+  }
+
   .heroCaption {
-    width: 87vw;
+    width: 100%;
+  }
+
+  .heroFieldNote {
+    margin-top: 3.5rem;
+    padding: 1.5rem 0 0;
+    border-top: 1px solid var(--site-line);
+    border-left: 0;
+  }
+
+  .heroFieldNoteText {
+    max-width: 27rem;
+    margin: 2rem 0 2.5rem;
+    font-size: 1.35rem;
+  }
+
+  .heroFieldNoteMeta {
+    max-width: 27rem;
   }
 
   .sectionHead h2 {

@@ -61,6 +61,10 @@ const english = {
     lede: "Places become the setting. Attention becomes the work — an evolving archive of distance, human traces, and quiet moments in motion.",
     heroAlt: "A solitary figure beside Lake Tekapo",
     heroCaption: "Quiet Distances, No. 04",
+    heroNoteLabel: "Field note / 04",
+    heroNoteText:
+      "The figure becomes a measure of the lake, the wind, and the distance still left between them.",
+    heroSeriesLabel: "Series",
     workEyebrow: "01 / Selected Work",
     workTitle: "Recurring ways of seeing.",
     workDescription:
@@ -261,6 +265,10 @@ const chinese = {
     lede: "我拍城市，也拍路上遇见的人和风景。有些照片来自计划好的行程，更多时候，只是因为当时忍不住停了下来。",
     heroAlt: "蒂卡普湖边的独行者",
     heroCaption: "蒂卡普湖边 · 04",
+    heroNoteLabel: "现场手记 / 04",
+    heroNoteText:
+      "人在画面里很小，恰好可以用来衡量湖面、风，以及彼此之间尚未走完的距离。",
+    heroSeriesLabel: "系列",
     workEyebrow: "01 / 精选作品",
     workTitle: "我最想留下的照片。",
     workDescription:
