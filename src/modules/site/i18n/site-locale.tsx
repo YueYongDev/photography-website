@@ -142,6 +142,9 @@ const english = {
     intro: (count: number) =>
       `One country, seen through ${count} ${count === 1 ? "place" : "places"}. Cities remain available as chapters inside this national archive.`,
     cityFrames: (year: string, count: number) => `${year} · ${count} frames`,
+    galleryPrompt: "Select a place to open its photographs.",
+    openGallery: (city: string, count: number) =>
+      `Open ${city}, ${count} photographs`,
     mapLink: "See these cities on the map",
   },
   city: {
@@ -336,6 +339,9 @@ const chinese = {
     intro: (count: number) =>
       `这次一共去了 ${count} 个地方，照片按城市分开放。`,
     cityFrames: (year: string, count: number) => `${year} · ${count} 张`,
+    galleryPrompt: "选择一个城市，打开完整照片。",
+    openGallery: (city: string, count: number) =>
+      `打开${city}的影集，共 ${count} 张照片`,
     mapLink: "在地图上查看这些城市",
   },
   city: {
