@@ -1,4 +1,3 @@
-import { HydrateClient, trpc } from "@/trpc/server";
 import { DiscoverView } from "@/modules/discover/ui/views/discover-view";
 
 export const dynamic = "force-dynamic";
@@ -9,16 +8,6 @@ export const metadata = {
     "Capturing memories across the globe - A visual journey through time and space",
 };
 
-const DiscoverPage = async () => {
-  void trpc.map.getMany.prefetchInfinite({
-    limit: 200,
-  });
-
-  return (
-    <HydrateClient>
-      <DiscoverView />
-    </HydrateClient>
-  );
-};
+const DiscoverPage = () => <DiscoverView />;
 
 export default DiscoverPage;

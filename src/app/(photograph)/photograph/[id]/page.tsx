@@ -1,5 +1,6 @@
 import { HydrateClient, trpc } from "@/trpc/server";
 import { PhotographSection } from "./photograph-section";
+import { SiteShell } from "@/modules/site/ui/site-shell";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -10,8 +11,8 @@ export const generateMetadata = async ({ params }: Props) => {
   const photo = await trpc.photos.getOne({ id });
 
   return {
-    title: `${photo.title}`,
-    description: `${photo.description}`,
+    title: photo?.title || "Photograph",
+    description: photo?.description || "A photograph from YueYong's archive.",
   };
 };
 
@@ -20,9 +21,11 @@ const page = async ({ params }: Props) => {
   void trpc.photos.getOne.prefetch({ id });
 
   return (
-    <HydrateClient>
-      <PhotographSection id={id} />
-    </HydrateClient>
+    <SiteShell>
+      <HydrateClient>
+        <PhotographSection id={id} />
+      </HydrateClient>
+    </SiteShell>
   );
 };
 

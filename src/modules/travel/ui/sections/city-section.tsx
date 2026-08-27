@@ -1,24 +1,39 @@
 "use client";
 
-import Footer from "@/modules/home/ui/components/footer";
-import BlurImage from "@/components/blur-image";
-import FlipCard from "@/components/flip-card";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import VectorCombined from "@/components/vector-combined";
-import { trpc } from "@/trpc/client";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import Masonry from "react-masonry-css";
+
+import BlurImage from "@/components/blur-image";
+import styles from "@/modules/site/ui/public-site.module.css";
+import { trpc } from "@/trpc/client";
 
 interface Props {
   city: string;
 }
 
+const LoadingState = () => (
+  <div className={styles.state}>
+    <div>
+      <h1>Opening the archive.</h1>
+      <p>The photographs and field metadata are being prepared.</p>
+    </div>
+  </div>
+);
+
+const ErrorState = () => (
+  <div className={styles.state}>
+    <div>
+      <h1>This place is temporarily out of reach.</h1>
+      <p>The archive could not be loaded. Return to Atlas and try again shortly.</p>
+    </div>
+  </div>
+);
+
 export const CitySection = ({ city }: Props) => {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <ErrorBoundary fallback={<p>Something went wrong</p>}>
+    <Suspense fallback={<LoadingState />}>
+      <ErrorBoundary fallback={<ErrorState />}>
         <CitySectionSuspense city={city} />
       </ErrorBoundary>
     </Suspense>
@@ -26,124 +41,73 @@ export const CitySection = ({ city }: Props) => {
 };
 
 const CitySectionSuspense = ({ city }: Props) => {
-  const router = useRouter();
   const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({ city });
 
-  if (!cityData) {
-    return null;
-  }
+  if (!cityData) return <ErrorState />;
 
   const decodedCityName = decodeURIComponent(city);
   const cityPhotos = cityData.photos?.filter(
     (photo) => photo.id !== cityData.coverPhoto?.id
-  ) || [];
-
-  const breakpointColumnsObj = {
-    default: 2,
-    768: 1,
-  };
+  ) ?? [];
+  const year = cityData.coverPhoto?.dateTimeOriginal
+    ? new Date(cityData.coverPhoto.dateTimeOriginal).getFullYear()
+    : "Archive";
 
   return (
-    <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row w-full">
-      {/* LEFT CONTENT - Fixed */}
-      <div className="w-full h-[70vh] lg:w-1/2 lg:fixed lg:top-0 lg:left-0 lg:h-screen p-0 lg:p-3">
-        <div className="w-full h-full relative">
+    <section className={styles.page}>
+      <div className={styles.cityHero}>
+        <div>
+          <p className={styles.eyebrow}>Atlas / {cityData.countryCode}</p>
+          <h1 className={styles.displayTitle}>{decodedCityName}</h1>
+        </div>
+        <p className={styles.lede} style={{ margin: 0 }}>
+          {cityData.description ||
+            `A photographic place study from ${decodedCityName}, kept as part of the geographic archive.`}
+        </p>
+
+        <Link
+          href={cityData.coverPhoto?.id ? `/photograph/${cityData.coverPhoto.id}` : "#"}
+          className={styles.cityCover}
+        >
           <BlurImage
             src={cityData.coverPhoto?.url || "/placeholder.svg"}
-            alt={cityData.city}
+            alt={cityData.coverPhoto?.title || cityData.city}
             fill
             priority
             quality={75}
             blurhash={cityData.coverPhoto?.blurData || ""}
-            sizes="75vw"
-            onClick={() => cityData.coverPhoto?.id && router.push(`/photograph/${cityData.coverPhoto.id}`)}
-            className="object-cover rounded-xl overflow-hidden cursor-pointer"
+            sizes="90vw"
+            className={styles.imageCover}
           />
-          <div className="absolute right-0 bottom-0">
-            <VectorCombined title={decodedCityName} position="bottom-right" />
-          </div>
-        </div>
+        </Link>
       </div>
 
-      {/* Spacer for fixed left content */}
-      <div className="hidden lg:block lg:w-1/2" />
-
-      {/* RIGHT CONTENT - Scrollable */}
-      <div className="w-full lg:w-1/2 space-y-3 pb-3">
-        {/* CITY INFO CARD  */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 2xl:grid-cols-3 gap-4 items-stretch">
-          <div className="col-span-1 md:col-span-2 lg:col-span-1 2xl:col-span-2">
-            <div className="flex flex-col p-10 gap-10 bg-muted rounded-xl font-light relative h-full">
-              <div className="flex gap-4 items-center">
-                <div className="flex flex-col gap-[2px]">
-                  <h1 className="text-4xl">{decodedCityName}</h1>
-                </div>
-              </div>
-              <div>
-                <p className="text-text-muted text-[15px] whitespace-pre-line">
-                  {cityData.description}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-1 md:col-span-1 lg:col-span-1 2xl:col-span-1 flex flex-col gap-3">
-            <div className="w-full h-full p-3 lg:p-5 bg-muted rounded-xl flex justify-between items-center">
-              <p className="text-xs text-text-muted">Country</p>
-              <p className="text-xs">{cityData.country}</p>
-            </div>
-
-            <div className="w-full h-full p-3 lg:p-5 bg-muted rounded-xl flex justify-between items-center">
-              <p className="text-xs text-text-muted">City</p>
-              <p className="text-xs">{cityData.city}</p>
-            </div>
-
-            <div className="w-full h-full p-3 lg:p-5 bg-muted rounded-xl flex justify-between items-center">
-              <p className="text-xs text-text-muted">Year</p>
-              <p className="text-xs">
-                {cityData.coverPhoto?.dateTimeOriginal ? new Date(cityData.coverPhoto.dateTimeOriginal).getFullYear() : "N/A"}
-              </p>
-            </div>
-
-            <div className="w-full h-full p-3 lg:p-5 bg-muted rounded-xl flex justify-between items-center">
-              <p className="text-xs text-text-muted">Photos</p>
-              <p className="text-xs">{cityData.photoCount}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* IMAGES -瀑布流 */}
-        <Masonry
-          breakpointCols={breakpointColumnsObj}
-          className="flex gap-4"
-          columnClassName="space-y-4"
-        >
-          {cityPhotos.map((photo) => (
-            <AspectRatio
-              ratio={photo.aspectRatio}
-              key={photo.id}
-              className="overflow-hidden rounded-lg"
-            >
-              <FlipCard
-                id={photo.id}
-                image={photo.url}
-                title={photo.title || ""}
-                location={photo.city + ", " + photo.country}
-                camera={photo.make + " " + photo.model}
-                blurData={photo.blurData}
-                focalLength={photo.focalLength35mm}
-                fNumber={photo.fNumber}
-                exposureTime={photo.exposureTime}
-                iso={photo.iso}
-                rotate="y"
-              />
-            </AspectRatio>
-          ))}
-        </Masonry>
-
-        {/* FOOTER  */}
-        <Footer />
+      <div className={styles.cityMeta}>
+        <div><span>Country</span><strong>{cityData.country}</strong></div>
+        <div><span>Place</span><strong>{cityData.city}</strong></div>
+        <div><span>Year</span><strong>{year}</strong></div>
+        <div><span>Frames</span><strong>{cityData.photoCount}</strong></div>
       </div>
-    </div>
+
+      <div className={styles.cityGrid}>
+        {cityPhotos.map((photo, index) => (
+          <Link href={`/photograph/${photo.id}`} className={styles.cityPhoto} key={photo.id}>
+            <BlurImage
+              src={photo.url}
+              alt={photo.title || `${decodedCityName} photograph`}
+              fill
+              quality={50}
+              blurhash={photo.blurData}
+              sizes="(min-width: 900px) 48vw, 92vw"
+              className={styles.imageCover}
+            />
+            <div className={styles.cityPhotoCaption}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <span>{photo.title || "Untitled"}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 };

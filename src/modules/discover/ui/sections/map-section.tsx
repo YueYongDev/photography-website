@@ -1,56 +1,57 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import MapComponent, { MapProps } from "@/components/map";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorBoundary } from "react-error-boundary";
 import { trpc } from "@/trpc/client";
 import BlurImage from "@/components/blur-image";
 import { useRouter } from "next/navigation";
 import { PhotoListDrawer } from "./photo-list-drawer";
+import styles from "@/modules/site/ui/public-site.module.css";
 // removed react-map-gl import
 
 export const MapSection = () => {
-  return (
-    <Suspense fallback={<MapSectionSkeleton />}>
-      <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <MapSectionSuspense />
-      </ErrorBoundary>
-    </Suspense>
-  );
+  return <MapSectionContent />;
 };
 
-const MapSectionSkeleton = () => {
-  return (
-    <div className="size-full rounded-xl overflow-hidden relative">
-      <Skeleton className="size-full" />
+const MapFallback = () => (
+  <div className={styles.mapFallback}>
+    <div className={styles.mapFallbackNote}>
+      <span>Live archive temporarily unavailable</span>
+      <p>The geographic index remains visible while the coordinate service reconnects.</p>
     </div>
-  );
-};
-
-const markerColor = (id: string) => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash << 5) - hash + id.charCodeAt(i);
-    hash |= 0;
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue} 80% 45%)`;
-};
+    <svg viewBox="0 0 1000 520" role="img" aria-label="A quiet coordinate study of the current archive">
+      <path d="M0 120 H1000 M0 260 H1000 M0 400 H1000 M180 0 V520 M500 0 V520 M820 0 V520" />
+      <path className={styles.mapFallbackRoute} d="M150 360 C280 140 410 180 520 330 S730 390 850 150" />
+      {[
+        [150, 360, "TEKAPO", "44.0047° S"],
+        [355, 206, "WĀNAKA", "44.6943° S"],
+        [520, 330, "GLENORCHY", "44.8506° S"],
+        [850, 150, "AORAKI", "43.5950° S"],
+      ].map(([x, y, city, coordinate], index) => (
+        <g key={String(city)} transform={`translate(${x} ${y})`}>
+          <circle r="5" />
+          <text x="14" y="-5">{String(index + 1).padStart(2, "0")} / {city}</text>
+          <text x="14" y="13" className={styles.mapFallbackCoordinate}>{coordinate}</text>
+        </g>
+      ))}
+    </svg>
+  </div>
+);
 
 const normalizeLocation = (value?: string | null) => {
   if (!value) return null;
   return value.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
 };
 
-const MapSectionSuspense = () => {
+const MapSectionContent = () => {
   const router = useRouter();
-  const [data, query] = trpc.map.getMany.useSuspenseInfiniteQuery(
+  const { data, ...query } = trpc.map.getMany.useInfiniteQuery(
     {
       limit: 200,
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
+      retry: false,
     }
   );
   const [activeLocation, setActiveLocation] = useState<{
@@ -60,8 +61,8 @@ const MapSectionSuspense = () => {
   } | null>(null);
 
   const photos = useMemo(
-    () => data.pages.flatMap((page) => page.items),
-    [data.pages]
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data?.pages]
   );
 
   const markers: MapProps["markers"] =
@@ -87,7 +88,7 @@ const MapSectionSuspense = () => {
             <div
               className="size-4 rounded-full border border-white shadow-md transition-all duration-200 group-hover:scale-125"
               style={{
-                background: markerColor(photo.id),
+                background: "#6e8085",
                 boxShadow: "0 6px 14px -6px rgba(0,0,0,0.45)",
               }}
             />
@@ -147,6 +148,10 @@ const MapSectionSuspense = () => {
 
   const filterLabel =
     activeLocation?.city ?? activeLocation?.region ?? null;
+
+  if (!data || query.isError) {
+    return <MapFallback />;
+  }
 
   return (
     <div className="relative size-full">

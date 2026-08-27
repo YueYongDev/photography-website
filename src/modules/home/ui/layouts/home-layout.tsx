@@ -1,10 +1,5 @@
-import Header from "../components/header";
+import { SiteShell } from "@/modules/site/ui/site-shell";
 
 export const HomeLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <>
-      <Header />
-      <main className="min-h-screen p-3">{children}</main>
-    </>
-  );
+  return <SiteShell>{children}</SiteShell>;
 };

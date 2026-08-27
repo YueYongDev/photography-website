@@ -3,7 +3,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
-import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TRPCProvider } from "@/trpc/client";
 
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s - YueYong Photography",
     default: "YueYong Photography",
   },
-  description: "YueYong Photography",
+  description: "Photography and field notes shaped by places, distance, and time.",
 };
 
 export default async function RootLayout({
@@ -30,10 +29,9 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${readex.className} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark">
+        <ThemeProvider attribute="class" defaultTheme="light">
           <TRPCProvider>{children}</TRPCProvider>
           <Toaster />
-          <TailwindIndicator />
           <ScrollToTop />
         </ThemeProvider>
         <SpeedInsights />

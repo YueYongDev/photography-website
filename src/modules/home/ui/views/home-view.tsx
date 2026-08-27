@@ -1,43 +1,155 @@
-import {
-  PageTransitionContainer,
-  PageTransitionItem,
-} from "@/components/page-transition";
-import { CitySetsSection } from "../sections/city-sets-section";
-import ProfileCard from "@/modules/home/ui/components/profile-card";
-import LatestTravelCard from "@/modules/home/ui/components/latest-travel-card";
-import Footer from "@/modules/home/ui/components/footer";
-import { ImageSliderSection } from "../sections/image-slider-section";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+
+import styles from "@/modules/site/ui/public-site.module.css";
+
+const workEntries = [
+  {
+    number: "01",
+    title: "Quiet Distances",
+    description: "Scale, weather, and the measured silence between a person and the horizon.",
+    image: "/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg",
+  },
+  {
+    number: "02",
+    title: "Passing Through",
+    description: "Roads, windows, borrowed viewpoints, and the landscape seen in transit.",
+    image: "/journeys/newzealand-2026/photos/03-lindis-road.jpg",
+  },
+  {
+    number: "03",
+    title: "The Observer",
+    description: "People looking, making, and becoming part of the scene they came to witness.",
+    image: "/journeys/newzealand-2026/photos/06-tekapo-portrait.jpg",
+  },
+];
 
 export const HomeView = () => {
   return (
-    <PageTransitionContainer className="flex flex-col lg:flex-row min-h-screen w-full">
-      {/* LEFT CONTENT - Fixed */}
-      <PageTransitionItem className="w-full lg:w-1/2 h-[70vh] lg:fixed lg:top-0 lg:left-0 lg:h-screen p-0 lg:p-3 rounded-xl">
-        <ImageSliderSection />
-      </PageTransitionItem>
-      {/* Spacer for fixed left content */}
-      <div className="hidden lg:block lg:w-1/2" />
-      {/* RIGHT CONTENT - Scrollable */}
-      <PageTransitionContainer className="w-full mt-3 lg:mt-0 lg:w-1/2 space-y-3 pb-3">
-        {/* PROFILE CARD  */}
-        <PageTransitionItem>
-          <ProfileCard />
-        </PageTransitionItem>
+    <>
+      <section className={styles.page}>
+        <p className={styles.eyebrow}>Photography by YueYong</p>
+        <h1 className={styles.displayTitle}>
+          Photography,
+          <br />
+          shaped <em>along the way.</em>
+        </h1>
+        <p className={styles.lede}>
+          Places become the setting. Attention becomes the work — an evolving
+          archive of distance, human traces, and quiet moments in motion.
+        </p>
 
-        {/* LAST TRAVEL CARD  */}
-        <PageTransitionItem>
-          <LatestTravelCard />
-        </PageTransitionItem>
+        <figure>
+          <div className={styles.heroImage}>
+            <Image
+              src="/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg"
+              alt="A solitary figure beside Lake Tekapo"
+              fill
+              unoptimized
+              priority
+              sizes="(min-width: 900px) 60vw, 87vw"
+              className={styles.imageCover}
+            />
+          </div>
+          <figcaption
+            className={`${styles.imageCaption} ${styles.heroCaption}`}
+          >
+            <span>Quiet Distances, No. 04</span>
+            <span>Tekapo · 2026</span>
+          </figcaption>
+        </figure>
+      </section>
 
-        {/* CITY SETS CARD  */}
-        <PageTransitionItem>
-          <CitySetsSection />
-        </PageTransitionItem>
+      <section className={`${styles.section} ${styles.sectionWhite}`}>
+        <div className={styles.sectionHead}>
+          <p className={styles.eyebrow}>01 / Selected Work</p>
+          <h2>Recurring ways of seeing.</h2>
+          <p>
+            A small, edited set of visual questions. Places change; the things
+            I return to remain.
+          </p>
+        </div>
 
-        <PageTransitionItem>
-          <Footer />
-        </PageTransitionItem>
-      </PageTransitionContainer>
-    </PageTransitionContainer>
+        <div className={styles.homeWorkGrid}>
+          {workEntries.map((entry) => (
+            <Link href="/work" className={styles.homeWorkCard} key={entry.number}>
+              <div className={styles.homeWorkImage}>
+                <Image
+                  src={entry.image}
+                  alt={entry.title}
+                  fill
+                  unoptimized
+                  sizes="(min-width: 900px) 45vw, 90vw"
+                  className={styles.imageCover}
+                />
+              </div>
+              <div className={styles.homeWorkMeta}>
+                <span>{entry.number}</span>
+                <h3>{entry.title}</h3>
+                <p>{entry.description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ marginTop: "5rem" }}>
+          <Link href="/work" className={styles.textLink}>
+            View selected work <ArrowUpRight size={15} strokeWidth={1.4} />
+          </Link>
+        </div>
+      </section>
+
+      <section className={`${styles.section} ${styles.sectionMist}`}>
+        <div className={styles.sectionHead}>
+          <p className={styles.eyebrow}>02 / Journeys</p>
+          <h2>Notes from the road.</h2>
+          <p>
+            Chronology, route, people, and field notes — the longer story around
+            the photographs.
+          </p>
+        </div>
+
+        <Link href="/journeys/newzealand-2026" className={styles.journeyFeature}>
+          <Image
+            src="/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg"
+            alt="New Zealand 2026 journey"
+            fill
+            unoptimized
+            sizes="90vw"
+            className={styles.imageCover}
+          />
+          <div className={styles.journeyShade} />
+          <div className={styles.journeyOverlay}>
+            <span>Field journal · 26 April — 02 May 2026</span>
+            <h3>New Zealand 2026</h3>
+          </div>
+        </Link>
+      </section>
+
+      <section className={`${styles.section} ${styles.sectionWhite}`}>
+        <div className={styles.sectionHead}>
+          <p className={styles.eyebrow}>03 / Atlas</p>
+          <h2>A quiet index of place.</h2>
+          <p>
+            The geographic way back into the archive — compact, factual, and
+            secondary to the photographs themselves.
+          </p>
+        </div>
+
+        <div className={styles.atlasTeaser}>
+          <h3>Every place, kept in reach.</h3>
+          <div className={styles.atlasLines}>
+            {["Kyoto, Japan", "Samarkand, Uzbekistan", "Tekapo, New Zealand"].map((place, index) => (
+              <Link href="/travel" className={styles.atlasLine} key={place}>
+                <span>A{String(index + 1).padStart(2, "0")}</span>
+                <strong>{place}</strong>
+                <ArrowUpRight size={15} strokeWidth={1.4} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 };

@@ -1,111 +1,77 @@
-// External dependencies
-import { type Metadata } from "next";
+import type { Metadata } from "next";
+import Image from "next/image";
 
-// Internal dependencies - UI Components
-import Footer from "../../../modules/home/ui/components/footer";
-import AboutCard from "../../../modules/home/ui/components/about-card";
-import TechMarquee from "@/components/tech-marquee";
-import CameraCard from "../../../modules/home/ui/components/camera-card";
-import ProfileCard from "../../../modules/home/ui/components/profile-card";
-import CardContainer from "@/components/card-container";
-import VectorCombined from "@/components/vector-combined";
-import {
-  PageTransitionContainer,
-  PageTransitionItem,
-} from "@/components/page-transition";
+import styles from "@/modules/site/ui/public-site.module.css";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "About page",
+  description: "About YueYong — photographer, traveler, and software engineer.",
 };
 
 const AboutPage = () => {
   return (
-    <PageTransitionContainer className="flex flex-col gap-3 lg:gap-0 lg:flex-row w-full">
-      {/* LEFT CONTENT - Fixed */}
-      <div className="w-full h-[70vh] lg:w-1/2 lg:fixed lg:top-0 lg:left-0 lg:h-screen p-0 lg:p-3">
-        <div className="w-full h-full relative bg-[url(/bg.webp)] bg-top bg-cover rounded-xl">
-          <div className="absolute right-0 bottom-0">
-            <VectorCombined title="About" position="bottom-right" />
-          </div>
+    <section className={styles.page}>
+      <div className={styles.aboutHero}>
+        <div className={styles.aboutPortrait}>
+          <Image
+            src="https://cdn.ytools.xyz/photos/IMG_9251.jpg"
+            alt="YueYong"
+            fill
+            unoptimized
+            priority
+            sizes="(min-width: 900px) 38vw, 90vw"
+            className={styles.imageCover}
+          />
+        </div>
+
+        <div className={styles.aboutCopy}>
+          <p className={styles.eyebrow}>04 / About</p>
+          <h1>A life observed through photographs.</h1>
+          <p>
+            I&apos;m YueYong, a photographer and software engineer. I make images
+            while moving through cities, roads, and open landscapes — looking
+            for the quiet structures that connect a place to the people inside it.
+          </p>
+          <p>
+            Travel gives the work its circumstances, but attention gives it its
+            subject: distance, weather, memory, and the small human gestures that
+            make a scene feel lived in.
+          </p>
         </div>
       </div>
 
-      {/* Spacer for fixed left content */}
-      <div className="hidden lg:block lg:w-1/2" />
-
-      {/* RIGHT CONTENT - Scrollable */}
-      <PageTransitionContainer className="w-full lg:w-1/2 space-y-3 pb-3">
-        {/* PROFILE CARD  */}
-        <PageTransitionItem>
-          <ProfileCard />
-        </PageTransitionItem>
-
-        {/* ABOUT CARD  */}
-        <PageTransitionItem>
-          <AboutCard />
-        </PageTransitionItem>
-
-        {/* TECH CARD  */}
-        <PageTransitionItem>
-          <TechMarquee />
-        </PageTransitionItem>
-
-        {/* CAMERA CARD  */}
-        <PageTransitionItem>
-          <CameraCard />
-        </PageTransitionItem>
-
-        <PageTransitionItem>
-          <CardContainer>
-            <div className="flex items-center justify-between p-6">
-              <h1 className="text-lg">SONY</h1>
-              <p className="text-sm">Alpha ILCE-6700L</p>
-            </div>
-          </CardContainer>
-        </PageTransitionItem>
-
-        <PageTransitionItem>
-          <CardContainer>
-            <div className="flex items-center justify-between p-6">
-              <h1 className="text-lg">DJI</h1>
-              <p className="text-sm">Mini 4PRO</p>
-            </div>
-          </CardContainer>
-        </PageTransitionItem>
-
-        <PageTransitionItem>
-          <CardContainer>
-            <div className="flex items-center justify-between p-6">
-              <h1 className="text-lg">Tamron</h1>
-              <p className="text-sm">18-300mm F/3.5-6.3 Di III-A VC VXD</p>
-            </div>
-          </CardContainer>
-        </PageTransitionItem>
-
-        <PageTransitionItem>
-          <CardContainer>
-            <div className="flex items-center justify-between p-6">
-              <h1 className="text-lg">Sigma</h1>
-              <p className="text-sm">18-50mm F2.8 DC DN Contemporary</p>
-            </div>
-          </CardContainer>
-        </PageTransitionItem>
-
-        <PageTransitionItem>
-          <CardContainer>
-            <div className="flex items-center justify-between p-6">
-              <h1 className="text-lg">Viltrox</h1>
-              <p className="text-sm">AF 27mm F/1.2 E</p>
-            </div>
-          </CardContainer>
-        </PageTransitionItem>
-
-        <PageTransitionItem>
-          <Footer />
-        </PageTransitionItem>
-      </PageTransitionContainer>
-    </PageTransitionContainer>
+      <div className={styles.aboutColumns}>
+        <div className={styles.aboutColumn}>
+          <span>01</span>
+          <h2>Practice</h2>
+          <p>
+            Candid moments, road studies, and landscapes shaped into recurring
+            photographic ideas rather than separated only by destination.
+          </p>
+        </div>
+        <div className={styles.aboutColumn}>
+          <span>02</span>
+          <h2>Tools</h2>
+          <ul>
+            <li>Sony Alpha ILCE-6700</li>
+            <li>Tamron 18–300mm</li>
+            <li>Sigma 18–50mm F2.8</li>
+            <li>Viltrox 27mm F1.2</li>
+            <li>DJI Mini 4 Pro</li>
+          </ul>
+        </div>
+        <div className={styles.aboutColumn}>
+          <span>03</span>
+          <h2>Contact</h2>
+          <ul>
+            <li><a href="mailto:yueyong1030@outlook.com">Email</a></li>
+            <li><a href="https://www.instagram.com/yueyong.lyy" target="_blank" rel="noreferrer">Instagram</a></li>
+            <li><a href="https://github.com/YueYongDev" target="_blank" rel="noreferrer">GitHub</a></li>
+            <li><a href="https://www.xiaohongshu.com/user/profile/5c1313b60000000007003641" target="_blank" rel="noreferrer">Xiaohongshu</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 };
 

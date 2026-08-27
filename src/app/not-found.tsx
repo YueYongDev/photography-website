@@ -1,17 +1,24 @@
-import VectorCombined from "@/components/vector-combined";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+
+import { SiteShell } from "@/modules/site/ui/site-shell";
+import styles from "@/modules/site/ui/public-site.module.css";
 
 export default function NotFound() {
   return (
-    <div className="h-dvh w-full p-3 relative">
-      <div className="bg-[url(/404.webp)] bg-bottom bg-cover h-full rounded-lg brightness-75 grayscale"></div>
-
-      <div className="absolute top-3 left-3">
-        <VectorCombined title="Back to Homepage" position="top-left" link="/" />
-      </div>
-
-      <div className="absolute bottom-3 right-3">
-        <VectorCombined title="404 - Page Not Found" position="bottom-right" />
-      </div>
-    </div>
+    <SiteShell>
+      <section className={styles.state}>
+        <div>
+          <p className={styles.eyebrow}>404 / Outside the archive</p>
+          <h1>This path ends here.</h1>
+          <p>The page may have moved, or the field note has not been published yet.</p>
+          <div style={{ marginTop: "2rem" }}>
+            <Link href="/" className={styles.textLink}>
+              Return home <ArrowUpRight size={15} strokeWidth={1.4} />
+            </Link>
+          </div>
+        </div>
+      </section>
+    </SiteShell>
   );
 }
