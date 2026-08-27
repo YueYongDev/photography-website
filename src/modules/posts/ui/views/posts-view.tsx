@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { PostsSection } from "../sections/posts-section";
-import { PageTransitionItem } from "@/components/page-transition";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,34 +10,38 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CreatePostSection } from "../sections/create-post-section";
+import { StudioPageHeader } from "@/modules/dashboard/ui/components/studio-page-header";
+import styles from "@/modules/dashboard/ui/studio.module.css";
 
 export const PostsView = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-y-6 pt-2.5">
-      <PageTransitionItem className="px-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Posts</h1>
-            <p className="text-xs text-muted-foreground">Manage your posts</p>
-          </div>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Create
+    <div className={styles.page}>
+      <StudioPageHeader
+        index="03"
+        eyebrow="Stories"
+        title={<>Stories in<br />the making.</>}
+        description="Journey essays and field notes begin here. Draft with room to think, then publish when the photographs and words belong together."
+        actions={
+          <Button
+            className={styles.primaryAction}
+            onClick={() => setIsCreateDialogOpen(true)}
+          >
+            Start a story
           </Button>
-        </div>
-      </PageTransitionItem>
-      <PageTransitionItem>
-        <PostsSection />
-      </PageTransitionItem>
-      
+        }
+      />
+      <PostsSection />
+
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto rounded-none">
           <DialogHeader>
             <DialogTitle>Create New Post</DialogTitle>
           </DialogHeader>
-          <CreatePostSection onCreateSuccess={() => setIsCreateDialogOpen(false)} />
+          <CreatePostSection
+            onCreateSuccess={() => setIsCreateDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

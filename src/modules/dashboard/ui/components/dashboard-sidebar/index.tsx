@@ -4,22 +4,46 @@ import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import {
-  Book,
-  ImageIcon,
-  LayoutDashboard,
-  LogOutIcon,
-  User2Icon,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { DashboardSidebarHeader } from "./dashboard-siderbar-header";
+import { UserAvatar } from "@/components/user-avatar";
+import styles from "../../studio.module.css";
+
+const navigation = [
+  {
+    number: "01",
+    label: "Overview",
+    note: "Archive status",
+    href: "/dashboard",
+  },
+  {
+    number: "02",
+    label: "Photographs",
+    note: "Contact sheets",
+    href: "/photos",
+  },
+  {
+    number: "03",
+    label: "Stories",
+    note: "Journeys & notes",
+    href: "/posts",
+  },
+  {
+    number: "04",
+    label: "Account",
+    note: "Access & profile",
+    href: "/profile",
+  },
+] as const;
 
 export const DashboardSidebar = ({
   user,
@@ -27,82 +51,87 @@ export const DashboardSidebar = ({
   user: { name: string; image?: string | null };
 }) => {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   return (
-    <Sidebar className="pt-16 z-40" collapsible="icon">
-      <SidebarContent className="bg-background">
-        <SidebarGroup>
+    <Sidebar className={styles.sidebar} collapsible="offcanvas">
+      <SidebarHeader className={styles.sidebarHeader}>
+        <Link
+          href="/dashboard"
+          className={styles.sidebarBrand}
+          onClick={closeOnMobile}
+        >
+          <span className={styles.brandMark}>YY</span>
+          <span className={styles.brandCopy}>
+            <strong>YUEYONG</strong>
+            <span>Photographic studio</span>
+          </span>
+        </Link>
+      </SidebarHeader>
+
+      <div className={styles.sidebarRule} />
+
+      <SidebarContent className={styles.sidebarContent}>
+        <SidebarGroup className="p-0">
           <SidebarGroupContent>
-            <SidebarMenu>
-              <DashboardSidebarHeader user={user} />
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Dashboard"
-                  isActive={pathname === "/dashboard"}
-                  asChild
-                >
-                  <Link href="/dashboard" className="flex items-center gap-4">
-                    <LayoutDashboard className="size-4" />
-                    <span className="text-sm">Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+            <p className={styles.sidebarLabel}>Workspace</p>
+            <SidebarMenu className={styles.sidebarMenu}>
+              {navigation.map((item) => {
+                const isActive =
+                  item.href === "/dashboard"
+                    ? pathname === item.href
+                    : pathname.startsWith(item.href);
 
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Photo Library"
-                  isActive={pathname.startsWith("/photos")}
-                  asChild
-                >
-                  <Link href="/photos" className="flex items-center gap-4">
-                    <ImageIcon className="size-4" />
-                    <span className="text-sm">Photo Library</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Posts"
-                  isActive={pathname.startsWith("/posts")}
-                  asChild
-                >
-                  <Link href="/posts" className="flex items-center gap-4">
-                    <Book className="size-4" />
-                    <span className="text-sm">Posts</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Profile"
-                  isActive={pathname === "/profile"}
-                  asChild
-                >
-                  <Link href="/profile" className="flex items-center gap-4">
-                    <User2Icon className="size-4" />
-                    <span className="text-sm">Profile</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <div className="px-4 w-full">
-                <Separator />
-              </div>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Exit Studio" asChild>
-                  <Link href="/" className="flex items-center gap-4">
-                    <LogOutIcon className="size-4" />
-                    <span className="text-sm">Exit Studio</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      tooltip={item.label}
+                      isActive={isActive}
+                      asChild
+                      className={styles.sidebarNavLink}
+                    >
+                      <Link href={item.href} onClick={closeOnMobile}>
+                        <span className={styles.navNumber}>{item.number}</span>
+                        <span className={styles.navCopy}>
+                          <strong>{item.label}</strong>
+                          <small>{item.note}</small>
+                        </span>
+                        <span className={styles.navDot} />
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className={styles.sidebarFooter}>
+        <Link
+          href="/profile"
+          className={styles.profileLink}
+          onClick={closeOnMobile}
+        >
+          <UserAvatar
+            imageUrl={user.image || ""}
+            name={user.name ?? "User"}
+            className="size-9"
+          />
+          <div>
+            <strong>{user.name}</strong>
+            <span>Archive owner</span>
+          </div>
+        </Link>
+        <Link href="/" className={styles.exitLink} onClick={closeOnMobile}>
+          Public archive
+          <ArrowUpRight size={13} />
+        </Link>
+      </SidebarFooter>
     </Sidebar>
   );
 };

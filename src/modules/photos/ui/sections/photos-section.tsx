@@ -1,250 +1,158 @@
 "use client";
 
-// External dependencies
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { memo, useEffect } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { Globe2Icon, HeartIcon, LockIcon } from "lucide-react";
+
+import BlurImage from "@/components/blur-image";
+import { InfiniteScroll } from "@/components/infinite-scroll";
+import styles from "@/modules/dashboard/ui/studio.module.css";
 import { trpc } from "@/trpc/client";
 
-// Internal dependencies - UI Components
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import BlurImage from "@/components/blur-image";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorBoundary } from "react-error-boundary";
-import { InfiniteScroll } from "@/components/infinite-scroll";
-import { snakeCaseToTitle } from "@/lib/utils";
-import { Globe2Icon, HeartCrack, HeartIcon, LockIcon } from "lucide-react";
-
-export const PhotosSection = () => {
-  return (
-    <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <PhotosSectionContent />
-    </ErrorBoundary>
-  );
+type StudioPhoto = {
+  id: string;
+  url: string;
+  title: string;
+  description: string;
+  visibility: string;
+  dateTimeOriginal: Date | null;
+  make: string | null;
+  model: string | null;
+  lensModel: string | null;
+  focalLength35mm: number | null;
+  city: string | null;
+  countryCode: string | null;
+  isFavorite: boolean;
+  blurData: string;
+  updatedAt: Date;
 };
 
-const PhotosSectionSkeleton = () => {
-  return (
-    <>
-      <div className="border-y">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-6 w-[510px]">Photos</TableHead>
-              <TableHead>Visibility</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Views</TableHead>
-              <TableHead className="text-right">Comments</TableHead>
-              <TableHead className="text-right pr-6">Likes</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 10 }).map((_, i) => (
-              <TableRow key={i}>
-                <TableCell className="pl-6">
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="h-20 w-36" />
-                    <div className="flex flex-col gap-2">
-                      <Skeleton className="h-4 w-[100px]" />
-                      <Skeleton className="h-3 w-[180px]" />
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell className="text-xs truncate">
-                  <Skeleton className="h-4 w-24" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <Skeleton className="h-4 w-16" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell className="text-right pr-6">
-                  <Skeleton className="h-4 w-16" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </>
-  );
-};
+export const PhotosSection = () => (
+  <ErrorBoundary
+    fallback={<div className={styles.errorState}>The archive could not be opened.</div>}
+  >
+    <PhotosSectionContent />
+  </ErrorBoundary>
+);
+
+const PhotosSectionSkeleton = () => (
+  <>
+    <div className={styles.archiveToolbar}>
+      <span>Loading contact sheets</span>
+      <span>Private + public</span>
+    </div>
+    <div className={styles.photoGrid} aria-hidden="true">
+      {Array.from({ length: 9 }).map((_, index) => (
+        <div key={index}>
+          <div className={`${styles.photoImage} ${styles.skeletonBlock}`} />
+          <div className={styles.photoMeta}>
+            <span className={styles.photoNumber}>{String(index + 1).padStart(2, "0")}</span>
+            <div className={styles.photoCopy}>
+              <div className={`${styles.skeletonBlock} h-5 w-2/3`} />
+              <div className={`${styles.skeletonBlock} mt-2 h-2.5 w-1/2`} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </>
+);
 
 const PhotosSectionContent = () => {
   const { data: photos, ...query } =
     trpc.photos.getManyWithPrivate.useInfiniteQuery(
-      {
-        limit: 15,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
-      }
+      { limit: 15 },
+      { getNextPageParam: (lastPage) => lastPage.nextCursor }
     );
 
-  // 预加载图片
   useEffect(() => {
-    if (photos && photos.pages) {
-      // 获取当前显示的图片列表
-      const currentPhotos = photos.pages.flatMap((page) => page.items);
+    if (!photos?.pages) return;
 
-      // 预加载当前显示图片的后续图片
-      const preloadCount = Math.min(5, currentPhotos.length);
-      for (let i = 0; i < preloadCount; i++) {
-        const img = new Image();
-        img.src = currentPhotos[i].url;
-      }
+    const currentPhotos = photos.pages.flatMap((page) => page.items);
+    for (let index = 0; index < Math.min(5, currentPhotos.length); index += 1) {
+      const image = new Image();
+      image.src = currentPhotos[index].url;
     }
   }, [photos]);
 
-  if (!photos) {
-    return <PhotosSectionSkeleton />
+  if (!photos) return <PhotosSectionSkeleton />;
+
+  const items = photos.pages.flatMap((page) => page.items);
+
+  if (items.length === 0) {
+    return <div className={styles.emptyState}>No photographs have been added yet.</div>;
   }
 
   return (
-    <div className="border-y">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="pl-6 w-[510px]">Photos</TableHead>
-            <TableHead>Visibility</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Make</TableHead>
-            <TableHead>Len</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead className="text-right pr-6">Favorite</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {photos.pages
-            .flatMap((page) => page.items)
-            .map((photo) => (
-              <PhotoTableRow key={photo.id} photo={photo} />
-            ))}
-        </TableBody>
-      </Table>
-
+    <>
+      <div className={styles.archiveToolbar}>
+        <span>{items.length} frames loaded</span>
+        <span>Private + public archive</span>
+      </div>
+      <div className={styles.photoGrid}>
+        {items.map((photo, index) => (
+          <PhotoCard key={photo.id} photo={photo} index={index} />
+        ))}
+      </div>
       <InfiniteScroll
+        className={styles.loadMore}
         hasNextPage={query.hasNextPage || false}
         fetchNextPage={query.fetchNextPage}
         isFetchingNextPage={query.isFetchingNextPage || false}
       />
-    </div>
+    </>
   );
 };
 
-const PhotoTableRow = memo(({ photo }: {
-  photo: {
-    id: string;
-    url: string;
-    title: string;
-    description: string;
-    visibility: string;
-    dateTimeOriginal: Date | null;
-    make: string | null;
-    model: string | null;
-    lensModel: string | null;
-    focalLength35mm: number | null;
-    city: string | null;
-    countryCode: string | null;
-    isFavorite: boolean;
-    blurData: string;
-    updatedAt: Date;
-  }
-}) => {
-  const router = useRouter();
+const PhotoCard = memo(({ photo, index }: { photo: StudioPhoto; index: number }) => {
+  const captured = photo.dateTimeOriginal
+    ? new Date(photo.dateTimeOriginal).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      })
+    : "Date unknown";
+  const location = [photo.city, photo.countryCode].filter(Boolean).join(", ");
+  const camera = [photo.make, photo.model].filter(Boolean).join(" ");
+  const lens = [photo.lensModel, photo.focalLength35mm ? `${photo.focalLength35mm}mm` : null]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <TableRow
-      className="cursor-pointer"
-      onClick={() => router.push(`/photos/${photo.id}`)}
-    >
-      <TableCell className="pl-6">
-        <div className="flex items-center gap-4">
-          <div className="relative aspect-video w-36 shrink-0">
-            <BlurImage
-              src={photo.url}
-              alt={photo.title}
-              fill
-              quality={30}
-              className="object-cover"
-              blurhash={photo.blurData}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          </div>
-          <div className="flex flex-col overflow-hidden gap-y-1">
-            <span className="text-sm line-clamp-1">
-              {photo.title}
-            </span>
-
-            <span className="text-xs text-muted-foreground line-clamp-1">
-              {photo.description || "No description"}
-            </span>
-          </div>
-        </div>
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center">
-          {photo.visibility === "private" ? (
-            <LockIcon className="size-4 mr-2" />
-          ) : (
-            <Globe2Icon className="size-4 mr-2" />
-          )}
-          {snakeCaseToTitle(photo.visibility)}
-        </div>
-      </TableCell>
-      <TableCell className="text-xs truncate">
-        {photo.dateTimeOriginal &&
-          new Date(photo.dateTimeOriginal).toLocaleDateString(
-            "en-US",
-            {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }
-          )}
-      </TableCell>
-      <TableCell>
-        <p className="line-clamp-1">
-          {photo.make} {photo.model}
-        </p>
-      </TableCell>
-      <TableCell>
-        <p className="line-clamp-1">
-          {photo.lensModel}
-          <span className="text-muted-foreground ml-2 text-xs">
-            {photo.focalLength35mm}mm
+    <Link href={`/photos/${photo.id}`} className={styles.photoCard}>
+      <div className={styles.photoImage}>
+        <BlurImage
+          src={photo.url}
+          alt={photo.title || "Untitled photograph"}
+          fill
+          quality={35}
+          className="object-cover"
+          blurhash={photo.blurData}
+          sizes="(max-width: 620px) 100vw, (max-width: 1100px) 50vw, 33vw"
+        />
+        <span className={styles.photoBadge}>
+          {photo.visibility === "private" ? <LockIcon size={11} /> : <Globe2Icon size={11} />}
+          {photo.visibility}
+        </span>
+        {photo.isFavorite ? (
+          <span className={styles.photoFavorite} aria-label="Selected work">
+            <HeartIcon size={13} fill="currentColor" />
           </span>
-        </p>
-      </TableCell>
-      <TableCell>
-        <p className="line-clamp-1">
-          {photo.city}, {photo.countryCode}
-        </p>
-      </TableCell>
-      <TableCell className="pr-6 text-right">
-        <div className="inline-block">
-          {photo.isFavorite ? (
-            <HeartIcon className="stroke-rose-500 fill-rose-500" />
-          ) : (
-            <HeartCrack className="text-muted-foreground" />
-          )}
+        ) : null}
+      </div>
+      <div className={styles.photoMeta}>
+        <span className={styles.photoNumber}>{String(index + 1).padStart(2, "0")}</span>
+        <div className={styles.photoCopy}>
+          <h2>{photo.title || "Untitled frame"}</h2>
+          <p>{location || "Location unassigned"} · {captured}</p>
+          <p className={styles.photoTechnical}>
+            {[camera, lens].filter(Boolean).join(" — ") || "Technical notes unavailable"}
+          </p>
         </div>
-      </TableCell>
-    </TableRow>
+      </div>
+    </Link>
   );
 });
-PhotoTableRow.displayName = "PhotoTableRow";
+
+PhotoCard.displayName = "PhotoCard";

@@ -1,35 +1,48 @@
+"use client";
+
 import Link from "next/link";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import UserButton from "@/modules/auth/components/user-button";
-import { RiCameraLensFill } from "react-icons/ri";
+import { ArrowUpRight } from "lucide-react";
+import { usePathname } from "next/navigation";
+import styles from "../../studio.module.css";
+
+const routeLabels = [
+  ["/dashboard", "Overview"],
+  ["/photos", "Photographs"],
+  ["/posts", "Stories"],
+  ["/profile", "Account"],
+] as const;
 
 export const DashboardNavbar = ({
   user,
 }: {
   user: { name: string; image?: string | null };
 }) => {
+  const pathname = usePathname();
+  const currentSection =
+    routeLabels.find(([href]) =>
+      href === "/dashboard" ? pathname === href : pathname.startsWith(href)
+    )?.[1] ?? "Studio";
+
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-background flex items-center px-2 pr-5 z-50 border-b shadow-md">
-      <div className="flex items-center gap-4 w-full">
-        {/* Menu & Logo */}
-        <div className="flex items-center shrink-0">
-          <SidebarTrigger />
-          <Link href="/dashboard">
-            <div className="flex items-center gap-1 p-4">
-              <RiCameraLensFill size={32} />
-              <p className="text-xl font-semibold tracking-tight">Studio</p>
-            </div>
-          </Link>
-        </div>
+    <header className={styles.topbar}>
+      <div className={styles.topbarTrail}>
+        <SidebarTrigger className={styles.sidebarTrigger} />
+        <strong>Studio</strong>
+        <span>/</span>
+        <span>{currentSection}</span>
+      </div>
 
-        {/* Space */}
-        <div className="flex-1" />
-
-        {/* Profile & Auth */}
-        <div className="shrink-0 items-center flex gap-4">
+      <div className={styles.topbarActions}>
+        <Link href="/" className={styles.liveLink}>
+          View live site
+          <ArrowUpRight size={13} />
+        </Link>
+        <div>
           <UserButton user={user} />
         </div>
       </div>
-    </nav>
+    </header>
   );
 };

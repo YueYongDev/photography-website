@@ -2,15 +2,19 @@
 
 import { StatisticsCard } from "../components/statistics-card";
 import { trpc } from "@/trpc/client";
+import styles from "../studio.module.css";
 
 export const StatisticsSection = () => {
   const { data: summary, isLoading } = trpc.summary.getSummary.useQuery();
   
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className={styles.statsGrid}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 bg-muted rounded-lg animate-pulse" />
+          <div key={i} className={styles.stat}>
+            <div className={`${styles.skeletonBlock} h-3 w-20`} />
+            <div className={`${styles.skeletonBlock} h-12 w-24`} />
+          </div>
         ))}
       </div>
     );
@@ -33,22 +37,29 @@ export const StatisticsSection = () => {
       : Math.round(((currentYearCount - lastYearCount) / lastYearCount) * 100);
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className={styles.statsGrid}>
       <StatisticsCard
+        index="01"
         title="Total photos"
         value={summary?.data?.photoCount || 0}
         direction={direction}
         percentage={growthPercentage}
       />
       <StatisticsCard
+        index="02"
         title="Mapped places"
         value={summary?.data?.cityCount || 0}
       />
       <StatisticsCard
+        index="03"
         title="Total posts"
         value={summary?.data?.postCount || 0}
       />
-      <StatisticsCard title="Likes" value={summary?.data?.favoriteCount || 0} />
+      <StatisticsCard
+        index="04"
+        title="Selected work"
+        value={summary?.data?.favoriteCount || 0}
+      />
     </div>
   );
 };

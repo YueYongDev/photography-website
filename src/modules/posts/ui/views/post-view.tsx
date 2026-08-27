@@ -1,4 +1,5 @@
 import { FormSection } from "../sections/form-section";
+import styles from "@/modules/dashboard/ui/studio.module.css";
 
 interface Props {
   postId: string;
@@ -6,7 +7,7 @@ interface Props {
 
 export const PostView = ({ postId }: Props) => {
   return (
-    <div className="pt-2.5 px-4">
+    <div className={styles.editorPage}>
       <FormSection postId={postId} />
     </div>
   );

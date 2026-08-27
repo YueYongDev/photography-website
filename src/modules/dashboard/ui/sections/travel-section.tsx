@@ -3,14 +3,14 @@
 import { ErrorBoundary } from "react-error-boundary";
 import { TravelPhotos } from "../components/travel-photos";
 import { trpc } from "@/trpc/client";
-import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
+import styles from "../studio.module.css";
 
 const TravelMap = dynamic(
   () => import("../components/travel-map").then((module) => module.TravelMap),
   {
     ssr: false,
-    loading: () => <Skeleton className="min-h-[300px] size-full rounded-none" />,
+    loading: () => <div className={`${styles.mapFrame} ${styles.skeletonBlock}`} />,
   }
 );
 
@@ -24,14 +24,20 @@ export const TravelSection = () => {
 
 export const TravelSectionSkeleton = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 w-full h-[500px] border">
-      <div className="grid grid-cols-1 gap-4 w-full border-r">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} className="size-full" />
-        ))}
+    <section className={styles.travelBlock}>
+      <div className={styles.sectionLabel}>
+        <p>Recent geography</p>
+        <span>Places with coordinates</span>
       </div>
-      <Skeleton className="size-full" />
-    </div>
+      <div className={styles.travelGrid}>
+        <div className={styles.travelList}>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className={`${styles.travelRow} ${styles.skeletonBlock}`} />
+          ))}
+        </div>
+        <div className={`${styles.mapFrame} ${styles.skeletonBlock}`} />
+      </div>
+    </section>
   );
 };
 
@@ -45,9 +51,15 @@ const TravelSectionContent = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 w-full border">
-      <TravelPhotos data={data?.items || []} />
-      <TravelMap data={data?.items || []} />
-    </div>
+    <section className={styles.travelBlock}>
+      <div className={styles.sectionLabel}>
+        <p>Recent geography</p>
+        <span>Places with coordinates</span>
+      </div>
+      <div className={styles.travelGrid}>
+        <TravelPhotos data={data?.items || []} />
+        <TravelMap data={data?.items || []} />
+      </div>
+    </section>
   );
 };

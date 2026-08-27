@@ -6,8 +6,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { PhotoUploader } from "@/modules/cloudflare/components/photo-uploader";
 import { ImagePlus } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
-export const PhotoUploadModal = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) => {
+export const PhotoUploadModal = ({
+  isOpen,
+  onClose,
+  triggerClassName,
+  triggerLabel = "Upload photograph",
+}: {
+  isOpen?: boolean;
+  onClose?: () => void;
+  triggerClassName?: string;
+  triggerLabel?: string;
+}) => {
   const [internalIsUploading, setInternalIsUploading] = useState(false);
   const isControlled = isOpen !== undefined && onClose !== undefined;
   const isUploading = isControlled ? isOpen : internalIsUploading;
@@ -35,10 +46,10 @@ export const PhotoUploadModal = ({ isOpen, onClose }: { isOpen?: boolean; onClos
       {!isControlled && (
         <Button
           onClick={() => setIsUploading(true)}
-          className="flex items-center gap-1"
+          className={cn("flex items-center gap-1", triggerClassName)}
         >
           <ImagePlus />
-          Upload photo
+          {triggerLabel}
         </Button>
       )}
     </>

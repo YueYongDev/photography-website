@@ -1,174 +1,109 @@
 "use client";
 
-// External dependencies
-import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Suspense } from "react";
-import { trpc } from "@/trpc/client";
-import { snakeCaseToTitle, cleanImageUrl } from "@/lib/utils";
-
-// Internal dependencies - UI Components
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
-import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Globe2Icon, LockIcon } from "lucide-react";
 
-export const PostsSection = () => {
-  return (
-    <Suspense fallback={<PostsSectionSkeleton />}>
-      <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <PostsSectionSuspense />
-      </ErrorBoundary>
-    </Suspense>
-  );
-};
+import { InfiniteScroll } from "@/components/infinite-scroll";
+import { cleanImageUrl } from "@/lib/utils";
+import styles from "@/modules/dashboard/ui/studio.module.css";
+import { trpc } from "@/trpc/client";
 
-const PostsSectionSkeleton = () => {
-  return (
-    <>
-      <div className="border-y">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-6 w-[510px]">Posts</TableHead>
-              <TableHead>Visibility</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right pr-6">Tags</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 10 }).map((_, i) => (
-              <TableRow key={i}>
-                <TableCell className="pl-6">
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="h-20 w-36" />
-                    <div className="flex flex-col gap-2">
-                      <Skeleton className="h-4 w-[100px]" />
-                      <Skeleton className="h-3 w-[180px]" />
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-10" />
-                </TableCell>
-                <TableCell className="text-right pr-6">
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+export const PostsSection = () => (
+  <Suspense fallback={<PostsSectionSkeleton />}>
+    <ErrorBoundary
+      fallback={<div className={styles.errorState}>The story index could not be opened.</div>}
+    >
+      <PostsSectionSuspense />
+    </ErrorBoundary>
+  </Suspense>
+);
+
+const PostsSectionSkeleton = () => (
+  <div className={styles.postList} aria-hidden="true">
+    {Array.from({ length: 5 }).map((_, index) => (
+      <div className={styles.postRow} key={index}>
+        <span className={styles.postNumber}>{String(index + 1).padStart(2, "0")}</span>
+        <div className={`${styles.postImage} ${styles.skeletonBlock}`} />
+        <div>
+          <div className={`${styles.skeletonBlock} h-8 w-2/3`} />
+          <div className={`${styles.skeletonBlock} mt-3 h-3 w-full`} />
+        </div>
+        <div className={`${styles.skeletonBlock} h-10 w-full`} />
       </div>
-    </>
-  );
-};
+    ))}
+  </div>
+);
 
 const PostsSectionSuspense = () => {
-  const router = useRouter();
   const [posts, query] = trpc.posts.getMany.useSuspenseInfiniteQuery(
-    {
-      limit: 10,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-    }
+    { limit: 10 },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor }
   );
+  const items = posts.pages.flatMap((page) => page.items);
+
+  if (items.length === 0) {
+    return <div className={styles.emptyState}>No stories have been started yet.</div>;
+  }
 
   return (
-    <div className="border-y">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="pl-6 w-[510px]">Posts</TableHead>
-            <TableHead>Visibility</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead className="text-right pr-6">Tags</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {posts.pages
-            .flatMap((page) => page.items)
-            .map((post) => (
-              <TableRow
-                key={post.id}
-                className="cursor-pointer"
-                onClick={() => router.push(`/posts/${post.id}`)}
-              >
-                <TableCell className="pl-6">
-                  <div className="flex items-center gap-4">
-                    <div className="relative aspect-video w-36 shrink-0">
-                      <Image
-                        src={cleanImageUrl(post.coverImage)}
-                        alt={post.title}
-                        fill
-                        quality={25}
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    </div>
-                    <div className="flex flex-col overflow-hidden gap-y-1">
-                      <span className="text-sm line-clamp-1">
-                        {post.title}
-                      </span>
+    <>
+      <div className={styles.archiveToolbar}>
+        <span>{items.length} stories loaded</span>
+        <span>Journey essays + field notes</span>
+      </div>
+      <div className={styles.postList}>
+        {items.map((post, index) => {
+          const created = post.createdAt
+            ? new Date(post.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+              })
+            : "No date";
 
-                      <span className="text-xs text-muted-foreground line-clamp-1">
-                        {post.description || "No description"}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    {post.visibility === "private" ? (
-                      <LockIcon className="size-4 mr-2" />
-                    ) : (
-                      <Globe2Icon className="size-4 mr-2" />
-                    )}
-                    {snakeCaseToTitle(post.visibility)}
-                  </div>
-                </TableCell>
-                <TableCell className="text-xs truncate">
-                  {post.createdAt &&
-                    new Date(post.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                    })}
-                </TableCell>
-                <TableCell>Travel</TableCell>
-                <TableCell className="text-right pr-6">
-                  {post.tags &&
-                    post.tags.map((tag) => (
-                      <span key={tag} className="mr-2">
-                        {tag}
-                      </span>
-                    ))}
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
+          return (
+            <Link href={`/posts/${post.id}`} className={styles.postRow} key={post.id}>
+              <span className={styles.postNumber}>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div className={styles.postImage}>
+                <Image
+                  src={cleanImageUrl(post.coverImage)}
+                  alt={post.title || "Story cover"}
+                  fill
+                  quality={30}
+                  className="object-cover"
+                  sizes="(max-width: 620px) 100vw, (max-width: 1100px) 42vw, 28vw"
+                />
+              </div>
+              <div className={styles.postCopy}>
+                <h2 className={styles.postTitle}>{post.title || "Untitled story"}</h2>
+                <p>{post.description || "A journey still waiting for its first note."}</p>
+              </div>
+              <div className={styles.postAside}>
+                <span className={styles.postVisibility}>
+                  {post.visibility === "private" ? <LockIcon size={11} /> : <Globe2Icon size={11} />}
+                  {post.visibility}
+                </span>
+                <span>{created}</span>
+                <span>Travel story</span>
+                <span className={styles.postTags}>
+                  {post.tags?.length ? post.tags.join(" · ") : "No tags"}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
       <InfiniteScroll
+        className={styles.loadMore}
         hasNextPage={query.hasNextPage}
         fetchNextPage={query.fetchNextPage}
         isFetchingNextPage={query.isFetchingNextPage}
       />
-    </div>
+    </>
   );
 };

@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 // Helper function to convert image to base64
 const convertImageToBase64 = async (file: File): Promise<string> => {
@@ -29,7 +30,7 @@ const convertImageToBase64 = async (file: File): Promise<string> => {
   });
 };
 
-const EditUserDialog = () => {
+const EditUserDialog = ({ triggerClassName }: { triggerClassName?: string }) => {
   const { data } = useSession();
   const [name, setName] = useState<string>();
   const router = useRouter();
@@ -53,7 +54,7 @@ const EditUserDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-2" variant="outline">
+        <Button size="sm" className={cn("gap-2", triggerClassName)} variant="outline">
           <Edit size={13} />
           Edit Profile
         </Button>

@@ -3,18 +3,12 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import styles from "../studio.module.css";
 
 interface LineChartProps {
   data: Record<number, number>;
@@ -31,17 +25,20 @@ export function PhotosByYearLineChart({ data }: LineChartProps) {
   const chartConfig = {
     photos: {
       label: "Photos",
-      color: "hsl(var(--chart-2))",
+      color: "var(--studio-accent)",
     },
   } satisfies ChartConfig;
 
   return (
-    <Card className="rounded-none shadow-none">
-      <CardHeader>
-        <CardTitle>Photos by Year</CardTitle>
-        <CardDescription>Last 5 years statistics</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <section className={styles.chartPanel}>
+      <header className={styles.chartHeader}>
+        <div>
+          <h2>Photographs over time</h2>
+          <p>Frames added by year</p>
+        </div>
+        <span className={styles.chartIndex}>A / 01</span>
+      </header>
+      <div className={styles.chartBody}>
         <ChartContainer config={chartConfig}>
           <AreaChart
             accessibilityLayer
@@ -57,8 +54,14 @@ export function PhotosByYearLineChart({ data }: LineChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              tick={{ fill: "var(--studio-muted)", fontSize: 11 }}
             />
-            <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tick={{ fill: "var(--studio-muted)", fontSize: 11 }}
+            />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}
@@ -66,13 +69,13 @@ export function PhotosByYearLineChart({ data }: LineChartProps) {
             <Area
               dataKey="photos"
               type="natural"
-              fill="hsl(var(--chart-2))"
-              fillOpacity={0.4}
-              stroke="hsl(var(--chart-2))"
+              fill="var(--studio-accent)"
+              fillOpacity={0.24}
+              stroke="var(--studio-accent)"
             />
           </AreaChart>
         </ChartContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

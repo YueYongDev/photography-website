@@ -1,7 +1,7 @@
 import BlurImage from "@/components/blur-image";
-import { ImageIcon } from "lucide-react";
 import { useMapStore } from "@/hooks/use-map-store";
 import type { DashboardTravelCitySet } from "./travel-types";
+import styles from "../studio.module.css";
 
 interface TravelPhotosProps {
   data: DashboardTravelCitySet[];
@@ -22,16 +22,19 @@ export const TravelPhotos = ({ data }: TravelPhotosProps) => {
   };
 
   return (
-    <div className="grid grid-cols-1 w-full border-r">
-      {data.map((citySet) => (
+    <div className={styles.travelList}>
+      {data.map((citySet, index) => (
         <div
-          className="p-4 w-full flex items-center justify-between border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer"
+          className={styles.travelRow}
           key={citySet.id}
           onMouseEnter={() => handleHover(citySet)}
         >
-          <div className="flex flex-col gap-2">
-            <h2 className="text-lg font-medium">{citySet.city}</h2>
-            <p className="text-muted-foreground text-sm">
+          <span className={styles.travelRowNumber}>
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <div className={styles.travelRowCopy}>
+            <h3>{citySet.city}</h3>
+            <p>
               {citySet.country}
               {", "}
               {citySet.coverPhoto.dateTimeOriginal &&
@@ -43,17 +46,10 @@ export const TravelPhotos = ({ data }: TravelPhotosProps) => {
                   day: "numeric",
                 })}
             </p>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <ImageIcon className="text-muted-foreground" size={16} />
-                <span className="text-sm text-muted-foreground">
-                  {citySet.photoCount}
-                </span>
-              </div>
-            </div>
+            <span>{citySet.photoCount} frames</span>
           </div>
 
-          <div className="relative h-16 aspect-4/3 overflow-hidden">
+          <div className={styles.travelThumb}>
             <BlurImage
               src={citySet.coverPhoto.url || "/placeholder.svg"}
               alt={citySet.city}

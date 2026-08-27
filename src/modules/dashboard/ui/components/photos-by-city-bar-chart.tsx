@@ -3,18 +3,12 @@
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import styles from "../studio.module.css";
 
 interface PhotosByCityBarChartProps {
   data: {
@@ -25,20 +19,12 @@ interface PhotosByCityBarChartProps {
 }
 
 export function PhotosByCityBarChart({ data }: PhotosByCityBarChartProps) {
-  const colors = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
-    "hsl(var(--chart-5))",
-  ];
-
   const chartData =
-    data?.map((item, index) => ({
+    data?.map((item) => ({
       city: item.city,
       photos: item.photoCount,
       countryCode: item.countryCode,
-      fill: colors[index % colors.length],
+      fill: "var(--studio-accent)",
     })) || [];
 
   const chartConfig = {
@@ -50,19 +36,22 @@ export function PhotosByCityBarChart({ data }: PhotosByCityBarChartProps) {
         item.city,
         {
           label: `${item.city} (${item.countryCode})`,
-          color: "hsl(var(--chart-2))",
+          color: "var(--studio-accent)",
         },
       ])
     ),
   } satisfies ChartConfig;
 
   return (
-    <Card className="rounded-none shadow-none">
-      <CardHeader>
-        <CardTitle>Top Cities by Photos</CardTitle>
-        <CardDescription>Top 5 cities with most photos</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <section className={styles.chartPanel}>
+      <header className={styles.chartHeader}>
+        <div>
+          <h2>Most observed places</h2>
+          <p>Top cities by frame count</p>
+        </div>
+        <span className={styles.chartIndex}>A / 02</span>
+      </header>
+      <div className={styles.chartBody}>
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
@@ -119,10 +108,10 @@ export function PhotosByCityBarChart({ data }: PhotosByCityBarChartProps) {
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="photos" layout="vertical" radius={5} />
+            <Bar dataKey="photos" layout="vertical" radius={0} />
           </BarChart>
         </ChartContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

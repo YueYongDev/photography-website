@@ -1,5 +1,6 @@
 import MapComponent, { MapProps } from "@/components/map";
 import type { DashboardTravelCitySet } from "./travel-types";
+import styles from "../studio.module.css";
 
 interface TravelMapProps {
   data: DashboardTravelCitySet[];
@@ -8,7 +9,7 @@ interface TravelMapProps {
 export const TravelMap = ({ data }: TravelMapProps) => {
   if (data.length === 0) {
     return (
-      <div className="size-full relative overflow-hidden min-h-[300px]" />
+      <div className={styles.mapFrame} />
     );
   }
 
@@ -35,7 +36,7 @@ export const TravelMap = ({ data }: TravelMapProps) => {
         latitude: photo.latitude,
         element: (
           <div className="relative cursor-pointer group -translate-y-[90%]">
-            <div className="relative w-5 h-7 bg-blue-500 rounded-t-full rounded-bl-full rotate-45 border-[1.5px] border-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-600">
+            <div className="relative w-5 h-7 bg-[#788984] rounded-t-full rounded-bl-full rotate-45 border-[1.5px] border-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-[#657772]">
               <div className="-rotate-45 w-full h-full flex items-center justify-center">
                 <div className="size-3 rounded-full bg-white/40 border border-white/20 shadow-inner" />
               </div>
@@ -46,7 +47,7 @@ export const TravelMap = ({ data }: TravelMapProps) => {
       })) || [];
 
   return (
-    <div className="size-full relative overflow-hidden min-h-[300px]">
+    <div className={styles.mapFrame}>
       <MapComponent
         id="city"
         markers={markers}

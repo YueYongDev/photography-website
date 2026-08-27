@@ -2,8 +2,11 @@
 
 import { trpc } from "@/trpc/client";
 import dynamic from "next/dynamic";
+import styles from "../studio.module.css";
 
-const ChartLoading = () => <div className="h-64 rounded-lg bg-muted" />;
+const ChartLoading = () => (
+  <div className={`${styles.skeletonBlock} min-h-80 bg-muted`} />
+);
 
 const PhotosByYearLineChart = dynamic(
   () =>
@@ -26,15 +29,15 @@ export const ChartsSection = () => {
   
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="h-64 bg-muted rounded-lg animate-pulse" />
-        <div className="h-64 bg-muted rounded-lg animate-pulse" />
+      <div className={styles.chartsGrid}>
+        <div className={`${styles.skeletonBlock} min-h-80`} />
+        <div className={`${styles.skeletonBlock} min-h-80`} />
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div className={styles.chartsGrid}>
       <PhotosByYearLineChart data={summary?.data?.yearlyStats || {}} />
       <PhotosByCityBarChart data={summary?.data?.topCities || []} />
     </div>

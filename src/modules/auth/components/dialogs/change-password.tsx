@@ -17,8 +17,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
-const ChangePassword = () => {
+const ChangePassword = ({ triggerClassName }: { triggerClassName?: string }) => {
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -29,7 +30,7 @@ const ChangePassword = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2" variant="outline" size="sm">
+        <Button className={cn("gap-2", triggerClassName)} variant="outline" size="sm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="1em"

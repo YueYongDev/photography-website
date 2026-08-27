@@ -1,7 +1,8 @@
 import SecurityAccessCard from "@/modules/auth/components/security-access-card";
 import { auth, getCurrentSession } from "@/modules/auth/lib/auth";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { StudioPageHeader } from "@/modules/dashboard/ui/components/studio-page-header";
+import styles from "@/modules/dashboard/ui/studio.module.css";
 
 export const metadata = {
   title: "Security & Access",
@@ -13,17 +14,24 @@ const ProfilePage = async () => {
     auth.api.listSessions({
       headers: await headers(),
     }),
-  ]).catch(() => {
-    throw redirect("/sign-in");
-  });
+  ]);
 
   return (
-    <div className="flex flex-col gap-y-6 pt-2.5">
-      <div className="px-4">
-        <h1 className="text-2xl font-bold">Access & Security</h1>
-        <p className="text-xs text-muted-foreground">
-          Manage the devices logged in your account & Profile information
-        </p>
+    <div className={styles.page}>
+      <StudioPageHeader
+        index="04"
+        eyebrow="Account"
+        title={<>Access, kept<br />private.</>}
+        description="A quiet record of your profile and the devices trusted to enter the studio."
+      />
+      <div className={styles.profileGrid}>
+        <aside className={styles.profileAside}>
+          <h2>Your studio key.</h2>
+          <p>
+            Review signed-in devices, update your identity, or change the password
+            that protects the private archive.
+          </p>
+        </aside>
         <SecurityAccessCard
           session={JSON.parse(JSON.stringify(session))}
           activeSessions={JSON.parse(JSON.stringify(activeSessions))}

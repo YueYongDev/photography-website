@@ -1,6 +1,7 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardNavbar } from "@/modules/dashboard/ui/components/dashboard-navbar";
 import { DashboardSidebar } from "@/modules/dashboard/ui/components/dashboard-sidebar";
+import styles from "../studio.module.css";
 
 export const DashboardLayout = ({
   children,
@@ -10,14 +11,15 @@ export const DashboardLayout = ({
   user: { name: string; image?: string | null };
 }) => {
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full flex-col overflow-hidden">
+    <SidebarProvider
+      className={styles.shell}
+      style={{ "--sidebar-width": "17.5rem" } as React.CSSProperties}
+    >
+      <DashboardSidebar user={user} />
+      <SidebarInset className={styles.workspace}>
         <DashboardNavbar user={user} />
-        <div className="flex flex-1 h-[calc(100vh-4rem)] mt-16">
-          <DashboardSidebar user={user} />
-          <main className="flex-1 overflow-y-auto">{children}</main>
-        </div>
-      </div>
+        <div className={styles.workspaceMain}>{children}</div>
+      </SidebarInset>
     </SidebarProvider>
   );
 };
