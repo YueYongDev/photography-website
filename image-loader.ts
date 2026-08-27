@@ -1,11 +1,6 @@
-const normalizeSrc = (src: string) => {
-  return src.startsWith("/") ? src.slice(1) : src;
-};
+const QINIU_MAX_DIMENSION = 50000;
 
-// Cloudflare Images maximum dimension allowed
-const CLOUDFLARE_MAX_DIMENSION = 50000;
-
-export default function cloudflareLoader({
+export default function qiniuLoader({
   src,
   width,
   quality,
@@ -31,12 +26,11 @@ export default function cloudflareLoader({
     return src;
   }
 
-  if (parsedUrl.hostname !== "p.yueyong.fun" && parsedUrl.hostname !== "cdn.ytools.xyz") {
+  if (parsedUrl.hostname !== "cdn.ytools.xyz") {
     return src;
   }
 
-  // For external images, use Image Resizing
-  const maxWidth = Math.min(width, CLOUDFLARE_MAX_DIMENSION);
+  const maxWidth = Math.min(width, QINIU_MAX_DIMENSION);
   const q = quality || 75;
 
   // Qiniu-style resizing: imageView2/2/w/<width>/q/<quality>

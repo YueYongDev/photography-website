@@ -13,7 +13,7 @@ import {
   protectedProcedure,
 } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { deletePhotoObjectByUrl } from "@/lib/cloudbase-media";
+import { deletePhotoObjectByUrl } from "@/lib/qiniu-storage";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { PUBLIC_PHOTOS_CACHE_TAG } from "@/lib/cache-tags";
 
@@ -243,7 +243,7 @@ export const photosRouter = createTRPCRouter({
         try {
           await deletePhotoObjectByUrl(photo.url);
         } catch (error) {
-          console.error("CloudBase media delete failed", error);
+          console.error("Qiniu media delete failed", error);
         }
 
         await db.delete(photos).where(eq(photos.id, id));

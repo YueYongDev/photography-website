@@ -1,22 +1,4 @@
 import type { NextConfig } from "next";
-import type { RemotePattern } from "next/dist/shared/lib/image-config";
-
-const cloudBaseStaticUrl = process.env.CLOUDBASE_STATIC_PUBLIC_URL;
-const cloudBaseStaticPattern: RemotePattern | null = cloudBaseStaticUrl
-  ? (() => {
-      try {
-        const parsed = new URL(cloudBaseStaticUrl);
-        return {
-          protocol: "https" as const,
-          hostname: parsed.hostname,
-          port: parsed.port,
-          pathname: "/photo-site/photos/**",
-        };
-      } catch {
-        return null;
-      }
-    })()
-  : null;
 
 const nextConfig: NextConfig = {
   // Vercel supplies its own Next.js build adapter and does not consume the
@@ -24,6 +6,7 @@ const nextConfig: NextConfig = {
   // `output: "standalone"` are enabled together because the adapter omits the
   // root NFT trace that the standalone copier still expects.
   output: process.env.VERCEL ? undefined : "standalone",
+  serverExternalPackages: ["qiniu"],
   images: {
     loader: "custom",
     loaderFile: "./image-loader.ts",
@@ -39,7 +22,6 @@ const nextConfig: NextConfig = {
         hostname: "cdn.ytools.xyz",
         port: "",
       },
-      ...(cloudBaseStaticPattern ? [cloudBaseStaticPattern] : []),
     ],
   },
   async rewrites() {

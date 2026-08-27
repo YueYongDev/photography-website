@@ -6,6 +6,7 @@ import { summaryRouter } from "@/modules/dashboard/server/procedures";
 import { postsRouter } from "@/modules/posts/server/procedures";
 import { blogRouter } from "@/modules/blog/server/procedures";
 import { aiRouter } from "@/modules/ai/server/procedures";
+import { storageRouter } from "@/modules/storage/server/procedures";
 
 export const appRouter = createTRPCRouter({
   map: mapRouter,
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   posts: postsRouter,
   blog: blogRouter,
   ai: aiRouter,
+  storage: storageRouter,
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;

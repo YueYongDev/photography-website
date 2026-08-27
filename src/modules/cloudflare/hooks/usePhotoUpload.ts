@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { uploadPhoto } from "@/lib/photo-upload";
+import { trpc } from "@/trpc/client";
 import {
   type TExifFormData,
   type TImageInfo,
@@ -27,6 +28,7 @@ export function usePhotoUpload({
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [exif, setExif] = useState<TExifFormData | null>(null);
   const [imageInfo, setImageInfo] = useState<TImageInfo | null>(null);
+  const createUpload = trpc.storage.createPhotoUpload.useMutation();
 
   const handleUpload = async (file: File) => {
     try {
@@ -52,13 +54,18 @@ export function usePhotoUpload({
       console.log(`Original file size: ${file.size / 1024 / 1024} MB`);
       console.log(`Compressed file size: ${compressedFile.size / 1024 / 1024} MB`);
 
-      const { publicUrl } = await uploadPhoto({
+      const ticket = await createUpload.mutateAsync({
+        contentType: compressedFile.type,
+      });
+      await uploadPhoto({
         file: compressedFile,
+        key: ticket.key,
+        token: ticket.token,
       });
 
-      setUploadedImageUrl(publicUrl);
+      setUploadedImageUrl(ticket.publicUrl);
       toast.success("Photo uploaded successfully!");
-      onUploadSuccess?.(publicUrl);
+      onUploadSuccess?.(ticket.publicUrl);
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(

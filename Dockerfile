@@ -7,7 +7,6 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL=mysql://build:build@127.0.0.1:3306/build
-ENV CLOUDBASE_STATIC_PUBLIC_URL=https://ytools-d8gboj3ce7caccb14-1253563876.tcloudbaseapp.com
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

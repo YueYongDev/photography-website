@@ -9,7 +9,7 @@ A modern, open-source photography blog platform built with the latest web techno
 - 📱 Responsive design for all devices
 - 🖼️ Automatic EXIF data extraction from photos
 - 🔐 Secure authentication with Better Auth
-- ☁️ Cloud storage with Tencent CloudBase static hosting
+- ☁️ Qiniu Kodo object storage with browser-direct uploads
 - 🎨 Beautiful UI with Shadcn/ui components
 - 🚀 Lightning-fast performance
 - 📍 Location-based photo organization
@@ -39,8 +39,8 @@ A modern, open-source photography blog platform built with the latest web techno
 - **Authentication:** [Better Auth](https://better-auth.com/)
 - **UI Components:** [Shadcn/ui](https://ui.shadcn.com/)
 - **API Layer:** [tRPC](https://trpc.io/)
-- **Storage:** Tencent CloudBase static hosting with a least-privilege media gateway
-- **Deployment:** Tencent CloudBase Run
+- **Storage:** Qiniu Kodo, delivered through `cdn.ytools.xyz`
+- **Deployment:** Vercel
 
 ## 🚀 Getting Started
 
@@ -48,8 +48,8 @@ A modern, open-source photography blog platform built with the latest web techno
 
 - Node.js 20+
 - bun (recommended) or npm
-- A CloudBase environment with MySQL and CloudBase Run
-- A CloudBase environment with static hosting enabled
+- A CloudBase MySQL database reachable from Vercel
+- A Qiniu Kodo bucket and CDN domain
 - [Mapbox Account](https://console.mapbox.com/)
 
 ### Environment Variables
@@ -57,14 +57,19 @@ A modern, open-source photography blog platform built with the latest web techno
 Create a `.env.local` file in the root directory:
 
 ```bash
-# CloudBase MySQL private connection URL
-DATABASE_URL=mysql://photo_site_app:password@private-host:3306/database
+# CloudBase MySQL connection URL reachable from Vercel
+DATABASE_URL=mysql://photo_site_app:password@database-host:3306/database
 DATABASE_POOL_SIZE=4
+
+# Optional database migration tooling
 CLOUDBASE_ENV_ID=ytools-d8gboj3ce7caccb14
 CLOUDBASE_REGION=ap-shanghai
-CLOUDBASE_STATIC_PUBLIC_URL=https://your-env-id.tcloudbaseapp.com
-CLOUDBASE_MEDIA_GATEWAY_URL=https://your-env-id.ap-shanghai.app.tcloudbase.com/photo-site-media
-CLOUDBASE_MEDIA_GATEWAY_SECRET=
+
+# Qiniu Kodo photo storage
+QINIU_ACCESS_KEY=
+QINIU_SECRET_KEY=
+QINIU_BUCKET=
+QINIU_PUBLIC_URL=https://cdn.ytools.xyz
 
 # Auth
 # You can generate a random secret using `openssl rand -base64 32`
@@ -78,20 +83,13 @@ NEXT_PUBLIC_APP_URL='http://localhost:3000'
 NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=
 ```
 
-Replace `your-domain.com` with your actual domain name. This is required for Cloudflare Image Optimization to work correctly.
+### Production architecture
 
-### Production routing
-
-The production site uses `https://p.yueyong.fun` as a Cloudflare Worker custom
-domain in front of CloudBase Run. The checked-in Worker at
-`workers/cloudbase-proxy.js` preserves the public host, rewrites upstream
-redirects, and bridges Better Auth's origin check only for `/api/auth/*`
-requests arriving from the exact production origin.
-
-CloudBase Run must retain its private VPC connection to CloudBase MySQL. Before
-deploying a new CloudBase Run revision or changing its environment variables,
-verify that the resulting revision still has access to the private database
-address.
+The Next.js application, dashboard, authentication routes, and tRPC API run on
+Vercel. CloudBase is used only for MySQL. Browser uploads are compressed before
+the server boundary, receive a short-lived upload token from Vercel, and go
+directly to Qiniu Kodo. The database stores the resulting public URL and photo
+metadata; it never stores image binaries.
 
 ### Installation
 
@@ -130,18 +128,12 @@ http://localhost:3000/sign-up
 
 Note: After the first admin user is created, the `/sign-up` route will be disabled for security purposes. Any subsequent attempts to access the sign-up page will automatically redirect to the sign-in page (`/sign-in`).
 
-### Enable Cloudflare Image Resizing
+### Qiniu image delivery
 
-### Custom Domain Configuration
-
-Before deploying, you need to update the custom domain in `image-loader.ts`:
-
-```typescript
-// image-loader.ts
-return `https://your-domain.com/cdn-cgi/image/${paramsString}/${normalizeSrc(
-  src
-)}`;
-```
+`image-loader.ts` uses Qiniu's `imageView2` transformation on
+`cdn.ytools.xyz`, so the bucket only needs one web-ready master per photograph.
+Camera RAW files and full-resolution originals remain in the photographer's
+separate archive and are not uploaded by the dashboard.
 
 Visit `http://localhost:3000` to see your application.
 
