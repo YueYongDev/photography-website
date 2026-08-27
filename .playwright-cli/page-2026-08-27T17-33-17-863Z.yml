@@ -1,0 +1,68 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e117] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: 摄影 / 旅行手记
+      - generic [ref=e6]:
+        - navigation "主导航" [ref=e118]:
+          - link "精选" [active] [ref=e119] [cursor=pointer]:
+            - /url: /work
+          - link "足迹" [ref=e120] [cursor=pointer]:
+            - /url: /travel
+          - link "旅程" [ref=e121] [cursor=pointer]:
+            - /url: /journeys
+          - link "地图" [ref=e122] [cursor=pointer]:
+            - /url: /discover
+          - link "关于" [ref=e123] [cursor=pointer]:
+            - /url: /about
+        - group "语言" [ref=e124]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [pressed] [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e151]:
+        - paragraph [ref=e152]: 01 / 精选作品
+        - heading [level=1] [ref=e153]:
+          - text: 精选照片
+          - emphasis [ref=e154]: Selected Works
+        - paragraph [ref=e155]: 这里只显示从公开图库中单独选出的照片。拍摄地点和年份列在每张照片下面。
+        - generic [ref=e156]:
+          - generic [ref=e157]: "00"
+          - generic [ref=e158]:
+            - heading "暂无精选照片" [level=2] [ref=e159]
+            - paragraph [ref=e160]: 在工作台将照片标记为 favorite 后，照片会显示在这里。
+    - contentinfo [ref=e87]:
+      - generic [ref=e88]:
+        - heading "YueYong Photography" [level=2] [ref=e141]
+        - paragraph [ref=e90]: 个人摄影网站。照片按精选、旅行记录和拍摄地点浏览。
+      - navigation "主导航" [ref=e142]:
+        - link "首页" [ref=e143] [cursor=pointer]:
+          - /url: /
+        - link "精选" [ref=e144] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [ref=e145] [cursor=pointer]:
+          - /url: /travel
+        - link "旅程" [ref=e146] [cursor=pointer]:
+          - /url: /journeys
+        - link "地图" [ref=e147] [cursor=pointer]:
+          - /url: /discover
+        - link "关于" [ref=e148] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e149] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e99]:
+        - paragraph [ref=e100]: 摄影师 / 软件工程师
+        - link "邮箱" [ref=e150] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e102] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e103] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e104]:
+        - generic [ref=e105]: © 2026 YueYong
+        - generic [ref=e106]: 摄影 / 旅行手记
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e112] [cursor=pointer]
+  - alert [ref=e116]: 精选照片 Selected Works

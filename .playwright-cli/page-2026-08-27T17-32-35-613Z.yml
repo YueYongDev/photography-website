@@ -1,0 +1,116 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong Photography home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: Photography / Field Notes
+      - generic [ref=e6]:
+        - navigation "Primary navigation" [ref=e7]:
+          - link "Work" [ref=e8] [cursor=pointer]:
+            - /url: /work
+          - link "Travel" [ref=e9] [cursor=pointer]:
+            - /url: /travel
+          - link "Journeys" [ref=e10] [cursor=pointer]:
+            - /url: /journeys
+          - link "Map" [ref=e11] [cursor=pointer]:
+            - /url: /discover
+          - link "About" [ref=e12] [cursor=pointer]:
+            - /url: /about
+        - group "Language" [ref=e13]:
+          - button "EN" [pressed] [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - paragraph [ref=e20]: Photography by YueYong
+          - heading [level=1] [ref=e21]:
+            - text: Photography,
+            - emphasis [ref=e22]: shaped along the way.
+        - figure "Passing Through, No. 01 Hong Kong" [ref=e23]:
+          - generic [ref=e24]:
+            - img "A red tram moving through a dense Hong Kong street" [ref=e25]
+            - generic [ref=e26]: HKG / 01
+          - generic [ref=e27]:
+            - generic [ref=e28]: Passing Through, No. 01
+            - generic [ref=e29]: Hong Kong
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: Places become the setting. Attention becomes the work — an evolving archive of distance, human traces, and quiet moments in motion.
+          - link "View selected work" [ref=e32] [cursor=pointer]:
+            - /url: /work
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - paragraph [ref=e38]: 01 / Selected Work
+          - heading "Recurring ways of seeing." [level=2] [ref=e39]
+          - paragraph [ref=e40]: A small, edited set of visual questions. Places change; the things I return to remain.
+        - generic [ref=e41]:
+          - generic [ref=e42]: "00"
+          - generic [ref=e43]:
+            - heading "The edit is still in progress." [level=3] [ref=e44]
+            - paragraph [ref=e45]: Photographs marked as favorite in Studio will appear here as the public selection.
+        - link "View selected work" [ref=e47] [cursor=pointer]:
+          - /url: /work
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - paragraph [ref=e53]: 02 / Journeys
+          - heading "Notes from the road." [level=2] [ref=e54]
+          - paragraph [ref=e55]: Chronology, route, people, and field notes — the longer story around the photographs.
+        - link [ref=e56] [cursor=pointer]:
+          - /url: /journeys/newzealand-2026
+          - img "New Zealand 2026 journey" [ref=e57]
+          - generic [ref=e59]:
+            - text: Field journal · 26 April — 02 May 2026
+            - heading "New Zealand 2026" [level=3] [ref=e60]
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - paragraph [ref=e63]: 03 / Travel
+          - heading "Countries first. Places within." [level=2] [ref=e64]
+          - paragraph [ref=e65]: Travel is kept at the scale of a country, while individual cities remain available inside each archive and on the map.
+        - generic [ref=e66]:
+          - heading "A broader view of where the work began." [level=3] [ref=e67]
+          - generic [ref=e68]:
+            - link "T01 New Zealand" [ref=e69] [cursor=pointer]:
+              - /url: /travel/nz
+              - generic [ref=e70]: T01
+              - strong [ref=e71]: New Zealand
+            - link "T02 Uzbekistan" [ref=e75] [cursor=pointer]:
+              - /url: /travel/uz
+              - generic [ref=e76]: T02
+              - strong [ref=e77]: Uzbekistan
+            - link "T03 Australia" [ref=e81] [cursor=pointer]:
+              - /url: /travel/au
+              - generic [ref=e82]: T03
+              - strong [ref=e83]: Australia
+    - contentinfo [ref=e87]:
+      - generic [ref=e88]:
+        - heading "One archive. Three paths through it." [level=2] [ref=e89]
+        - paragraph [ref=e90]: Photography arranged by recurring ideas, lived journeys, and the places that hold them together.
+      - navigation "Primary navigation" [ref=e91]:
+        - link "Home" [ref=e92] [cursor=pointer]:
+          - /url: /
+        - link "Work" [ref=e93] [cursor=pointer]:
+          - /url: /work
+        - link "Travel" [ref=e94] [cursor=pointer]:
+          - /url: /travel
+        - link "Journeys" [ref=e95] [cursor=pointer]:
+          - /url: /journeys
+        - link "Map" [ref=e96] [cursor=pointer]:
+          - /url: /discover
+        - link "About" [ref=e97] [cursor=pointer]:
+          - /url: /about
+        - link "Studio" [ref=e98] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e99]:
+        - paragraph [ref=e100]: Photographer / Software Engineer
+        - link "Email" [ref=e101] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e102] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e103] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e104]:
+        - generic [ref=e105]: © 2026 YueYong
+        - generic [ref=e106]: Photography / Field Notes
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e112] [cursor=pointer]

@@ -16,7 +16,6 @@ import styles from "@/modules/site/ui/public-site.module.css";
 type JourneyArchiveEntry = {
   slug: string;
   title: string;
-  description: string;
   coverImage: string | null;
   coverAlt: string;
   route: string[];
@@ -43,7 +42,6 @@ export const JourneysView = ({
     ...localizedJourneys.map((journey) => ({
       slug: journey.slug,
       title: journey.title,
-      description: journey.description,
       coverImage: journey.coverImage,
       coverAlt: journey.coverAlt,
       route: journey.route,
@@ -56,7 +54,6 @@ export const JourneysView = ({
       .map((story) => ({
         slug: story.slug,
         title: story.title,
-        description: story.description || copy.journeys.noteFallback,
         coverImage: story.coverImage,
         coverAlt: story.title,
         route: story.tags || [],
@@ -85,7 +82,6 @@ export const JourneysView = ({
             <em>{copy.journeys.titleEnd}</em>
           </h1>
         </div>
-        <p className={styles.lede}>{copy.journeys.lede}</p>
       </div>
 
       <div className={styles.journeyArchive}>
@@ -120,7 +116,6 @@ export const JourneysView = ({
               <div>
                 <p className={styles.journeyArchiveMeta}>{entry.meta}</p>
                 <h2>{entry.title}</h2>
-                <p>{entry.description}</p>
                 {entry.route.length > 0 && (
                   <div className={styles.journeyRoute}>
                     {entry.route.map((place) => (

@@ -33,8 +33,7 @@ export const metadata: Metadata = {
     template: "%s - YueYong Photography",
     default: "YueYong Photography",
   },
-  description:
-    "Photography and field notes shaped by places, distance, and time.",
+  description: "Photographs by YueYong.",
 };
 
 export default async function RootLayout({

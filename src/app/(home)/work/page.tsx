@@ -5,8 +5,7 @@ import { trpc } from "@/trpc/server";
 
 export const metadata: Metadata = {
   title: "Work",
-  description:
-    "Selected photography by YueYong, arranged as recurring ways of seeing.",
+  description: "Selected photographs by YueYong.",
 };
 
 const WorkPage = async () => {

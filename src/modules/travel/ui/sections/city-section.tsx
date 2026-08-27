@@ -85,12 +85,6 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
           </p>
           <h1 className={styles.displayTitle}>{displayCity}</h1>
         </div>
-        <p className={styles.lede} style={{ margin: 0 }}>
-          {locale === "en" && cityData.description
-            ? cityData.description
-            : copy.city.study(displayCity)}
-        </p>
-
         <Link
           href={cityData.coverPhoto?.id ? `/photograph/${cityData.coverPhoto.id}` : "#"}
           className={styles.cityCover}

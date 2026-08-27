@@ -44,7 +44,6 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
           <h1>{countryName}</h1>
         </div>
         <div className={styles.countryHeroMeta}>
-          <p>{copy.country.intro(country.cities.length)}</p>
           <dl>
             <div>
               <dt>{copy.common.places}</dt>
@@ -64,7 +63,6 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
 
       <div className={styles.countryGalleryHead}>
         <p>{copy.common.places}</p>
-        <span>{copy.country.galleryPrompt}</span>
       </div>
 
       <div className={styles.countryGalleryGrid}>

@@ -4,8 +4,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Map",
-  description:
-    "A city-level map of YueYong's public photographic archive.",
+  description: "Map of photographed cities.",
 };
 
 const DiscoverPage = () => <DiscoverView />;

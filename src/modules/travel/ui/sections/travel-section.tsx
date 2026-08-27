@@ -37,7 +37,6 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
             <em>{copy.travel.titleEnd}</em>
           </h1>
         </div>
-        <p className={styles.lede}>{copy.travel.lede}</p>
       </div>
 
       <div className={styles.atlasSummary}>
@@ -118,7 +117,7 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
                     src={image.url}
                     alt={`${localizeCountryName(country.name, country.code, locale)} ${
                       locale === "zh-CN"
-                        ? `摄影作品 ${imageIndex + 1}`
+                        ? `照片 ${String(imageIndex + 1).padStart(2, "0")}`
                         : `photograph ${imageIndex + 1}`
                     }`}
                     fill

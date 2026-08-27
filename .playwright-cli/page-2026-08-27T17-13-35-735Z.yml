@@ -1,0 +1,99 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong Photography home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: Photography / Field Notes
+      - generic [ref=e6]:
+        - navigation "Primary navigation" [ref=e7]:
+          - link "Work" [ref=e8] [cursor=pointer]:
+            - /url: /work
+          - link "Travel" [ref=e9] [cursor=pointer]:
+            - /url: /travel
+          - link "Journeys" [ref=e10] [cursor=pointer]:
+            - /url: /journeys
+          - link "Map" [ref=e11] [cursor=pointer]:
+            - /url: /discover
+          - link "About" [ref=e12] [cursor=pointer]:
+            - /url: /about
+        - group "Language" [ref=e13]:
+          - button "EN" [pressed] [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - paragraph [ref=e21]: 02 / Journeys
+            - heading [level=1] [ref=e22]:
+              - text: Stories that need
+              - emphasis [ref=e23]: more than one frame.
+          - paragraph [ref=e24]: "Journeys are the longer form of the archive: route, sequence, notes, and photographs kept together as one story. Every entry now lives here, inside the same site."
+        - generic [ref=e25]:
+          - article [ref=e26]:
+            - link [ref=e27] [cursor=pointer]:
+              - /url: /journeys/newzealand-2026
+              - img "The road toward Aoraki / Mount Cook" [ref=e28]
+            - generic [ref=e29]:
+              - generic [ref=e30]: J01
+              - generic [ref=e31]:
+                - paragraph [ref=e32]: Journey · New Zealand · 26 April — 02 May 2026
+                - heading "South Island" [level=2] [ref=e33]
+                - paragraph [ref=e34]: A road journal through autumn light, glacial water, and the long distances between Queenstown and Aoraki.
+                - generic [ref=e35]:
+                  - generic [ref=e36]: Queenstown
+                  - generic [ref=e37]: Glenorchy
+                  - generic [ref=e38]: Wānaka
+                  - generic [ref=e39]: Tekapo
+                  - generic [ref=e40]: Aoraki
+                - link "Read the journey" [ref=e41] [cursor=pointer]:
+                  - /url: /journeys/newzealand-2026
+          - article [ref=e45]:
+            - link [ref=e46] [cursor=pointer]:
+              - /url: /journeys/uzbekistan-2026
+              - img "Architecture and winter light in Uzbekistan" [ref=e47]
+            - generic [ref=e48]:
+              - generic [ref=e49]: J02
+              - generic [ref=e50]:
+                - paragraph [ref=e51]: Journey · Uzbekistan · 17 — 24 February 2026
+                - heading "Silk Road, in winter" [level=2] [ref=e52]
+                - paragraph [ref=e53]: A field notebook about blue tile, Soviet geometry, old stories, and three cities connected by rail.
+                - generic [ref=e54]:
+                  - generic [ref=e55]: Tashkent
+                  - generic [ref=e56]: Bukhara
+                  - generic [ref=e57]: Samarkand
+                - link "Read the journey" [ref=e58] [cursor=pointer]:
+                  - /url: /journeys/uzbekistan-2026
+    - contentinfo [ref=e62]:
+      - generic [ref=e63]:
+        - heading "One archive. Three paths through it." [level=2] [ref=e64]
+        - paragraph [ref=e65]: Photography arranged by recurring ideas, lived journeys, and the places that hold them together.
+      - navigation "Primary navigation" [ref=e66]:
+        - link "Home" [ref=e67] [cursor=pointer]:
+          - /url: /
+        - link "Work" [ref=e68] [cursor=pointer]:
+          - /url: /work
+        - link "Travel" [ref=e69] [cursor=pointer]:
+          - /url: /travel
+        - link "Journeys" [ref=e70] [cursor=pointer]:
+          - /url: /journeys
+        - link "Map" [ref=e71] [cursor=pointer]:
+          - /url: /discover
+        - link "About" [ref=e72] [cursor=pointer]:
+          - /url: /about
+        - link "Studio" [ref=e73] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e74]:
+        - paragraph [ref=e75]: Photographer / Software Engineer
+        - link "Email" [ref=e76] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e77] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e78] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e79]:
+        - generic [ref=e80]: © 2026 YueYong
+        - generic [ref=e81]: Photography / Field Notes
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e87] [cursor=pointer]

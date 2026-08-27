@@ -31,79 +31,43 @@ export const HomeView = ({
 
   return (
     <>
-      <section className={styles.page}>
-        <p className={styles.eyebrow}>{copy.home.eyebrow}</p>
-        <h1 className={styles.displayTitle}>
-          {copy.home.titleStart}
-          <br />
-          <em>{copy.home.titleEnd}</em>
-        </h1>
-        <p className={styles.lede}>{copy.home.lede}</p>
+      <section className={`${styles.page} ${styles.homeHero}`}>
+        <div className={styles.homeHeroCopy}>
+          <p className={styles.eyebrow}>{copy.home.eyebrow}</p>
+          <h1 className={styles.displayTitle}>
+            {copy.home.titleStart}
+            <br />
+            <em>{copy.home.titleEnd}</em>
+          </h1>
+        </div>
 
-        <figure className={styles.heroFeature}>
-          <div
-            className={styles.heroImage}
-            style={{ aspectRatio: 1360 / 2400 }}
-          >
+        <figure className={styles.homeHeroFigure}>
+          <div className={styles.homeHeroImage}>
             <Image
-              src="/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg"
+              src="/404.webp"
               alt={copy.home.heroAlt}
               fill
               priority
-              sizes="(min-width: 900px) 60vw, 87vw"
-              className={styles.imageContain}
+              sizes="(min-width: 900px) 42vw, 92vw"
+              className={styles.imageCover}
             />
-          </div>
-          <figcaption
-            className={`${styles.imageCaption} ${styles.heroCaption}`}
-          >
-            <span>{copy.home.heroCaption}</span>
-            <span>
-              {locale === "zh-CN" ? "蒂卡普 · 2026" : "Tekapo · 2026"}
+
+            <span className={styles.homeHeroPhotoIndex} aria-hidden="true">
+              HKG / 01
             </span>
+          </div>
+          <figcaption className={styles.imageCaption}>
+            <span>{copy.home.heroCaption}</span>
+            <span>{locale === "zh-CN" ? "香港" : "Hong Kong"}</span>
           </figcaption>
-
-          <aside
-            className={styles.heroFieldNote}
-            aria-label={copy.home.heroNoteLabel}
-          >
-            <div className={styles.heroFieldNoteHead}>
-              <span>{copy.home.heroNoteLabel}</span>
-              <span aria-hidden="true">04 / 12</span>
-            </div>
-
-            <p className={styles.heroFieldNoteText}>
-              {copy.home.heroNoteText}
-            </p>
-
-            <dl className={styles.heroFieldNoteMeta}>
-              <div>
-                <dt>{copy.home.heroSeriesLabel}</dt>
-                <dd>{copy.home.workEntries[0].title}</dd>
-              </div>
-              <div>
-                <dt>{copy.common.place}</dt>
-                <dd>{locale === "zh-CN" ? "蒂卡普" : "Tekapo"}</dd>
-              </div>
-              <div>
-                <dt>{copy.common.year}</dt>
-                <dd>2026</dd>
-              </div>
-            </dl>
-
-            <Link href="/work" className={styles.textLink}>
-              {copy.home.workLink}
-              <ArrowUpRight size={15} strokeWidth={1.4} />
-            </Link>
-          </aside>
         </figure>
+
       </section>
 
       <section className={`${styles.section} ${styles.sectionWhite}`}>
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>{copy.home.workEyebrow}</p>
           <h2>{copy.home.workTitle}</h2>
-          <p>{copy.home.workDescription}</p>
         </div>
 
         {selectedPhotos.length === 0 ? (
@@ -111,7 +75,6 @@ export const HomeView = ({
             <span>00</span>
             <div>
               <h3>{copy.work.emptyTitle}</h3>
-              <p>{copy.work.emptyDescription}</p>
             </div>
           </div>
         ) : (
@@ -120,10 +83,6 @@ export const HomeView = ({
               const localizedEntry = copy.home.workEntries[index];
               const title =
                 entry.title || localizedEntry?.title || copy.common.untitled;
-              const description =
-                entry.description ||
-                localizedEntry?.description ||
-                copy.home.workDescription;
               const aspectRatio =
                 entry.width && entry.height
                   ? entry.width / entry.height
@@ -151,7 +110,6 @@ export const HomeView = ({
                   <div className={styles.homeWorkMeta}>
                     <span>{String(index + 1).padStart(2, "0")}</span>
                     <h3>{title}</h3>
-                    <p>{description}</p>
                   </div>
                 </Link>
               );
@@ -170,7 +128,6 @@ export const HomeView = ({
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>{copy.home.journeysEyebrow}</p>
           <h2>{copy.home.journeysTitle}</h2>
-          <p>{copy.home.journeysDescription}</p>
         </div>
 
         <Link
@@ -181,7 +138,7 @@ export const HomeView = ({
             src="/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg"
             alt={
               locale === "zh-CN"
-                ? "新西兰 2026 旅程"
+                ? "通往奥拉基的公路，新西兰南岛 2026 旅行记录"
                 : "New Zealand 2026 journey"
             }
             fill
@@ -200,7 +157,6 @@ export const HomeView = ({
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>{copy.home.travelEyebrow}</p>
           <h2>{copy.home.travelTitle}</h2>
-          <p>{copy.home.travelDescription}</p>
         </div>
 
         <div className={styles.atlasTeaser}>

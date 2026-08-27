@@ -12,7 +12,7 @@ export const generateMetadata = async ({ params }: Props) => {
 
   return {
     title: photo?.title || "Photograph",
-    description: photo?.description || "A photograph from YueYong's archive.",
+    description: photo?.description || "Photograph by YueYong.",
   };
 };
 

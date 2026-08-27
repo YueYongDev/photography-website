@@ -1,0 +1,139 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e92] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: 摄影 / 旅行手记
+      - generic [ref=e6]:
+        - navigation "主导航" [ref=e93]:
+          - link "精选" [ref=e94] [cursor=pointer]:
+            - /url: /work
+          - link "足迹" [ref=e95] [cursor=pointer]:
+            - /url: /travel
+          - link "旅程" [ref=e96] [cursor=pointer]:
+            - /url: /journeys
+          - link "地图" [ref=e97] [cursor=pointer]:
+            - /url: /discover
+          - link "关于" [ref=e98] [cursor=pointer]:
+            - /url: /about
+        - group "语言" [ref=e99]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [pressed] [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e128]:
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - paragraph [ref=e131]: 03 / 足迹
+            - heading [level=1] [ref=e132]:
+              - text: 照片从哪里来，
+              - emphasis [ref=e133]: 就放回哪里。
+          - paragraph [ref=e134]: 这里按国家和城市整理全部照片。每个国家可以继续展开到城市，也可以换成地图来找。
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - generic [ref=e137]:
+              - generic [ref=e138]: 去过的国家
+              - strong [ref=e139]: "03"
+            - generic [ref=e140]:
+              - generic [ref=e141]: 到过的城市
+              - strong [ref=e142]: "05"
+            - generic [ref=e143]:
+              - generic [ref=e144]: 影像
+              - strong [ref=e145]: "021"
+          - generic "浏览方式" [ref=e146]:
+            - link "去过的国家" [ref=e147] [cursor=pointer]:
+              - /url: /travel
+            - link "从地图找" [ref=e150] [cursor=pointer]:
+              - /url: /discover
+        - generic [ref=e153]:
+          - link "T01 / NZ 新西兰 奥拉基 / 库克山 · 蒂卡普湖 · 瓦纳卡 地点 03 影像 12 年份 2026 看看在这里拍了什么 新西兰 在这里拍下的第 1 张照片 新西兰 在这里拍下的第 2 张照片 新西兰 在这里拍下的第 3 张照片" [ref=e154] [cursor=pointer]:
+            - /url: /travel/nz
+            - generic [ref=e155]:
+              - generic [ref=e156]: T01 / NZ
+              - heading "新西兰" [level=2] [ref=e157]
+              - paragraph [ref=e158]: 奥拉基 / 库克山 · 蒂卡普湖 · 瓦纳卡
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - term [ref=e161]: 地点
+                  - definition [ref=e162]: "03"
+                - generic [ref=e163]:
+                  - term [ref=e164]: 影像
+                  - definition [ref=e165]: "12"
+                - generic [ref=e166]:
+                  - term [ref=e167]: 年份
+                  - definition [ref=e168]: "2026"
+              - generic [ref=e169]: 看看在这里拍了什么
+            - generic [ref=e173]:
+              - img "新西兰 在这里拍下的第 1 张照片" [ref=e175]
+              - img "新西兰 在这里拍下的第 2 张照片" [ref=e177]
+              - img "新西兰 在这里拍下的第 3 张照片" [ref=e179]
+          - link "T02 / AU 澳大利亚 悉尼 地点 01 影像 08 年份 2026 看看在这里拍了什么 澳大利亚 在这里拍下的第 1 张照片" [ref=e180] [cursor=pointer]:
+            - /url: /travel/au
+            - generic [ref=e181]:
+              - generic [ref=e182]: T02 / AU
+              - heading "澳大利亚" [level=2] [ref=e183]
+              - paragraph [ref=e184]: 悉尼
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - term [ref=e187]: 地点
+                  - definition [ref=e188]: "01"
+                - generic [ref=e189]:
+                  - term [ref=e190]: 影像
+                  - definition [ref=e191]: "08"
+                - generic [ref=e192]:
+                  - term [ref=e193]: 年份
+                  - definition [ref=e194]: "2026"
+              - generic [ref=e195]: 看看在这里拍了什么
+            - img "澳大利亚 在这里拍下的第 1 张照片" [ref=e201]
+          - link "T03 / UZ 乌兹别克斯坦 撒马尔罕 地点 01 影像 01 年份 2026 看看在这里拍了什么 乌兹别克斯坦 在这里拍下的第 1 张照片" [ref=e202] [cursor=pointer]:
+            - /url: /travel/uz
+            - generic [ref=e203]:
+              - generic [ref=e204]: T03 / UZ
+              - heading "乌兹别克斯坦" [level=2] [ref=e205]
+              - paragraph [ref=e206]: 撒马尔罕
+              - generic [ref=e207]:
+                - generic [ref=e208]:
+                  - term [ref=e209]: 地点
+                  - definition [ref=e210]: "01"
+                - generic [ref=e211]:
+                  - term [ref=e212]: 影像
+                  - definition [ref=e213]: "01"
+                - generic [ref=e214]:
+                  - term [ref=e215]: 年份
+                  - definition [ref=e216]: "2026"
+              - generic [ref=e217]: 看看在这里拍了什么
+            - img "乌兹别克斯坦 在这里拍下的第 1 张照片" [ref=e223]
+    - contentinfo [ref=e62]:
+      - generic [ref=e63]:
+        - heading "相机跟着我出门，照片回到这里。" [level=2] [ref=e117]
+        - paragraph [ref=e65]: 想看照片，可以去精选或足迹。想把一趟路从头看到尾，就去旅程。
+      - navigation "主导航" [ref=e118]:
+        - link "首页" [ref=e119] [cursor=pointer]:
+          - /url: /
+        - link "精选" [ref=e120] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [active] [ref=e121] [cursor=pointer]:
+          - /url: /travel
+        - link "旅程" [ref=e122] [cursor=pointer]:
+          - /url: /journeys
+        - link "地图" [ref=e123] [cursor=pointer]:
+          - /url: /discover
+        - link "关于" [ref=e124] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e125] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e74]:
+        - paragraph [ref=e75]: 摄影师 / 软件工程师
+        - link "邮箱" [ref=e126] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e77] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e78] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e79]:
+        - generic [ref=e80]: © 2026 YueYong
+        - generic [ref=e81]: 摄影 / 旅行手记
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e87] [cursor=pointer]
+  - alert [ref=e91]: 照片从哪里来， 就放回哪里。

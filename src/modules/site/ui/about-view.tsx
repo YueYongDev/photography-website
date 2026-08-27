@@ -26,7 +26,6 @@ export const AboutView = () => {
           <p className={styles.eyebrow}>{copy.about.eyebrow}</p>
           <h1>{copy.about.title}</h1>
           <p>{copy.about.paragraphOne}</p>
-          <p>{copy.about.paragraphTwo}</p>
         </div>
       </div>
 

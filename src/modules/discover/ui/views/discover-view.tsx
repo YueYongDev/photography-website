@@ -14,7 +14,6 @@ export const DiscoverView = () => {
           <p className={styles.eyebrow}>{copy.discover.eyebrow}</p>
           <h1>{copy.discover.title}</h1>
         </div>
-        <p>{copy.discover.lede}</p>
       </div>
       <div className={styles.mapFrame}>
         <MapSection />

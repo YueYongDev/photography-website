@@ -17,14 +17,18 @@ const getArchive = cache(async (): Promise<TravelArchive> => {
   }
 });
 
-export const generateMetadata = async ({ params }: { params: Params }): Promise<Metadata> => {
+export const generateMetadata = async ({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> => {
   const { countryCode } = await params;
   const country = getCountryGroups(await getArchive()).find(
     (group) => group.code.toLowerCase() === countryCode.toLowerCase()
   );
   return {
-    title: country ? `${country.name} — Travel` : "Country — Travel",
-    description: country ? `Photographs from ${country.name}, organized by city.` : undefined,
+    title: country ? `${country.name} · Places` : "Country · Places",
+    description: country ? `Photographs from ${country.name}.` : undefined,
   };
 };
 

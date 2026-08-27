@@ -6,8 +6,7 @@ import { trpc } from "@/trpc/server";
 
 export const metadata: Metadata = {
   title: "Journeys",
-  description:
-    "Long-form photographic stories by YueYong, kept together in one archive.",
+  description: "Journey photographs and notes by YueYong.",
 };
 
 const JourneysPage = async () => {

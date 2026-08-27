@@ -3,8 +3,7 @@ import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Journeys",
-  description:
-    "Blog has moved to Journeys, the long-form stories inside YueYong's photography archive.",
+  description: "Journey photographs and notes by YueYong.",
 };
 
 const BlogPage = () => {

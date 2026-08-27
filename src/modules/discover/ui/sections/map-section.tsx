@@ -166,7 +166,10 @@ const MapSectionContent = () => {
             className={styles.imageCover}
           />
         </div>
-        <span>{group.countryCode ?? "—"} · {group.photos.length} frames</span>
+        <span>
+          {group.countryCode ?? copy.common.notRecorded} · {group.photos.length}{" "}
+          {copy.common.frames}
+        </span>
         <strong>{localizePlaceName(group.city, locale)}</strong>
         <small>{copy.map.openCity}</small>
       </button>

@@ -1,0 +1,95 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e117] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: 摄影 / 旅行手记
+      - generic [ref=e6]:
+        - navigation "主导航" [ref=e118]:
+          - link "精选" [ref=e119] [cursor=pointer]:
+            - /url: /work
+          - link "足迹" [ref=e120] [cursor=pointer]:
+            - /url: /travel
+          - link "旅程" [ref=e121] [cursor=pointer]:
+            - /url: /journeys
+          - link "地图" [ref=e122] [cursor=pointer]:
+            - /url: /discover
+          - link "关于" [active] [ref=e123] [cursor=pointer]:
+            - /url: /about
+        - group "语言" [ref=e124]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [pressed] [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e205]:
+        - generic [ref=e206]:
+          - img "站在悉尼大学主楼前的 YueYong" [ref=e208]
+          - generic [ref=e209]:
+            - paragraph [ref=e210]: 05 / 关于
+            - heading "YueYong，软件工程师。" [level=1] [ref=e211]
+            - paragraph [ref=e212]: 我平时写代码。旅行时会带一台 Sony A6700，拍城市、道路、湖边和同行的人。
+            - paragraph [ref=e213]: 这个网站也是我自己写的。照片页保留拍摄地点、日期和相机参数，行程较完整的部分另做成旅行记录。
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - text: "01"
+            - heading "拍摄内容" [level=2] [ref=e216]
+            - paragraph [ref=e217]: 城市、道路、湖泊，以及旅行中遇到的人。大多不摆拍。
+          - generic [ref=e218]:
+            - text: "02"
+            - heading "相机与镜头" [level=2] [ref=e219]
+            - list [ref=e220]:
+              - listitem [ref=e221]: Sony Alpha ILCE-6700
+              - listitem [ref=e222]: Tamron 18–300mm
+              - listitem [ref=e223]: Sigma 18–50mm F2.8
+              - listitem [ref=e224]: Viltrox 27mm F1.2
+              - listitem [ref=e225]: DJI Mini 4 Pro
+          - generic [ref=e226]:
+            - text: "03"
+            - heading "找到我" [level=2] [ref=e227]
+            - list [ref=e228]:
+              - listitem [ref=e229]:
+                - link "邮箱" [ref=e230] [cursor=pointer]:
+                  - /url: mailto:yueyong1030@outlook.com
+              - listitem [ref=e231]:
+                - link "Instagram" [ref=e232] [cursor=pointer]:
+                  - /url: https://www.instagram.com/yueyong.lyy
+              - listitem [ref=e233]:
+                - link "GitHub" [ref=e234] [cursor=pointer]:
+                  - /url: https://github.com/YueYongDev
+              - listitem [ref=e235]:
+                - link "小红书" [ref=e236] [cursor=pointer]:
+                  - /url: https://www.xiaohongshu.com/user/profile/5c1313b60000000007003641
+    - contentinfo [ref=e87]:
+      - generic [ref=e88]:
+        - heading "YueYong Photography" [level=2] [ref=e141]
+        - paragraph [ref=e90]: 个人摄影网站。照片按精选、旅行记录和拍摄地点浏览。
+      - navigation "主导航" [ref=e142]:
+        - link "首页" [ref=e143] [cursor=pointer]:
+          - /url: /
+        - link "精选" [ref=e144] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [ref=e145] [cursor=pointer]:
+          - /url: /travel
+        - link "旅程" [ref=e146] [cursor=pointer]:
+          - /url: /journeys
+        - link "地图" [ref=e147] [cursor=pointer]:
+          - /url: /discover
+        - link "关于" [ref=e148] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e149] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e99]:
+        - paragraph [ref=e100]: 摄影师 / 软件工程师
+        - link "邮箱" [ref=e150] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e102] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e103] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e104]:
+        - generic [ref=e105]: © 2026 YueYong
+        - generic [ref=e106]: 摄影 / 旅行手记
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e112] [cursor=pointer]
+  - alert [ref=e116]: YueYong，软件工程师。

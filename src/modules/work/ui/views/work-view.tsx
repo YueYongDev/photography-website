@@ -52,14 +52,12 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
         <br />
         <em>{copy.work.titleEnd}</em>
       </h1>
-      <p className={styles.lede}>{copy.work.lede}</p>
 
       {photos.length === 0 ? (
         <div className={styles.archiveEmpty}>
           <span>00</span>
           <div>
             <h2>{copy.work.emptyTitle}</h2>
-            <p>{copy.work.emptyDescription}</p>
           </div>
         </div>
       ) : (

@@ -9,8 +9,8 @@ import styles from "./public-site.module.css";
 
 const navigation = [
   { key: "work", href: "/work" },
-  { key: "travel", href: "/travel" },
   { key: "journeys", href: "/journeys" },
+  { key: "travel", href: "/travel" },
   { key: "map", href: "/discover" },
   { key: "about", href: "/about" },
 ] as const;

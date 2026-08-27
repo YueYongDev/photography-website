@@ -2,8 +2,8 @@ import { TravelView, type TravelArchive } from "@/modules/travel/ui/views/travel
 import { trpc } from "@/trpc/server";
 
 export const metadata = {
-  title: "Travel",
-  description: "YueYong's photographic travel archive, organized by country.",
+  title: "Places",
+  description: "Photographs by country and city.",
 };
 
 export const dynamic = "force-dynamic";

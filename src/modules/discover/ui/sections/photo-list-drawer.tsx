@@ -219,7 +219,7 @@ export const PhotoListDrawer = ({
           <div className="space-y-4 p-2 sm:p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">
-                {copy.map.photos}{filterLabel ? ` — ${filterLabel}` : ""}
+                {copy.map.photos}{filterLabel ? ` · ${filterLabel}` : ""}
               </h2>
               <span className="text-sm text-muted-foreground">
                 {photoAlbumPhotos.length} {copy.map.items}

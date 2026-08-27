@@ -23,12 +23,18 @@ const findCity = cache(async (countryCode: string, citySlug: string) => {
   return { country, city };
 });
 
-export const generateMetadata = async ({ params }: { params: Params }): Promise<Metadata> => {
+export const generateMetadata = async ({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> => {
   const { countryCode, citySlug } = await params;
   const { country, city } = await findCity(countryCode, citySlug);
   return {
-    title: city ? `${city.city} — ${country?.name}` : "Place — Travel",
-    description: city ? `A photographic place study from ${city.city}, ${country?.name}.` : undefined,
+    title: city ? `${city.city} · ${country?.name}` : "Place · Travel",
+    description: city
+      ? `Photographs from ${city.city}, ${country?.name}.`
+      : undefined,
   };
 };
 

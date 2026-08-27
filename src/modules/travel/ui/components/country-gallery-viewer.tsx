@@ -38,12 +38,12 @@ const viewerCopy = {
     fallback: "The rest of this place is temporarily unavailable.",
   },
   "zh-CN": {
-    close: "关闭影集",
+    close: "关闭这一组照片",
     previous: "上一张照片",
     next: "下一张照片",
-    opening: "照片正在打开…",
-    details: "进入城市页面",
-    fallback: "这个城市的其他照片暂时无法载入。",
+    opening: "正在打开照片…",
+    details: "查看这座城市的全部照片",
+    fallback: "这座城市的其他照片暂时加载失败。",
   },
 } as const;
 
@@ -260,7 +260,7 @@ export const CountryGalleryViewer = ({
           </Link>
         </div>
         <p className={styles.countryViewerCount} aria-live="polite">
-          {String(activeIndex + 1).padStart(2, "0")} —{" "}
+          {String(activeIndex + 1).padStart(2, "0")} ·{" "}
           {String(photos.length).padStart(2, "0")}
         </p>
       </footer>

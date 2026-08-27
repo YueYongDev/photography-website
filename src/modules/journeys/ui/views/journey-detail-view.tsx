@@ -86,7 +86,7 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
         />
         <figcaption>
           <span>{content.country}</span>
-          <span>{content.route.join(" — ")}</span>
+          <span>{content.route.join(" · ")}</span>
         </figcaption>
       </figure>
 

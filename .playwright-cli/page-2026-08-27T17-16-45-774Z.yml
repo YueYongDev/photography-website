@@ -1,0 +1,100 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e92] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: 摄影 / 旅行手记
+      - generic [ref=e6]:
+        - navigation "主导航" [ref=e93]:
+          - link "精选" [ref=e94] [cursor=pointer]:
+            - /url: /work
+          - link "足迹" [ref=e95] [cursor=pointer]:
+            - /url: /travel
+          - link "旅程" [active] [ref=e96] [cursor=pointer]:
+            - /url: /journeys
+          - link "地图" [ref=e97] [cursor=pointer]:
+            - /url: /discover
+          - link "关于" [ref=e98] [cursor=pointer]:
+            - /url: /about
+        - group "语言" [ref=e99]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [pressed] [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e285]:
+        - generic [ref=e286]:
+          - generic [ref=e287]:
+            - paragraph [ref=e288]: 02 / 旅程
+            - heading [level=1] [ref=e289]:
+              - text: 照片拍完了，
+              - emphasis [ref=e290]: 路还没有讲完。
+          - paragraph [ref=e291]: 一篇旅程从出发写到回来，路线和照片按顺序放在一起。途中写下的短笔记也收在这里。
+        - generic [ref=e292]:
+          - article [ref=e293]:
+            - link [ref=e294] [cursor=pointer]:
+              - /url: /journeys/newzealand-2026
+              - img "通往奥拉基 / 库克山的公路" [ref=e295]
+            - generic [ref=e296]:
+              - generic [ref=e297]: J01
+              - generic [ref=e298]:
+                - paragraph [ref=e299]: 旅行记录 · 新西兰 · 2026 年 4 月 26 日至 5 月 2 日
+                - heading "南岛" [level=2] [ref=e300]
+                - paragraph [ref=e301]: 2026 年秋天，从皇后镇一路开到奥拉基。七天里走过几段很长的公路，天气也变了好几次。
+                - generic [ref=e302]:
+                  - generic [ref=e303]: 皇后镇
+                  - generic [ref=e304]: 格林诺奇
+                  - generic [ref=e305]: 瓦纳卡
+                  - generic [ref=e306]: 蒂卡普
+                  - generic [ref=e307]: 奥拉基
+                - link "从头看这趟旅程" [ref=e308] [cursor=pointer]:
+                  - /url: /journeys/newzealand-2026
+          - article [ref=e312]:
+            - link [ref=e313] [cursor=pointer]:
+              - /url: /journeys/uzbekistan-2026
+              - img "乌兹别克斯坦的建筑与冬日光线" [ref=e314]
+            - generic [ref=e315]:
+              - generic [ref=e316]: J02
+              - generic [ref=e317]:
+                - paragraph [ref=e318]: 旅行记录 · 乌兹别克斯坦 · 2026 年 2 月 17 日至 24 日
+                - heading "乌兹别克斯坦的冬天" [level=2] [ref=e319]
+                - paragraph [ref=e320]: 2026 年冬天，坐火车走过塔什干、布哈拉和撒马尔罕。一路看了许多蓝色瓷砖，也吹了不少冷风。
+                - generic [ref=e321]:
+                  - generic [ref=e322]: 塔什干
+                  - generic [ref=e323]: 布哈拉
+                  - generic [ref=e324]: 撒马尔罕
+                - link "从头看这趟旅程" [ref=e325] [cursor=pointer]:
+                  - /url: /journeys/uzbekistan-2026
+    - contentinfo [ref=e62]:
+      - generic [ref=e63]:
+        - heading "相机跟着我出门，照片回到这里。" [level=2] [ref=e117]
+        - paragraph [ref=e65]: 想看照片，可以去精选或足迹。想把一趟路从头看到尾，就去旅程。
+      - navigation "主导航" [ref=e118]:
+        - link "首页" [ref=e119] [cursor=pointer]:
+          - /url: /
+        - link "精选" [ref=e120] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [ref=e121] [cursor=pointer]:
+          - /url: /travel
+        - link "旅程" [ref=e122] [cursor=pointer]:
+          - /url: /journeys
+        - link "地图" [ref=e123] [cursor=pointer]:
+          - /url: /discover
+        - link "关于" [ref=e124] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e125] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e74]:
+        - paragraph [ref=e75]: 摄影师 / 软件工程师
+        - link "邮箱" [ref=e126] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e77] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e78] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e79]:
+        - generic [ref=e80]: © 2026 YueYong
+        - generic [ref=e81]: 摄影 / 旅行手记
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e87] [cursor=pointer]
+  - alert [ref=e91]: 照片拍完了， 路还没有讲完。

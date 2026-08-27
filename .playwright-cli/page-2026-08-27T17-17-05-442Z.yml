@@ -1,0 +1,146 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e92] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: 摄影 / 旅行手记
+      - generic [ref=e6]:
+        - navigation "主导航" [ref=e93]:
+          - link "精选" [ref=e94] [cursor=pointer]:
+            - /url: /work
+          - link "足迹" [ref=e95] [cursor=pointer]:
+            - /url: /travel
+          - link "旅程" [ref=e96] [cursor=pointer]:
+            - /url: /journeys
+          - link "地图" [ref=e97] [cursor=pointer]:
+            - /url: /discover
+          - link "关于" [ref=e98] [cursor=pointer]:
+            - /url: /about
+        - group "语言" [ref=e99]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [pressed] [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - article [ref=e329]:
+        - generic [ref=e330]:
+          - link "回到全部旅程" [ref=e331] [cursor=pointer]:
+            - /url: /journeys
+          - generic [ref=e334]:
+            - generic [ref=e335]:
+              - paragraph [ref=e336]: NZ / 2026
+              - heading "南岛" [level=1] [ref=e337]
+            - generic [ref=e338]:
+              - paragraph [ref=e339]: 从皇后镇开到奥拉基的七天
+              - generic [ref=e340]: 2026 年 4 月 26 日至 5 月 2 日
+        - figure "新西兰 皇后镇 — 格林诺奇 — 瓦纳卡 — 蒂卡普 — 奥拉基" [ref=e341]:
+          - img "通往奥拉基 / 库克山的公路" [ref=e342]
+          - generic [ref=e343]:
+            - generic [ref=e344]: 新西兰
+            - generic [ref=e345]: 皇后镇 — 格林诺奇 — 瓦纳卡 — 蒂卡普 — 奥拉基
+        - generic [ref=e346]:
+          - paragraph [ref=e347]: 出发之前
+          - paragraph [ref=e348]: 南岛一共走了七天。每天开车、停车，再上路。回来看照片，我记得最清楚的是临时靠边的那几分钟。风停了，云散开了，也有人刚好走进画面。
+        - generic [ref=e349]:
+          - navigation "这次经过" [ref=e350]:
+            - button "01 林迪斯山口" [ref=e352] [cursor=pointer]:
+              - generic [ref=e353]: "01"
+              - strong [ref=e354]: 林迪斯山口
+            - button "02 格林诺奇" [ref=e355] [cursor=pointer]:
+              - generic [ref=e356]: "02"
+              - strong [ref=e357]: 格林诺奇
+            - button "03 蒂卡普湖" [ref=e358] [cursor=pointer]:
+              - generic [ref=e359]: "03"
+              - strong [ref=e360]: 蒂卡普湖
+          - generic [ref=e361]:
+            - generic [ref=e362]:
+              - generic [ref=e363]:
+                - paragraph [ref=e364]: 01 / 林迪斯山口
+                - heading "先上路" [level=2] [ref=e365]
+                - paragraph [ref=e366]: 从皇后镇往北开，城镇很快就被甩在身后。林迪斯山口的路很长，车窗外几乎没有建筑，只有起伏的山和不断往前延伸的白线。
+                - paragraph [ref=e367]: 那天在路边停了好几次。没有特别的目的，眼前这段路值得拍下来就够了。
+              - figure "01 / 林迪斯山口 林迪斯山口，临时靠边拍的一张。" [ref=e368]:
+                - img "穿过林迪斯山口开阔地貌的公路" [ref=e370]
+                - generic [ref=e371]:
+                  - generic [ref=e372]: 01 / 林迪斯山口
+                  - generic [ref=e373]: 林迪斯山口，临时靠边拍的一张。
+            - generic [ref=e374]:
+              - generic [ref=e375]:
+                - paragraph [ref=e376]: 02 / 格林诺奇
+                - heading "格林诺奇的傍晚" [level=2] [ref=e377]
+                - paragraph [ref=e378]: 到格林诺奇时已经接近傍晚。山离得很近，站在路边抬头看，比照片里见过的更有压迫感。
+                - paragraph [ref=e379]: 我在原地等了一会儿，最后一点光落到山脊上。画面里那个人很小，山的大小也有了参照。
+              - figure "02 / 格林诺奇 太阳落下前，山顶还亮着。" [ref=e380]:
+                - img "格林诺奇山峰上的光" [ref=e382]
+                - generic [ref=e383]:
+                  - generic [ref=e384]: 02 / 格林诺奇
+                  - generic [ref=e385]: 太阳落下前，山顶还亮着。
+            - generic [ref=e386]:
+              - generic [ref=e387]:
+                - paragraph [ref=e388]: 03 / 蒂卡普湖
+                - heading "蒂卡普的风" [level=2] [ref=e389]
+                - paragraph [ref=e390]: 蒂卡普的湖水很蓝，那天的风也很大。岸边站不了多久，说话都有些听不清。
+                - paragraph [ref=e391]: 我退得很远拍了这张。后来再看，画面里那个很小的人最先抓住了我。
+              - figure "03 / 蒂卡普湖 湖边风很大，他一个人站了一会儿。" [ref=e392]:
+                - img "蒂卡普湖岸边的独行者" [ref=e394]
+                - generic [ref=e395]:
+                  - generic [ref=e396]: 03 / 蒂卡普湖
+                  - generic [ref=e397]: 湖边风很大，他一个人站了一会儿。
+        - generic [ref=e398]:
+          - generic [ref=e399]:
+            - paragraph [ref=e400]: 路上还拍了这些
+            - generic [ref=e401]: 03 影像
+          - generic [ref=e402]:
+            - figure "01 / 蒂卡普湖 天快黑时的蒂卡普湖。" [ref=e403]:
+              - img "蒂卡普湖全景" [ref=e405]
+              - generic [ref=e406]:
+                - generic [ref=e407]: 01 / 蒂卡普湖
+                - generic [ref=e408]: 天快黑时的蒂卡普湖。
+            - figure "02 / 蒂卡普湖 大家都在拍湖，我拍了拍照的人。" [ref=e409]:
+              - img "在蒂卡普湖拍摄风景的人" [ref=e411]
+              - generic [ref=e412]:
+                - generic [ref=e413]: 02 / 蒂卡普湖
+                - generic [ref=e414]: 大家都在拍湖，我拍了拍照的人。
+            - figure "03 / 瓦纳卡 在瓦纳卡湖边歇一会儿。" [ref=e415]:
+              - img "瓦纳卡湖边的相机与笔记本" [ref=e417]
+              - generic [ref=e418]:
+                - generic [ref=e419]: 03 / 瓦纳卡
+                - generic [ref=e420]: 在瓦纳卡湖边歇一会儿。
+        - generic [ref=e421]:
+          - paragraph [ref=e422]: 旅程结束以后
+          - blockquote [ref=e423]: 最后一天到了奥拉基，这趟路也走完了。回来整理照片，途中临时停车的地方入选最多。它们在地图上可能没有名字，我还记得当时的风和光。
+          - link "继续看新西兰的照片" [ref=e424] [cursor=pointer]:
+            - /url: /travel/nz
+    - contentinfo [ref=e62]:
+      - generic [ref=e63]:
+        - heading "相机跟着我出门，照片回到这里。" [level=2] [ref=e117]
+        - paragraph [ref=e65]: 想看照片，可以去精选或足迹。想把一趟路从头看到尾，就去旅程。
+      - navigation "主导航" [ref=e118]:
+        - link "首页" [ref=e119] [cursor=pointer]:
+          - /url: /
+        - link "精选" [ref=e120] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [ref=e121] [cursor=pointer]:
+          - /url: /travel
+        - link "旅程" [ref=e122] [cursor=pointer]:
+          - /url: /journeys
+        - link "地图" [ref=e123] [cursor=pointer]:
+          - /url: /discover
+        - link "关于" [ref=e124] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e125] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e74]:
+        - paragraph [ref=e75]: 摄影师 / 软件工程师
+        - link "邮箱" [ref=e126] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e77] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e78] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e79]:
+        - generic [ref=e80]: © 2026 YueYong
+        - generic [ref=e81]: 摄影 / 旅行手记
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e87] [cursor=pointer]
+  - alert [ref=e91]: 南岛

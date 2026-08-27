@@ -72,22 +72,47 @@ const PhotographSectionSuspense = ({ id }: Props) => {
     data.country
       ? localizeCountryName(data.country, data.countryCode, locale)
       : null,
-  ].filter(Boolean).join(locale === "zh-CN" ? "，" : ", ") || copy.photo.locationUnknown;
+  ].filter(Boolean).join(locale === "zh-CN" ? "，" : ", ") ||
+    copy.photo.locationUnknown;
 
   const specs = [
-    [copy.photo.camera, [data.make, data.model].filter(Boolean).join(" ") || copy.common.notRecorded],
+    [
+      copy.photo.camera,
+      [data.make, data.model].filter(Boolean).join(" ") ||
+        copy.common.notRecorded,
+    ],
     [copy.photo.lens, data.lensModel || copy.common.notRecorded],
-    [copy.photo.focalLength, data.focalLength35mm ? `${data.focalLength35mm}mm` : "—"],
-    [copy.photo.aperture, data.fNumber ? `ƒ/${data.fNumber}` : "—"],
-    [copy.photo.exposure, data.exposureTime ? formatExposureTime(data.exposureTime) : "—"],
-    [copy.photo.sensitivity, data.iso ? `ISO ${data.iso}` : "—"],
+    [
+      copy.photo.focalLength,
+      data.focalLength35mm
+        ? `${data.focalLength35mm}mm`
+        : copy.common.notRecorded,
+    ],
+    [
+      copy.photo.aperture,
+      data.fNumber ? `ƒ/${data.fNumber}` : copy.common.notRecorded,
+    ],
+    [
+      copy.photo.exposure,
+      data.exposureTime
+        ? formatExposureTime(data.exposureTime)
+        : copy.common.notRecorded,
+    ],
+    [
+      copy.photo.sensitivity,
+      data.iso ? `ISO ${data.iso}` : copy.common.notRecorded,
+    ],
     [copy.photo.date, date],
     [copy.common.place, location],
   ];
 
   return (
     <section className={`${styles.page} ${styles.photoPage}`}>
-      <button type="button" onClick={() => router.back()} className={styles.photoBack}>
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className={styles.photoBack}
+      >
         <ArrowLeft size={15} strokeWidth={1.4} /> {copy.photo.back}
       </button>
 
@@ -104,9 +129,11 @@ const PhotographSectionSuspense = ({ id }: Props) => {
 
       <div className={styles.photoInfo}>
         <div>
-          <p className={styles.eyebrow}>{copy.photo.photograph} / {data.countryCode || copy.common.archive}</p>
+          <p className={styles.eyebrow}>
+            {copy.photo.photograph} / {data.countryCode || copy.common.archive}
+          </p>
           <h1>{data.title || copy.common.untitled}</h1>
-          <p>{locale === "en" && data.description ? data.description : copy.photo.fallbackDescription}</p>
+          {locale === "en" && data.description && <p>{data.description}</p>}
         </div>
 
         <div className={styles.photoSpecs}>

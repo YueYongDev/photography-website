@@ -4,8 +4,7 @@ import { SiteConceptView } from "@/modules/concept/ui/views/site-concept-view";
 
 export const metadata: Metadata = {
   title: "Site Concept",
-  description:
-    "A work-led concept for YueYong Photography: selected work, journeys, and a geographic atlas.",
+  description: "YueYong Photography site concept.",
 };
 
 export default function ConceptPage() {

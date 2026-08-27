@@ -1,0 +1,95 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e92] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: 摄影 / 旅行手记
+      - generic [ref=e6]:
+        - navigation "主导航" [ref=e93]:
+          - link "精选" [ref=e94] [cursor=pointer]:
+            - /url: /work
+          - link "足迹" [ref=e95] [cursor=pointer]:
+            - /url: /travel
+          - link "旅程" [ref=e96] [cursor=pointer]:
+            - /url: /journeys
+          - link "地图" [ref=e97] [cursor=pointer]:
+            - /url: /discover
+          - link "关于" [active] [ref=e98] [cursor=pointer]:
+            - /url: /about
+        - group "语言" [ref=e99]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [pressed] [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e253]:
+        - generic [ref=e254]:
+          - img "站在悉尼大学主楼前的 YueYong" [ref=e256]
+          - generic [ref=e257]:
+            - paragraph [ref=e258]: 05 / 关于
+            - heading "我是 YueYong。写代码，也拍照。" [level=1] [ref=e259]
+            - paragraph [ref=e260]: 旅行时，我习惯把相机带在身边。城市、山路和湖边都会拍，镜头里也常有同行的人。遇到想多看一会儿的画面，我就停下来拍一张。
+            - paragraph [ref=e261]: 这个网站用来整理这些年带回来的照片。精选里放我挑出的部分，足迹按拍摄地点归档，旅程则把一整段路从头讲完。
+        - generic [ref=e262]:
+          - generic [ref=e263]:
+            - text: "01"
+            - heading "镜头通常对着哪里" [level=2] [ref=e264]
+            - paragraph [ref=e265]: 旅行途中遇见的人、道路和风景。大多顺手拍下，不摆拍，也不限定题材。
+          - generic [ref=e266]:
+            - text: "02"
+            - heading "出门常带的器材" [level=2] [ref=e267]
+            - list [ref=e268]:
+              - listitem [ref=e269]: Sony Alpha ILCE-6700
+              - listitem [ref=e270]: Tamron 18–300mm
+              - listitem [ref=e271]: Sigma 18–50mm F2.8
+              - listitem [ref=e272]: Viltrox 27mm F1.2
+              - listitem [ref=e273]: DJI Mini 4 Pro
+          - generic [ref=e274]:
+            - text: "03"
+            - heading "找到我" [level=2] [ref=e275]
+            - list [ref=e276]:
+              - listitem [ref=e277]:
+                - link "邮箱" [ref=e278] [cursor=pointer]:
+                  - /url: mailto:yueyong1030@outlook.com
+              - listitem [ref=e279]:
+                - link "Instagram" [ref=e280] [cursor=pointer]:
+                  - /url: https://www.instagram.com/yueyong.lyy
+              - listitem [ref=e281]:
+                - link "GitHub" [ref=e282] [cursor=pointer]:
+                  - /url: https://github.com/YueYongDev
+              - listitem [ref=e283]:
+                - link "小红书" [ref=e284] [cursor=pointer]:
+                  - /url: https://www.xiaohongshu.com/user/profile/5c1313b60000000007003641
+    - contentinfo [ref=e62]:
+      - generic [ref=e63]:
+        - heading "相机跟着我出门，照片回到这里。" [level=2] [ref=e117]
+        - paragraph [ref=e65]: 想看照片，可以去精选或足迹。想把一趟路从头看到尾，就去旅程。
+      - navigation "主导航" [ref=e118]:
+        - link "首页" [ref=e119] [cursor=pointer]:
+          - /url: /
+        - link "精选" [ref=e120] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [ref=e121] [cursor=pointer]:
+          - /url: /travel
+        - link "旅程" [ref=e122] [cursor=pointer]:
+          - /url: /journeys
+        - link "地图" [ref=e123] [cursor=pointer]:
+          - /url: /discover
+        - link "关于" [ref=e124] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e125] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e74]:
+        - paragraph [ref=e75]: 摄影师 / 软件工程师
+        - link "邮箱" [ref=e126] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e77] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e78] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e79]:
+        - generic [ref=e80]: © 2026 YueYong
+        - generic [ref=e81]: 摄影 / 旅行手记
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e87] [cursor=pointer]
+  - alert [ref=e91]: 我是 YueYong。写代码，也拍照。

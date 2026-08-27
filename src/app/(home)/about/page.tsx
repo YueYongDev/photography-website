@@ -4,7 +4,7 @@ import { AboutView } from "@/modules/site/ui/about-view";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "About YueYong — photographer, traveler, and software engineer.",
+  description: "YueYong, software engineer and photographer.",
 };
 
 const AboutPage = () => <AboutView />;
