@@ -47,6 +47,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
+import styles from "@/modules/dashboard/ui/studio.module.css";
 
 const MapComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
@@ -213,20 +214,20 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     <div className="py-2.5 px-4">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold">Photo details</h1>
-              <p className="text-xs text-muted-foreground">
+          <div className={styles.editorHeader}>
+            <div className={styles.editorHeaderCopy}>
+              <h1 className={styles.editorTitle}>Photo details</h1>
+              <p className={styles.editorDescription}>
                 Manage your photo details
               </p>
             </div>
-            <div className="flex items-center gap-x-2">
+            <div className={styles.editorActions}>
               <Button
                 type="button"
                 variant="default"
                 onClick={() => generateAIDescription.mutate({ id: photoId })}
                 disabled={generateAIDescription.isPending}
-                className="whitespace-nowrap"
+                className={`${styles.editorSecondaryButton} whitespace-nowrap`}
               >
                 {generateAIDescription.isPending ? (
                   <>
@@ -242,7 +243,11 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   </>
                 )}
               </Button>
-              <Button type="submit" disabled={update.isPending}>
+              <Button
+                type="submit"
+                className={styles.editorPrimaryButton}
+                disabled={update.isPending}
+              >
                 Save
               </Button>
               <DropdownMenu modal={false}>
@@ -267,7 +272,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
             {/* Preview Image and Camera Info - Left side */}
             <div className="lg:col-span-2 space-y-6">
               {/* Preview Image */}
-              <div className="flex flex-col gap-4 bg-muted rounded-xl overflow-hidden h-fit">
+              <div className={`${styles.editorMediaCard} flex h-fit flex-col gap-4`}>
                 <div className="aspect-video overflow-hidden relative">
                   <BlurImage
                     src={photo.url}
@@ -310,7 +315,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
               <div className="flex flex-col gap-y-6">
                 {/* Camera Info Collapsible */}
                 <Collapsible open={cameraInfoOpen} onOpenChange={setCameraInfoOpen}>
-                  <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
+                  <div className={styles.editorSectionHead}>
                     <h3 className="text-lg font-semibold">Camera Info</h3>
                     <CollapsibleTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -319,7 +324,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                     </CollapsibleTrigger>
                   </div>
                   <CollapsibleContent>
-                    <div className="space-y-4 p-4 bg-muted rounded-b-lg">
+                    <div className={`${styles.editorSectionBody} space-y-4 p-4`}>
                       <FormField
                         name="make"
                         control={form.control}
@@ -379,7 +384,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
 
                 {/* Exposure Info Collapsible */}
                 <Collapsible open={exposureInfoOpen} onOpenChange={setExposureInfoOpen}>
-                  <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg">
+                  <div className={styles.editorSectionHead}>
                     <h3 className="text-lg font-semibold">Exposure Info</h3>
                     <CollapsibleTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -388,7 +393,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                     </CollapsibleTrigger>
                   </div>
                   <CollapsibleContent>
-                    <div className="space-y-4 p-4 bg-muted rounded-b-lg">
+                    <div className={`${styles.editorSectionBody} space-y-4 p-4`}>
                       <FormField
                         name="focalLength"
                         control={form.control}

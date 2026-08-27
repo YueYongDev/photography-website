@@ -36,6 +36,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { postsUpdateSchema } from "@/db/schema/posts";
 import { toast } from "sonner";
+import styles from "@/modules/dashboard/ui/studio.module.css";
 
 interface FormSectionProps {
   postId: string;
@@ -255,20 +256,21 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold">Post details</h1>
-              <p className="text-xs text-muted-foreground">
+          <div className={styles.editorHeader}>
+            <div className={styles.editorHeaderCopy}>
+              <h1 className={styles.editorTitle}>Story details</h1>
+              <p className={styles.editorDescription}>
                 Manage your post details
               </p>
             </div>
 
-            <div className="flex items-center gap-x-2">
+            <div className={styles.editorActions}>
               <Button 
                 type="button" 
                 onClick={generateAIDescription}
                 disabled={generateAIDescriptionMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
                 variant="secondary"
+                className={styles.editorSecondaryButton}
               >
                 {generateAIDescriptionMutation.isPending ? (
                   <>
@@ -287,6 +289,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 onClick={generateAITitle}
                 disabled={generateAITitleMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
                 variant="secondary"
+                className={styles.editorSecondaryButton}
               >
                 {generateAITitleMutation.isPending ? (
                   <>
@@ -305,6 +308,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 onClick={generateAITags}
                 disabled={generateAITagsMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
                 variant="secondary"
+                className={styles.editorSecondaryButton}
               >
                 {generateAITagsMutation.isPending ? (
                   <>
@@ -318,7 +322,11 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   </>
                 )}
               </Button>
-              <Button type="submit" disabled={update.isPending}>
+              <Button
+                type="submit"
+                className={styles.editorPrimaryButton}
+                disabled={update.isPending}
+              >
                 {update.isPending ? "Saving..." : "Save"}
               </Button>
 
@@ -465,7 +473,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
             </div>
 
             <div className="flex flex-col gap-y-8 lg:col-span-2">
-              <div className="flex flex-col gap-4 bg-muted rounded-xl overflow-hidden p-4">
+              <div className={`${styles.editorAsideCard} flex flex-col gap-4 p-4`}>
                 <FormField
                   control={form.control}
                   name="coverImage"
