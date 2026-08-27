@@ -5,14 +5,32 @@ import { TravelPhotos } from "../components/travel-photos";
 import { trpc } from "@/trpc/client";
 import dynamic from "next/dynamic";
 import styles from "../studio.module.css";
+import type { DashboardTravelCitySet } from "../components/travel-types";
+import { useLazyVisibility } from "@/hooks/use-lazy-visibility";
 
 const TravelMap = dynamic(
   () => import("../components/travel-map").then((module) => module.TravelMap),
   {
     ssr: false,
-    loading: () => <div className={`${styles.mapFrame} ${styles.skeletonBlock}`} />,
-  }
+    loading: () => (
+      <div className={`${styles.mapFrame} ${styles.skeletonBlock}`} />
+    ),
+  },
 );
+
+const LazyTravelMap = ({ data }: { data: DashboardTravelCitySet[] }) => {
+  const { targetRef, shouldRender } = useLazyVisibility("400px");
+
+  return (
+    <div className={styles.mapGate} ref={targetRef}>
+      {shouldRender ? (
+        <TravelMap data={data} />
+      ) : (
+        <div className={`${styles.mapFrame} ${styles.skeletonBlock}`} />
+      )}
+    </div>
+  );
+};
 
 export const TravelSection = () => {
   return (
@@ -32,7 +50,10 @@ export const TravelSectionSkeleton = () => {
       <div className={styles.travelGrid}>
         <div className={styles.travelList}>
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className={`${styles.travelRow} ${styles.skeletonBlock}`} />
+            <div
+              key={index}
+              className={`${styles.travelRow} ${styles.skeletonBlock}`}
+            />
           ))}
         </div>
         <div className={`${styles.mapFrame} ${styles.skeletonBlock}`} />
@@ -58,7 +79,7 @@ const TravelSectionContent = () => {
       </div>
       <div className={styles.travelGrid}>
         <TravelPhotos data={data?.items || []} />
-        <TravelMap data={data?.items || []} />
+        <LazyTravelMap data={data?.items || []} />
       </div>
     </section>
   );

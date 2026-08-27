@@ -33,8 +33,8 @@ const navigation = [
   },
   {
     number: "03",
-    label: "Stories",
-    note: "Journeys & notes",
+    label: "Journeys",
+    note: "Essays & field notes",
     href: "/posts",
   },
   {

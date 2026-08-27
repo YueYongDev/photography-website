@@ -1,42 +1,116 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import { journeys } from "@/modules/journeys/data/journeys";
+import type { PublicJourneyStory } from "@/modules/journeys/types";
+import {
+  localizeJourney,
+  useSiteLocale,
+} from "@/modules/site/i18n/site-locale";
 import styles from "@/modules/site/ui/public-site.module.css";
 
-export const JourneysView = () => {
+type JourneyArchiveEntry = {
+  slug: string;
+  title: string;
+  description: string;
+  coverImage: string | null;
+  coverAlt: string;
+  route: string[];
+  meta: string;
+  sortDate: string;
+  isFieldNote: boolean;
+};
+
+export const JourneysView = ({
+  stories,
+}: {
+  stories: PublicJourneyStory[];
+}) => {
+  const { copy, locale } = useSiteLocale();
+  const localizedJourneys = journeys.map((journey) =>
+    localizeJourney(journey, locale),
+  );
+  const journeySlugs = new Set(localizedJourneys.map(({ slug }) => slug));
+  const dateFormatter = new Intl.DateTimeFormat(
+    locale === "zh-CN" ? "zh-CN" : "en-US",
+    { year: "numeric", month: "long", day: "numeric" },
+  );
+  const entries: JourneyArchiveEntry[] = [
+    ...localizedJourneys.map((journey) => ({
+      slug: journey.slug,
+      title: journey.title,
+      description: journey.description,
+      coverImage: journey.coverImage,
+      coverAlt: journey.coverAlt,
+      route: journey.route,
+      meta: `${copy.journeys.journeyLabel} · ${journey.country} · ${journey.dates}`,
+      sortDate: `${journey.year}-12-31`,
+      isFieldNote: false,
+    })),
+    ...stories
+      .filter((story) => !journeySlugs.has(story.slug))
+      .map((story) => ({
+        slug: story.slug,
+        title: story.title,
+        description: story.description || copy.journeys.noteFallback,
+        coverImage: story.coverImage,
+        coverAlt: story.title,
+        route: story.tags || [],
+        meta: [
+          copy.journeys.fieldNote,
+          dateFormatter.format(new Date(story.updatedAt)),
+          story.readingTimeMinutes
+            ? copy.journeys.minRead(story.readingTimeMinutes)
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        sortDate: story.updatedAt,
+        isFieldNote: true,
+      })),
+  ].sort((a, b) => b.sortDate.localeCompare(a.sortDate));
+
   return (
     <section className={`${styles.page} ${styles.pageMist}`}>
       <div className={styles.journeyIndexIntro}>
         <div>
-          <p className={styles.eyebrow}>02 / Journeys</p>
+          <p className={styles.eyebrow}>{copy.journeys.eyebrow}</p>
           <h1 className={styles.displayTitle}>
-            Stories that need
+            {copy.journeys.titleStart}
             <br />
-            <em>more than one frame.</em>
+            <em>{copy.journeys.titleEnd}</em>
           </h1>
         </div>
-        <p className={styles.lede}>
-          Journeys are the longer form of the archive: route, sequence, notes,
-          and photographs kept together as one story. Every entry now lives
-          here, inside the same site.
-        </p>
+        <p className={styles.lede}>{copy.journeys.lede}</p>
       </div>
 
       <div className={styles.journeyArchive}>
-        {journeys.map((journey, index) => (
-          <article className={styles.journeyArchiveItem} key={journey.slug}>
-            <Link href={`/journeys/${journey.slug}`} className={styles.journeyArchiveImage}>
-              <Image
-                src={journey.coverImage}
-                alt={journey.coverAlt}
-                fill
-                unoptimized
-                priority={index === 0}
-                sizes="(min-width: 900px) 58vw, 92vw"
-                className={styles.imageCover}
-              />
+        {entries.map((entry, index) => (
+          <article className={styles.journeyArchiveItem} key={entry.slug}>
+            <Link
+              href={`/journeys/${entry.slug}`}
+              className={styles.journeyArchiveImage}
+            >
+              {entry.coverImage ? (
+                <Image
+                  src={entry.coverImage}
+                  alt={entry.coverAlt}
+                  fill
+                  loader={getArchiveImageLoader(entry.coverImage)}
+                  priority={index === 0}
+                  sizes="(min-width: 900px) 58vw, 92vw"
+                  className={styles.imageCover}
+                />
+              ) : (
+                <span className={styles.journeyArchivePlaceholder}>
+                  <small>{copy.journeys.fieldNote}</small>
+                  <strong>{entry.title}</strong>
+                </span>
+              )}
             </Link>
 
             <div className={styles.journeyArchiveCopy}>
@@ -44,16 +118,24 @@ export const JourneysView = () => {
                 J{String(index + 1).padStart(2, "0")}
               </span>
               <div>
-                <p className={styles.journeyArchiveMeta}>
-                  {journey.country} · {journey.dates}
-                </p>
-                <h2>{journey.title}</h2>
-                <p>{journey.description}</p>
-                <div className={styles.journeyRoute}>
-                  {journey.route.map((place) => <span key={place}>{place}</span>)}
-                </div>
-                <Link href={`/journeys/${journey.slug}`} className={styles.textLink}>
-                  Read the journey <ArrowUpRight size={15} strokeWidth={1.4} />
+                <p className={styles.journeyArchiveMeta}>{entry.meta}</p>
+                <h2>{entry.title}</h2>
+                <p>{entry.description}</p>
+                {entry.route.length > 0 && (
+                  <div className={styles.journeyRoute}>
+                    {entry.route.map((place) => (
+                      <span key={place}>{place}</span>
+                    ))}
+                  </div>
+                )}
+                <Link
+                  href={`/journeys/${entry.slug}`}
+                  className={styles.textLink}
+                >
+                  {entry.isFieldNote
+                    ? copy.journeys.readNote
+                    : copy.journeys.read}{" "}
+                  <ArrowUpRight size={15} strokeWidth={1.4} />
                 </Link>
               </div>
             </div>

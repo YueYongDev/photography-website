@@ -4,8 +4,58 @@ import { db } from "@/db/drizzle";
 import { z } from "zod";
 import { and, eq, lt, or, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { unstable_cache } from "next/cache";
+
+import { PUBLIC_JOURNEYS_CACHE_TAG } from "@/lib/cache-tags";
+
+const getCachedJourneyIndex = unstable_cache(
+  async (limit: number) =>
+    db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        slug: posts.slug,
+        tags: posts.tags,
+        coverImage: posts.coverImage,
+        description: posts.description,
+        readingTimeMinutes: posts.readingTimeMinutes,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+      })
+      .from(posts)
+      .where(eq(posts.visibility, "public"))
+      .orderBy(desc(posts.updatedAt))
+      .limit(limit),
+  ["public-journey-index-v1"],
+  { revalidate: 300, tags: [PUBLIC_JOURNEYS_CACHE_TAG] },
+);
+
+const getCachedPublicStory = unstable_cache(
+  async (slug: string) => {
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        slug,
+      );
+    const storyCondition = isUuid
+      ? or(eq(posts.slug, slug), eq(posts.id, slug))
+      : eq(posts.slug, slug);
+
+    const [story] = await db
+      .select()
+      .from(posts)
+      .where(and(eq(posts.visibility, "public"), storyCondition))
+      .limit(1);
+
+    return story || null;
+  },
+  ["public-journey-story-v1"],
+  { revalidate: 300, tags: [PUBLIC_JOURNEYS_CACHE_TAG] },
+);
 
 export const blogRouter = createTRPCRouter({
+  getJourneyIndex: baseProcedure
+    .input(z.object({ limit: z.number().min(1).max(100).default(24) }))
+    .query(({ input }) => getCachedJourneyIndex(input.limit)),
   getMany: baseProcedure
     .input(
       z.object({
@@ -16,7 +66,7 @@ export const blogRouter = createTRPCRouter({
           })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
@@ -32,11 +82,11 @@ export const blogRouter = createTRPCRouter({
                   lt(posts.updatedAt, cursor.updatedAt),
                   and(
                     eq(posts.updatedAt, cursor.updatedAt),
-                    lt(posts.id, cursor.id)
-                  )
+                    lt(posts.id, cursor.id),
+                  ),
                 )
-              : undefined
-          )
+              : undefined,
+          ),
         )
         .limit(limit + 1)
         .orderBy(desc(posts.updatedAt));
@@ -58,33 +108,7 @@ export const blogRouter = createTRPCRouter({
   getOne: baseProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
-      const { slug } = input;
-
-      // 首先尝试通过 slug 查找
-      let [blog] = await db
-        .select()
-        .from(posts)
-        .where(
-          and(
-            eq(posts.visibility, "public"),
-            eq(posts.slug, slug)
-          )
-        )
-        .limit(1);
-
-      // 如果通过 slug 没找到，且 slug 看起来像 UUID，则尝试通过 id 查找
-      if (!blog && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)) {
-        [blog] = await db
-          .select()
-          .from(posts)
-          .where(
-            and(
-              eq(posts.visibility, "public"),
-              eq(posts.id, slug)
-            )
-          )
-          .limit(1);
-      }
+      const blog = await getCachedPublicStory(input.slug);
 
       if (!blog) {
         throw new TRPCError({

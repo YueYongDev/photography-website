@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -129,6 +129,13 @@
 
 @layer base {
   :root {
+    /* Shared archive palette used by both the public site and Studio. */
+    --archive-paper: #fafaf8;
+    --archive-surface: #ffffff;
+    --archive-mist: #e9edec;
+    --archive-ink: #202422;
+    --archive-accent: #6e8085;
+
     --background: var(--background-default);
     --foreground: var(--text-default);
     --card: var(--background-default);
@@ -307,7 +314,7 @@
     }
 
     /* Task list specific styles */
-    ul[data-type='taskList'] {
+    ul[data-type="taskList"] {
       list-style: none;
       margin-left: 0;
       padding: 0;
@@ -327,11 +334,11 @@
         }
       }
 
-      input[type='checkbox'] {
+      input[type="checkbox"] {
         cursor: pointer;
       }
 
-      ul[data-type='taskList'] {
+      ul[data-type="taskList"] {
         margin: 0;
       }
     }
@@ -402,7 +409,7 @@
 
       .selectedCell:after {
         background: #c7c7c8;
-        content: '';
+        content: "";
         left: 0;
         right: 0;
         top: 0;

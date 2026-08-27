@@ -1,31 +1,33 @@
+"use client";
+
 import Link from "next/link";
 
+import { useSiteLocale } from "@/modules/site/i18n/site-locale";
 import styles from "./public-site.module.css";
 
 export const SiteFooter = () => {
+  const { copy } = useSiteLocale();
+
   return (
     <footer className={styles.footer}>
       <div className={styles.footerLead}>
-        <h2>One archive. Three paths through it.</h2>
-        <p>
-          Photography arranged by recurring ideas, lived journeys, and the
-          places that hold them together.
-        </p>
+        <h2>{copy.shell.footerTitle}</h2>
+        <p>{copy.shell.footerDescription}</p>
       </div>
 
-      <nav className={styles.footerNav} aria-label="Footer navigation">
-        <Link href="/">Home</Link>
-        <Link href="/work">Work</Link>
-        <Link href="/journeys">Journeys</Link>
-        <Link href="/travel">Travel</Link>
-        <Link href="/discover">Map</Link>
-        <Link href="/about">About</Link>
-        <Link href="/dashboard">Studio</Link>
+      <nav className={styles.footerNav} aria-label={copy.navigation.label}>
+        <Link href="/">{copy.navigation.home}</Link>
+        <Link href="/work">{copy.navigation.work}</Link>
+        <Link href="/journeys">{copy.navigation.journeys}</Link>
+        <Link href="/travel">{copy.navigation.travel}</Link>
+        <Link href="/discover">{copy.navigation.map}</Link>
+        <Link href="/about">{copy.navigation.about}</Link>
+        <Link href="/dashboard">{copy.navigation.studio}</Link>
       </nav>
 
       <div className={styles.footerMeta}>
-        <p>Photographer / Software Engineer</p>
-        <a href="mailto:yueyong1030@outlook.com">Email</a>
+        <p>{copy.shell.role}</p>
+        <a href="mailto:yueyong1030@outlook.com">{copy.shell.email}</a>
         <a href="https://www.instagram.com/yueyong.lyy" target="_blank" rel="noreferrer">
           Instagram
         </a>
@@ -36,7 +38,7 @@ export const SiteFooter = () => {
 
       <div className={styles.footerBottom}>
         <span>© {new Date().getFullYear()} YueYong</span>
-        <span>Photography / Field Notes</span>
+        <span>{copy.shell.brandDetail}</span>
       </div>
     </footer>
   );

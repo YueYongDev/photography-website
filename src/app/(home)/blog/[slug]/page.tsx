@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Convert slug to title format (e.g., "kyoto-autumn-zen-time" -> "Kyoto Autumn Zen Time")
   const title = slug
     .split("-")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
   return {
@@ -20,8 +20,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const BlogSlugPage = async ({ params }: Props) => {
-  await params;
-  redirect("/journeys");
+  const { slug } = await params;
+  redirect(`/journeys/${slug}`);
 };
 
 export default BlogSlugPage;

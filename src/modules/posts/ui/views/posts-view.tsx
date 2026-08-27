@@ -20,15 +20,20 @@ export const PostsView = () => {
     <div className={styles.page}>
       <StudioPageHeader
         index="03"
-        eyebrow="Stories"
-        title={<>Stories in<br />the making.</>}
-        description="Journey essays and field notes begin here. Draft with room to think, then publish when the photographs and words belong together."
+        eyebrow="Journeys"
+        title={
+          <>
+            Journeys &<br />
+            field notes.
+          </>
+        }
+        description="Write the shorter essays that publish inside Journeys. Structured travel features keep their chapter format; these notes join the same public archive as a continuous read."
         actions={
           <Button
             className={styles.primaryAction}
             onClick={() => setIsCreateDialogOpen(true)}
           >
-            Start a story
+            New field note
           </Button>
         }
       />
@@ -37,7 +42,7 @@ export const PostsView = () => {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto rounded-none">
           <DialogHeader>
-            <DialogTitle>Create New Post</DialogTitle>
+            <DialogTitle>Create Field Note</DialogTitle>
           </DialogHeader>
           <CreatePostSection
             onCreateSuccess={() => setIsCreateDialogOpen(false)}

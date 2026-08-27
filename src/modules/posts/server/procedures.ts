@@ -4,6 +4,9 @@ import { db } from "@/db/drizzle";
 import { z } from "zod";
 import { and, eq, lt, or, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { revalidateTag } from "next/cache";
+
+import { PUBLIC_JOURNEYS_CACHE_TAG } from "@/lib/cache-tags";
 
 export const postsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -23,6 +26,7 @@ export const postsRouter = createTRPCRouter({
         .where(eq(posts.id, values.id))
         .limit(1);
 
+      revalidateTag(PUBLIC_JOURNEYS_CACHE_TAG, { expire: 0 });
       return newPost;
     }),
   update: protectedProcedure
@@ -51,13 +55,14 @@ export const postsRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
+      revalidateTag(PUBLIC_JOURNEYS_CACHE_TAG, { expire: 0 });
       return updatedPost;
     }),
   remove: protectedProcedure
     .input(
       z.object({
         id: z.string().uuid(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { id } = input;
@@ -78,13 +83,14 @@ export const postsRouter = createTRPCRouter({
 
       await db.delete(posts).where(eq(posts.id, id));
 
+      revalidateTag(PUBLIC_JOURNEYS_CACHE_TAG, { expire: 0 });
       return deletedPost;
     }),
   getOne: protectedProcedure
     .input(
       z.object({
         postId: z.string().uuid(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const { postId } = input;
@@ -107,7 +113,7 @@ export const postsRouter = createTRPCRouter({
           })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
@@ -122,11 +128,11 @@ export const postsRouter = createTRPCRouter({
                   lt(posts.updatedAt, cursor.updatedAt),
                   and(
                     eq(posts.updatedAt, cursor.updatedAt),
-                    lt(posts.id, cursor.id)
-                  )
+                    lt(posts.id, cursor.id),
+                  ),
                 )
-              : undefined
-          )
+              : undefined,
+          ),
         )
         .limit(limit + 1)
         .orderBy(desc(posts.updatedAt));

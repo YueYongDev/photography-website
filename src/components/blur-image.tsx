@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, memo } from "react";
 import Image, { ImageProps } from "next/image";
 import { Blurhash } from "react-blurhash";
 
+import { getArchiveImageLoader } from "@/lib/archive-image-loader";
+
 interface BlurImageProps extends Omit<ImageProps, "onLoad"> {
   blurhash: string;
 }
@@ -71,6 +73,10 @@ const BlurImage = memo(function BlurImage({
         onError={() => setImageError(true)}
         loading={props.priority ? undefined : "lazy"}
         {...props}
+        loader={
+          props.loader ||
+          (typeof src === "string" ? getArchiveImageLoader(src) : undefined)
+        }
       />
     </div>
   );

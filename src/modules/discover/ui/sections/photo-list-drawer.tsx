@@ -11,6 +11,7 @@ import PhotoAlbum from "react-photo-album";
 import "react-photo-album/styles.css";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { useSiteLocale } from "@/modules/site/i18n/site-locale";
 
 interface CustomPhotoType {
   src: string;
@@ -42,6 +43,7 @@ export const PhotoListDrawer = ({
   isFetchingNextPage,
   fetchNextPage,
 }: PhotoListDrawerProps) => {
+  const { copy } = useSiteLocale();
   const getMap = useMapStore((state) => state.getMap);
   const discoverMap = getMap("discoverMap");
   const [isOpen, setIsOpen] = useState(false);
@@ -99,7 +101,7 @@ export const PhotoListDrawer = ({
         {hasError ? (
           <div className="absolute inset-0 flex items-center justify-center bg-background/20">
             <p className="text-sm text-muted-foreground">
-              Failed to load image
+              {copy.map.imageError}
             </p>
           </div>
         ) : (
@@ -217,10 +219,10 @@ export const PhotoListDrawer = ({
           <div className="space-y-4 p-2 sm:p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">
-                Photos{filterLabel ? ` - ${filterLabel}` : ""}
+                {copy.map.photos}{filterLabel ? ` — ${filterLabel}` : ""}
               </h2>
               <span className="text-sm text-muted-foreground">
-                {photoAlbumPhotos.length} items
+                {photoAlbumPhotos.length} {copy.map.items}
               </span>
             </div>
             {/* Photo Album */}
@@ -242,7 +244,7 @@ export const PhotoListDrawer = ({
                   disabled={isFetchingNextPage}
                   onClick={() => void fetchNextPage()}
                 >
-                  {isFetchingNextPage ? "Loading..." : "Load more"}
+                  {isFetchingNextPage ? copy.map.loading : copy.map.loadMore}
                 </Button>
               </div>
             )}

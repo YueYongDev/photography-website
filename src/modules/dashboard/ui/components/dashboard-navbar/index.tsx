@@ -10,7 +10,7 @@ import styles from "../../studio.module.css";
 const routeLabels = [
   ["/dashboard", "Overview"],
   ["/photos", "Photographs"],
-  ["/posts", "Stories"],
+  ["/posts", "Journeys"],
   ["/profile", "Account"],
 ] as const;
 
@@ -22,7 +22,7 @@ export const DashboardNavbar = ({
   const pathname = usePathname();
   const currentSection =
     routeLabels.find(([href]) =>
-      href === "/dashboard" ? pathname === href : pathname.startsWith(href)
+      href === "/dashboard" ? pathname === href : pathname.startsWith(href),
     )?.[1] ?? "Studio";
 
   return (

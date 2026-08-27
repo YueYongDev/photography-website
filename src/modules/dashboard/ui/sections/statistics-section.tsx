@@ -6,7 +6,7 @@ import styles from "../studio.module.css";
 
 export const StatisticsSection = () => {
   const { data: summary, isLoading } = trpc.summary.getSummary.useQuery();
-  
+
   if (isLoading) {
     return (
       <div className={styles.statsGrid}>
@@ -19,7 +19,7 @@ export const StatisticsSection = () => {
       </div>
     );
   }
-  
+
   const yearlyStats = summary?.data?.yearlyStats || {};
   const years = Object.keys(yearlyStats)
     .map(Number)
@@ -52,7 +52,7 @@ export const StatisticsSection = () => {
       />
       <StatisticsCard
         index="03"
-        title="Total posts"
+        title="Journey notes"
         value={summary?.data?.postCount || 0}
       />
       <StatisticsCard

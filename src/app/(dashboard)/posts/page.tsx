@@ -4,8 +4,8 @@ import { HydrateClient, trpc } from "@/trpc/server";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Manage Posts",
-  description: "Manage your posts",
+  title: "Manage Journeys",
+  description: "Manage journey essays and field notes",
 };
 
 const PostsPage = () => {

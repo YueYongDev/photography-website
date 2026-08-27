@@ -140,7 +140,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
 
   const update = trpc.posts.update.useMutation({
     onSuccess: () => {
-      toast.success("Post updated");
+      toast.success("Field note updated");
       utils.posts.getMany.invalidate();
       utils.posts.getOne.invalidate({ postId });
       router.push("/posts");
@@ -151,7 +151,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
   });
   const remove = trpc.posts.remove.useMutation({
     onSuccess: () => {
-      toast.success("Post deleted");
+      toast.success("Field note deleted");
       utils.posts.getMany.invalidate();
       router.push("/posts");
     },
@@ -265,10 +265,13 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
             </div>
 
             <div className={styles.editorActions}>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 onClick={generateAIDescription}
-                disabled={generateAIDescriptionMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+                disabled={
+                  generateAIDescriptionMutation.isPending ||
+                  (!form.getValues("content") && !form.getValues("title"))
+                }
                 variant="secondary"
                 className={styles.editorSecondaryButton}
               >
@@ -284,10 +287,13 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   </>
                 )}
               </Button>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 onClick={generateAITitle}
-                disabled={generateAITitleMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+                disabled={
+                  generateAITitleMutation.isPending ||
+                  (!form.getValues("content") && !form.getValues("title"))
+                }
                 variant="secondary"
                 className={styles.editorSecondaryButton}
               >
@@ -303,10 +309,13 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   </>
                 )}
               </Button>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 onClick={generateAITags}
-                disabled={generateAITagsMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+                disabled={
+                  generateAITagsMutation.isPending ||
+                  (!form.getValues("content") && !form.getValues("title"))
+                }
                 variant="secondary"
                 className={styles.editorSecondaryButton}
               >
@@ -357,7 +366,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Post title" />
+                      <Input {...field} placeholder="Field note title" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -372,7 +381,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                     <FormLabel>Slug</FormLabel>
                     <div className="flex gap-2">
                       <FormControl className="flex-1">
-                        <Input {...field} placeholder="Post slug" />
+                        <Input {...field} placeholder="Field note slug" />
                       </FormControl>
                       <Button
                         type="button"
@@ -392,11 +401,13 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                         }}
                         disabled={generateAISlugMutation.isPending}
                       >
-                        {generateAISlugMutation.isPending ? "Generating..." : "Generate"}
+                        {generateAISlugMutation.isPending
+                          ? "Generating..."
+                          : "Generate"}
                       </Button>
                     </div>
                     <FormDescription>
-                      URL-friendly identifier for your post
+                      URL-friendly identifier for this field note
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -415,11 +426,11 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                         rows={3}
                         className="resize-none"
                         value={field.value || ""}
-                        placeholder="Post description"
+                        placeholder="Field note description"
                       />
                     </FormControl>
                     <FormDescription>
-                      A short description of your post (optional)
+                      A short description of this field note (optional)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -464,7 +475,8 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                       />
                     </FormControl>
                     <FormDescription>
-                      Enter tags separated by commas (e.g. travel, photography, story) or use AI Tags button to generate automatically
+                      Enter tags separated by commas (e.g. travel, photography,
+                      story) or use AI Tags button to generate automatically
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -473,7 +485,9 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
             </div>
 
             <div className="flex flex-col gap-y-8 lg:col-span-2">
-              <div className={`${styles.editorAsideCard} flex flex-col gap-4 p-4`}>
+              <div
+                className={`${styles.editorAsideCard} flex flex-col gap-4 p-4`}
+              >
                 <FormField
                   control={form.control}
                   name="coverImage"
@@ -495,7 +509,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   )}
                 />
                 <p className="text-sm text-muted-foreground">
-                  {`Posts are public by default. Make your changes above and click 'Save' to update.`}
+                  {`Field notes are public by default. Make your changes above and save when this note is ready to rejoin Journeys.`}
                 </p>
               </div>
             </div>

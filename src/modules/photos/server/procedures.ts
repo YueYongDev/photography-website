@@ -32,16 +32,22 @@ const getCachedLikedPhotos = unstable_cache(
         id: photos.id,
         url: photos.url,
         title: photos.title,
+        description: photos.description,
+        city: photos.city,
+        countryCode: photos.countryCode,
+        dateTimeOriginal: photos.dateTimeOriginal,
         blurData: photos.blurData,
+        width: photos.width,
+        height: photos.height,
+        aspectRatio: photos.aspectRatio,
+        updatedAt: photos.updatedAt,
       })
       .from(photos)
-      .where(
-        and(eq(photos.isFavorite, true), eq(photos.visibility, "public"))
-      )
+      .where(and(eq(photos.isFavorite, true), eq(photos.visibility, "public")))
       .orderBy(desc(photos.updatedAt))
       .limit(limit),
-  ["liked-photos-v2"],
-  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
+  ["liked-photos-v3"],
+  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] },
 );
 
 const getCachedCitySetsPreview = unstable_cache(
@@ -51,8 +57,8 @@ const getCachedCitySetsPreview = unstable_cache(
           lt(citySets.updatedAt, cursor.updatedAt),
           and(
             eq(citySets.updatedAt, cursor.updatedAt),
-            lt(citySets.id, cursor.id)
-          )
+            lt(citySets.id, cursor.id),
+          ),
         )
       : undefined;
 
@@ -97,7 +103,7 @@ const getCachedCitySetsPreview = unstable_cache(
     return { items, nextCursor };
   },
   ["city-set-previews-v2"],
-  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
+  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] },
 );
 
 export const photosRouter = createTRPCRouter({
@@ -149,15 +155,15 @@ export const photosRouter = createTRPCRouter({
             .where(
               and(
                 eq(citySets.country, insertedPhoto.country),
-                eq(citySets.city, cityName)
-              )
+                eq(citySets.city, cityName),
+              ),
             );
 
           console.log("Updated city set:", updatedCitySet);
         } else {
           console.log(
             "No geo information available for photo:",
-            insertedPhoto.id
+            insertedPhoto.id,
           );
         }
 
@@ -191,8 +197,8 @@ export const photosRouter = createTRPCRouter({
             .where(
               and(
                 eq(citySets.country, photo.country),
-                eq(citySets.city, photo.city)
-              )
+                eq(citySets.city, photo.city),
+              ),
             );
 
           if (citySet) {
@@ -206,8 +212,8 @@ export const photosRouter = createTRPCRouter({
                   and(
                     eq(photos.country, photo.country),
                     eq(photos.city, photo.city),
-                    ne(photos.id, photo.id)
-                  )
+                    ne(photos.id, photo.id),
+                  ),
                 );
 
               await db
@@ -220,8 +226,8 @@ export const photosRouter = createTRPCRouter({
                 .where(
                   and(
                     eq(citySets.country, photo.country),
-                    eq(citySets.city, photo.city)
-                  )
+                    eq(citySets.city, photo.city),
+                  ),
                 );
             } else {
               await db
@@ -233,8 +239,8 @@ export const photosRouter = createTRPCRouter({
                 .where(
                   and(
                     eq(citySets.country, photo.country),
-                    eq(citySets.city, photo.city)
-                  )
+                    eq(citySets.city, photo.city),
+                  ),
                 );
             }
           }
@@ -282,9 +288,7 @@ export const photosRouter = createTRPCRouter({
       const [photo] = await db
         .select()
         .from(photos)
-        .where(
-          and(eq(photos.id, input.id), eq(photos.visibility, "public"))
-        );
+        .where(and(eq(photos.id, input.id), eq(photos.visibility, "public")));
       return photo;
     }),
 
@@ -295,7 +299,7 @@ export const photosRouter = createTRPCRouter({
           .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
@@ -306,10 +310,10 @@ export const photosRouter = createTRPCRouter({
               lt(photos.updatedAt, cursor.updatedAt),
               and(
                 eq(photos.updatedAt, cursor.updatedAt),
-                lt(photos.id, cursor.id)
-              )
+                lt(photos.id, cursor.id),
+              ),
             )
-          : undefined
+          : undefined,
       );
 
       const data = await db
@@ -354,18 +358,18 @@ export const photosRouter = createTRPCRouter({
           .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
       const whereClause = cursor
         ? or(
-          lt(photos.updatedAt, cursor.updatedAt),
-          and(
-            eq(photos.updatedAt, cursor.updatedAt),
-            lt(photos.id, cursor.id)
+            lt(photos.updatedAt, cursor.updatedAt),
+            and(
+              eq(photos.updatedAt, cursor.updatedAt),
+              lt(photos.id, cursor.id),
+            ),
           )
-        )
         : undefined;
 
       const data = await db
@@ -414,18 +418,18 @@ export const photosRouter = createTRPCRouter({
           .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const { cursor, limit } = input;
       const whereClause = cursor
         ? or(
-          lt(citySets.updatedAt, cursor.updatedAt),
-          and(
-            eq(citySets.updatedAt, cursor.updatedAt),
-            lt(citySets.id, cursor.id)
+            lt(citySets.updatedAt, cursor.updatedAt),
+            and(
+              eq(citySets.updatedAt, cursor.updatedAt),
+              lt(citySets.id, cursor.id),
+            ),
           )
-        )
         : undefined;
 
       const data = await db.query.citySets.findMany({
@@ -457,21 +461,26 @@ export const photosRouter = createTRPCRouter({
           .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ input }) =>
-      getCachedCitySetsPreview(input.cursor, input.limit)
+      getCachedCitySetsPreview(input.cursor, input.limit),
     ),
 
   getCitySetByCity: baseProcedure
-    .input(z.object({ city: z.string(), countryCode: z.string().length(2).optional() }))
+    .input(
+      z.object({
+        city: z.string(),
+        countryCode: z.string().length(2).optional(),
+      }),
+    )
     .query(async ({ input }) => {
       return (
         (await db.query.citySets.findFirst({
           where: input.countryCode
             ? and(
                 eq(citySets.city, input.city),
-                eq(citySets.countryCode, input.countryCode.toUpperCase())
+                eq(citySets.countryCode, input.countryCode.toUpperCase()),
               )
             : eq(citySets.city, input.city),
           with: {
@@ -490,10 +499,7 @@ export const photosRouter = createTRPCRouter({
       const { id } = input;
 
       // 获取照片信息
-      const [photo] = await db
-        .select()
-        .from(photos)
-        .where(eq(photos.id, id));
+      const [photo] = await db.select().from(photos).where(eq(photos.id, id));
 
       if (!photo) {
         throw new TRPCError({
@@ -516,37 +522,43 @@ export const photosRouter = createTRPCRouter({
           const apiKey = process.env.ZHIPU_AI_API_KEY;
           if (!apiKey) {
             return {
-              title: photo.make || photo.model
-                ? `使用${photo.make || ""} ${photo.model || ""}拍摄`.trim()
-                : "未命名照片",
+              title:
+                photo.make || photo.model
+                  ? `使用${photo.make || ""} ${photo.model || ""}拍摄`.trim()
+                  : "未命名照片",
               description: "一个美好的瞬间被永远定格。",
             };
           }
 
-          const response = await fetch(`https://open.bigmodel.cn/api/paas/v4/chat/completions`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`,
+          const response = await fetch(
+            `https://open.bigmodel.cn/api/paas/v4/chat/completions`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model: "glm-4v-plus-0111",
+                messages: [
+                  {
+                    role: "user",
+                    content: [
+                      { type: "image_url", image_url: { url: photo.url } },
+                      { type: "text", text: prompt },
+                    ],
+                  },
+                ],
+                stream: false,
+              }),
             },
-            body: JSON.stringify({
-              model: 'glm-4v-plus-0111',
-              messages: [
-                {
-                  role: 'user',
-                  content: [
-                    { type: 'image_url', image_url: { url: photo.url } },
-                    { type: 'text', text: prompt }
-                  ]
-                }
-              ],
-              stream: false
-            }),
-          });
+          );
 
           if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Zhipu AI API error: ${response.status} ${errorText}`);
+            throw new Error(
+              `Zhipu AI API error: ${response.status} ${errorText}`,
+            );
           }
 
           const data = await response.json();
@@ -560,7 +572,7 @@ export const photosRouter = createTRPCRouter({
           } catch {
             content = {
               title: "未命名照片",
-              description: "一个美好的瞬间被永远定格。"
+              description: "一个美好的瞬间被永远定格。",
             };
           }
 
@@ -568,10 +580,11 @@ export const photosRouter = createTRPCRouter({
         } catch (error) {
           console.error("Failed to call Zhipu AI API:", error);
           return {
-            title: photo.make || photo.model
-              ? `使用${photo.make || ''} ${photo.model || ''}拍摄`.trim()
-              : "未命名照片",
-            description: "一个美好的瞬间被永远定格。"
+            title:
+              photo.make || photo.model
+                ? `使用${photo.make || ""} ${photo.model || ""}拍摄`.trim()
+                : "未命名照片",
+            description: "一个美好的瞬间被永远定格。",
           };
         }
       };

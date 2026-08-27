@@ -94,7 +94,7 @@ const fallbackEntries: TravelCityEntry[] = [
       url: "https://cdn.ytools.xyz/photos/DSC00614-1771667465746.jpg?imageView2/2/w/3840/q/75|imageslim",
       width: 3,
       height: 2,
-      aspectRatio: 3 / 2,
+      aspectRatio: 1.5,
     },
   },
 ];
@@ -127,10 +127,7 @@ export const getTravelEntries = (archive: TravelArchive): TravelCityEntry[] => {
         url: item.coverPhoto!.url,
         width: item.coverPhoto!.width,
         height: item.coverPhoto!.height,
-        aspectRatio:
-          item.coverPhoto!.width && item.coverPhoto!.height
-            ? item.coverPhoto!.width / item.coverPhoto!.height
-            : item.coverPhoto!.aspectRatio || 3 / 2,
+        aspectRatio: item.coverPhoto!.aspectRatio,
       },
     }));
 

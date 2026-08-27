@@ -5,6 +5,11 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 import BlurImage from "@/components/blur-image";
+import {
+  localizeCountryName,
+  localizePlaceName,
+  useSiteLocale,
+} from "@/modules/site/i18n/site-locale";
 import styles from "@/modules/site/ui/public-site.module.css";
 import { trpc } from "@/trpc/client";
 
@@ -13,23 +18,29 @@ interface Props {
   countryCode: string;
 }
 
-const LoadingState = () => (
-  <div className={styles.state}>
-    <div>
-      <h1>Opening the archive.</h1>
-      <p>The photographs and field metadata are being prepared.</p>
+const LoadingState = () => {
+  const { copy } = useSiteLocale();
+  return (
+    <div className={styles.state}>
+      <div>
+        <h1>{copy.city.loadingTitle}</h1>
+        <p>{copy.city.loadingDescription}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-const ErrorState = () => (
-  <div className={styles.state}>
-    <div>
-      <h1>This place is temporarily out of reach.</h1>
-      <p>The archive could not be loaded. Return to Travel and try again shortly.</p>
+const ErrorState = () => {
+  const { copy } = useSiteLocale();
+  return (
+    <div className={styles.state}>
+      <div>
+        <h1>{copy.city.errorTitle}</h1>
+        <p>{copy.city.errorDescription}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const CitySection = ({ city, countryCode }: Props) => {
   return (
@@ -42,48 +53,46 @@ export const CitySection = ({ city, countryCode }: Props) => {
 };
 
 const CitySectionSuspense = ({ city, countryCode }: Props) => {
-  const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({
-    city,
-    countryCode,
-  });
+  const { copy, locale } = useSiteLocale();
+  const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({ city, countryCode });
 
   if (!cityData) return <ErrorState />;
 
   const decodedCityName = decodeURIComponent(city);
+  const displayCity = localizePlaceName(decodedCityName, locale);
+  const displayCountry = localizeCountryName(
+    cityData.country,
+    cityData.countryCode,
+    locale
+  );
   const cityPhotos = cityData.photos?.filter(
     (photo) => photo.id !== cityData.coverPhoto?.id
   ) ?? [];
   const year = cityData.coverPhoto?.dateTimeOriginal
     ? new Date(cityData.coverPhoto.dateTimeOriginal).getFullYear()
-    : "Archive";
+    : copy.common.archive;
   const coverAspectRatio =
-    cityData.coverPhoto?.width && cityData.coverPhoto?.height
+    cityData.coverPhoto?.width && cityData.coverPhoto.height
       ? cityData.coverPhoto.width / cityData.coverPhoto.height
-      : cityData.coverPhoto?.aspectRatio || 3 / 2;
+      : cityData.coverPhoto?.aspectRatio || 1.5;
 
   return (
     <section className={styles.page}>
       <div className={styles.cityHero}>
         <div>
           <p className={styles.eyebrow}>
-            <Link href="/travel">Travel</Link> /{" "}
-            <Link href={`/travel/${cityData.countryCode.toLowerCase()}`}>
-              {cityData.country}
-            </Link>
+            <Link href="/travel">{copy.navigation.travel}</Link> / <Link href={`/travel/${cityData.countryCode.toLowerCase()}`}>{displayCountry}</Link>
           </p>
-          <h1 className={styles.displayTitle}>{decodedCityName}</h1>
+          <h1 className={styles.displayTitle}>{displayCity}</h1>
         </div>
         <p className={styles.lede} style={{ margin: 0 }}>
-          {cityData.description ||
-            `A photographic place study from ${decodedCityName}, kept as part of the geographic archive.`}
+          {locale === "en" && cityData.description
+            ? cityData.description
+            : copy.city.study(displayCity)}
         </p>
 
         <Link
-          href={
-            cityData.coverPhoto?.id
-              ? `/photograph/${cityData.coverPhoto.id}`
-              : "#"
-          }
+          href={cityData.coverPhoto?.id ? `/photograph/${cityData.coverPhoto.id}` : "#"}
           className={styles.cityCover}
           style={{ aspectRatio: coverAspectRatio }}
         >
@@ -101,41 +110,29 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
       </div>
 
       <div className={styles.cityMeta}>
-        <div>
-          <span>Country</span>
-          <strong>{cityData.country}</strong>
-        </div>
-        <div>
-          <span>Place</span>
-          <strong>{cityData.city}</strong>
-        </div>
-        <div>
-          <span>Year</span>
-          <strong>{year}</strong>
-        </div>
-        <div>
-          <span>Frames</span>
-          <strong>{cityData.photoCount}</strong>
-        </div>
+        <div><span>{copy.common.country}</span><strong>{displayCountry}</strong></div>
+        <div><span>{copy.common.place}</span><strong>{localizePlaceName(cityData.city, locale)}</strong></div>
+        <div><span>{copy.common.year}</span><strong>{year}</strong></div>
+        <div><span>{copy.common.frames}</span><strong>{cityData.photoCount}</strong></div>
       </div>
 
       <div className={styles.cityGrid}>
         {cityPhotos.map((photo, index) => {
           const aspectRatio =
-            photo.width && photo.height
+            photo.width > 0 && photo.height > 0
               ? photo.width / photo.height
-              : photo.aspectRatio || 3 / 2;
+              : photo.aspectRatio || 1.5;
 
           return (
             <Link
               href={`/photograph/${photo.id}`}
               className={styles.cityPhoto}
-              key={photo.id}
               style={{ aspectRatio }}
+              key={photo.id}
             >
               <BlurImage
                 src={photo.url}
-                alt={photo.title || `${decodedCityName} photograph`}
+                alt={photo.title || copy.city.photoAlt(displayCity)}
                 fill
                 quality={50}
                 blurhash={photo.blurData}
@@ -144,7 +141,7 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
               />
               <div className={styles.cityPhotoCaption}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
-                <span>{photo.title || "Untitled"}</span>
+                <span>{photo.title || copy.common.untitled}</span>
               </div>
             </Link>
           );

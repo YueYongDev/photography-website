@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 
 import BlurImage from "@/components/blur-image";
 import MapComponent, { type MapProps } from "@/components/map";
+import {
+  localizePlaceName,
+  useSiteLocale,
+} from "@/modules/site/i18n/site-locale";
 import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
 import styles from "@/modules/site/ui/public-site.module.css";
 import { trpc } from "@/trpc/client";
@@ -12,13 +16,15 @@ import { PhotoListDrawer } from "./photo-list-drawer";
 
 export const MapSection = () => <MapSectionContent />;
 
-const MapFallback = () => (
-  <div className={styles.mapFallback}>
-    <div className={styles.mapFallbackNote}>
-      <span>Live archive temporarily unavailable</span>
-      <p>The city index remains visible while the coordinate service reconnects.</p>
-    </div>
-    <svg viewBox="0 0 1000 520" role="img" aria-label="A quiet city map of the current archive">
+const MapFallback = () => {
+  const { copy } = useSiteLocale();
+  return (
+    <div className={styles.mapFallback}>
+      <div className={styles.mapFallbackNote}>
+        <span>{copy.map.fallbackTitle}</span>
+        <p>{copy.map.fallbackDescription}</p>
+      </div>
+      <svg viewBox="0 0 1000 520" role="img" aria-label={copy.map.fallbackLabel}>
       <path d="M0 120 H1000 M0 260 H1000 M0 400 H1000 M180 0 V520 M500 0 V520 M820 0 V520" />
       <path className={styles.mapFallbackRoute} d="M150 360 C280 140 410 180 520 330 S730 390 850 150" />
       {[
@@ -33,9 +39,10 @@ const MapFallback = () => (
           <text x="14" y="13" className={styles.mapFallbackCoordinate}>{coordinate}</text>
         </g>
       ))}
-    </svg>
-  </div>
-);
+      </svg>
+    </div>
+  );
+};
 
 const normalizeLocation = (value?: string | null) => {
   if (!value) return null;
@@ -52,6 +59,7 @@ const getCityLevelLocation = (photo: {
     : photo.city ?? photo.region;
 
 const MapSectionContent = () => {
+  const { copy, locale } = useSiteLocale();
   const router = useRouter();
   const { data, ...query } = trpc.map.getMany.useInfiniteQuery(
     { limit: 200 },
@@ -80,7 +88,7 @@ const MapSectionContent = () => {
 
     return Array.from(groups.entries()).map(([key, groupPhotos]) => {
       const representative = groupPhotos[0];
-      const location = getCityLevelLocation(representative) ?? "Unknown place";
+      const location = getCityLevelLocation(representative) ?? copy.map.unknownPlace;
       const latitude = groupPhotos.reduce((sum, photo) => sum + (photo.latitude ?? 0), 0) / groupPhotos.length;
       const longitude = groupPhotos.reduce((sum, photo) => sum + (photo.longitude ?? 0), 0) / groupPhotos.length;
       return {
@@ -93,18 +101,24 @@ const MapSectionContent = () => {
         longitude,
       };
     });
-  }, [photos]);
+  }, [copy.map.unknownPlace, photos]);
 
   const markers: MapProps["markers"] = cityGroups.map((group) => ({
     id: group.key,
     longitude: group.longitude,
     latitude: group.latitude,
-    onClick: () => setActiveLocation({ key: group.key, label: group.city }),
+    onClick: () => setActiveLocation({
+      key: group.key,
+      label: localizePlaceName(group.city, locale),
+    }),
     element: (
       <button
         type="button"
         className={styles.cityMapMarker}
-        aria-label={`Open ${group.city}, ${group.photos.length} photographs`}
+        aria-label={copy.map.markerLabel(
+          localizePlaceName(group.city, locale),
+          group.photos.length
+        )}
       >
         <span>{group.photos.length}</span>
       </button>
@@ -114,7 +128,7 @@ const MapSectionContent = () => {
         type="button"
         className={styles.cityMapPopup}
         onClick={() => {
-          if (group.countryCode && group.city !== "Unknown place") {
+          if (group.countryCode && group.city !== copy.map.unknownPlace) {
             router.push(`/travel/${group.countryCode.toLowerCase()}/${toPlaceSlug(group.city)}`);
           } else {
             router.push(`/photograph/${group.representative.id}`);
@@ -133,8 +147,8 @@ const MapSectionContent = () => {
           />
         </div>
         <span>{group.countryCode ?? "—"} · {group.photos.length} frames</span>
-        <strong>{group.city}</strong>
-        <small>Open city ↗</small>
+        <strong>{localizePlaceName(group.city, locale)}</strong>
+        <small>{copy.map.openCity}</small>
       </button>
     ),
   }));

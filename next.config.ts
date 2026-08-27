@@ -8,8 +8,6 @@ const nextConfig: NextConfig = {
   output: process.env.VERCEL ? undefined : "standalone",
   serverExternalPackages: ["qiniu"],
   images: {
-    loader: "custom",
-    loaderFile: "./image-loader.ts",
     qualities: [25, 50, 75],
     remotePatterns: [
       {

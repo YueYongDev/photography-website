@@ -1,58 +1,54 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import { getArchiveImageLoader } from "@/lib/archive-image-loader";
+import {
+  localizeCountryName,
+  useSiteLocale,
+} from "@/modules/site/i18n/site-locale";
 import styles from "@/modules/site/ui/public-site.module.css";
 
-const workEntries = [
-  {
-    number: "01",
-    title: "Quiet Distances",
-    description: "Scale, weather, and the measured silence between a person and the horizon.",
-    image: "/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg",
-    width: 1360,
-    height: 2400,
-  },
-  {
-    number: "02",
-    title: "Passing Through",
-    description: "Roads, windows, borrowed viewpoints, and the landscape seen in transit.",
-    image: "/journeys/newzealand-2026/photos/03-lindis-road.jpg",
-    width: 2400,
-    height: 1350,
-  },
-  {
-    number: "03",
-    title: "The Observer",
-    description: "People looking, making, and becoming part of the scene they came to witness.",
-    image: "/journeys/newzealand-2026/photos/06-tekapo-portrait.jpg",
-    width: 2400,
-    height: 1359,
-  },
-];
+export type HomeSelectedPhoto = {
+  id: string;
+  url: string;
+  title: string | null;
+  description: string | null;
+  blurData: string | null;
+  width: number | null;
+  height: number | null;
+  aspectRatio: number | null;
+};
 
-export const HomeView = () => {
+export const HomeView = ({
+  selectedPhotos,
+}: {
+  selectedPhotos: HomeSelectedPhoto[];
+}) => {
+  const { copy, locale } = useSiteLocale();
+
   return (
     <>
       <section className={styles.page}>
-        <p className={styles.eyebrow}>Photography by YueYong</p>
+        <p className={styles.eyebrow}>{copy.home.eyebrow}</p>
         <h1 className={styles.displayTitle}>
-          Photography,
+          {copy.home.titleStart}
           <br />
-          shaped <em>along the way.</em>
+          <em>{copy.home.titleEnd}</em>
         </h1>
-        <p className={styles.lede}>
-          Places become the setting. Attention becomes the work — an evolving
-          archive of distance, human traces, and quiet moments in motion.
-        </p>
+        <p className={styles.lede}>{copy.home.lede}</p>
 
         <figure>
-          <div className={styles.heroImage} style={{ aspectRatio: 1360 / 2400 }}>
+          <div
+            className={styles.heroImage}
+            style={{ aspectRatio: 1360 / 2400 }}
+          >
             <Image
               src="/journeys/newzealand-2026/photos/08-tekapo-quiet.jpg"
-              alt="A solitary figure beside Lake Tekapo"
+              alt={copy.home.heroAlt}
               fill
-              unoptimized
               priority
               sizes="(min-width: 900px) 60vw, 87vw"
               className={styles.imageContain}
@@ -61,102 +57,135 @@ export const HomeView = () => {
           <figcaption
             className={`${styles.imageCaption} ${styles.heroCaption}`}
           >
-            <span>Quiet Distances, No. 04</span>
-            <span>Tekapo · 2026</span>
+            <span>{copy.home.heroCaption}</span>
+            <span>
+              {locale === "zh-CN" ? "蒂卡普 · 2026" : "Tekapo · 2026"}
+            </span>
           </figcaption>
         </figure>
       </section>
 
       <section className={`${styles.section} ${styles.sectionWhite}`}>
         <div className={styles.sectionHead}>
-          <p className={styles.eyebrow}>01 / Selected Work</p>
-          <h2>Recurring ways of seeing.</h2>
-          <p>
-            A small, edited set of visual questions. Places change; the things
-            I return to remain.
-          </p>
+          <p className={styles.eyebrow}>{copy.home.workEyebrow}</p>
+          <h2>{copy.home.workTitle}</h2>
+          <p>{copy.home.workDescription}</p>
         </div>
 
-        <div className={styles.homeWorkGrid}>
-          {workEntries.map((entry) => (
-            <Link href="/work" className={styles.homeWorkCard} key={entry.number}>
-              <div
-                className={styles.homeWorkImage}
-                style={{ aspectRatio: entry.width / entry.height }}
-              >
-                <Image
-                  src={entry.image}
-                  alt={entry.title}
-                  fill
-                  unoptimized
-                  sizes="(min-width: 900px) 45vw, 90vw"
-                  className={styles.imageContain}
-                />
-              </div>
-              <div className={styles.homeWorkMeta}>
-                <span>{entry.number}</span>
-                <h3>{entry.title}</h3>
-                <p>{entry.description}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {selectedPhotos.length === 0 ? (
+          <div className={styles.archiveEmpty}>
+            <span>00</span>
+            <div>
+              <h3>{copy.work.emptyTitle}</h3>
+              <p>{copy.work.emptyDescription}</p>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.homeWorkGrid}>
+            {selectedPhotos.map((entry, index) => {
+              const localizedEntry = copy.home.workEntries[index];
+              const title =
+                entry.title || localizedEntry?.title || copy.common.untitled;
+              const description =
+                entry.description ||
+                localizedEntry?.description ||
+                copy.home.workDescription;
+              const aspectRatio =
+                entry.width && entry.height
+                  ? entry.width / entry.height
+                  : entry.aspectRatio && entry.aspectRatio > 0
+                    ? entry.aspectRatio
+                    : 1.18;
+              return (
+                <Link
+                  href={`/photograph/${entry.id}`}
+                  className={styles.homeWorkCard}
+                  key={entry.id}
+                >
+                  <div className={styles.homeWorkImage} style={{ aspectRatio }}>
+                    <Image
+                      src={entry.url}
+                      alt={title}
+                      fill
+                      loader={getArchiveImageLoader(entry.url)}
+                      placeholder={entry.blurData ? "blur" : "empty"}
+                      blurDataURL={entry.blurData || undefined}
+                      sizes="(min-width: 900px) 45vw, 90vw"
+                      className={styles.imageContain}
+                    />
+                  </div>
+                  <div className={styles.homeWorkMeta}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
         <div style={{ marginTop: "5rem" }}>
           <Link href="/work" className={styles.textLink}>
-            View selected work <ArrowUpRight size={15} strokeWidth={1.4} />
+            {copy.home.workLink} <ArrowUpRight size={15} strokeWidth={1.4} />
           </Link>
         </div>
       </section>
 
       <section className={`${styles.section} ${styles.sectionMist}`}>
         <div className={styles.sectionHead}>
-          <p className={styles.eyebrow}>02 / Journeys</p>
-          <h2>Notes from the road.</h2>
-          <p>
-            Chronology, route, people, and field notes — the longer story around
-            the photographs.
-          </p>
+          <p className={styles.eyebrow}>{copy.home.journeysEyebrow}</p>
+          <h2>{copy.home.journeysTitle}</h2>
+          <p>{copy.home.journeysDescription}</p>
         </div>
 
-        <Link href="/journeys/newzealand-2026" className={styles.journeyFeature}>
+        <Link
+          href="/journeys/newzealand-2026"
+          className={styles.journeyFeature}
+        >
           <Image
             src="/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg"
-            alt="New Zealand 2026 journey"
+            alt={
+              locale === "zh-CN"
+                ? "新西兰 2026 旅程"
+                : "New Zealand 2026 journey"
+            }
             fill
-            unoptimized
             sizes="90vw"
             className={styles.imageCover}
           />
           <div className={styles.journeyShade} />
           <div className={styles.journeyOverlay}>
-            <span>Field journal · 26 April — 02 May 2026</span>
-            <h3>New Zealand 2026</h3>
+            <span>{copy.home.journalMeta}</span>
+            <h3>{copy.home.journalTitle}</h3>
           </div>
         </Link>
       </section>
 
       <section className={`${styles.section} ${styles.sectionWhite}`}>
         <div className={styles.sectionHead}>
-          <p className={styles.eyebrow}>03 / Travel</p>
-          <h2>Countries first. Places within.</h2>
-          <p>
-            Travel is kept at the scale of a country, while individual cities
-            remain available inside each archive and on the map.
-          </p>
+          <p className={styles.eyebrow}>{copy.home.travelEyebrow}</p>
+          <h2>{copy.home.travelTitle}</h2>
+          <p>{copy.home.travelDescription}</p>
         </div>
 
         <div className={styles.atlasTeaser}>
-          <h3>A broader view of where the work began.</h3>
+          <h3>{copy.home.travelPrompt}</h3>
           <div className={styles.atlasLines}>
             {[
-              { name: "New Zealand", href: "/travel/nz" },
-              { name: "Uzbekistan", href: "/travel/uz" },
-              { name: "Australia", href: "/travel/au" },
+              { name: "New Zealand", code: "NZ", href: "/travel/nz" },
+              { name: "Uzbekistan", code: "UZ", href: "/travel/uz" },
+              { name: "Australia", code: "AU", href: "/travel/au" },
             ].map((country, index) => (
-              <Link href={country.href} className={styles.atlasLine} key={country.name}>
+              <Link
+                href={country.href}
+                className={styles.atlasLine}
+                key={country.name}
+              >
                 <span>T{String(index + 1).padStart(2, "0")}</span>
-                <strong>{country.name}</strong>
+                <strong>
+                  {localizeCountryName(country.name, country.code, locale)}
+                </strong>
                 <ArrowUpRight size={15} strokeWidth={1.4} />
               </Link>
             ))}

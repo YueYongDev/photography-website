@@ -26,11 +26,13 @@ interface CreatePostSectionProps {
   onCreateSuccess?: () => void;
 }
 
-export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) => {
+export const CreatePostSection = ({
+  onCreateSuccess,
+}: CreatePostSectionProps) => {
   const utils = trpc.useUtils();
   const create = trpc.posts.create.useMutation({
     onSuccess: () => {
-      toast.success("Post created successfully");
+      toast.success("Field note created successfully");
       utils.posts.getMany.invalidate();
       onCreateSuccess?.();
     },
@@ -197,9 +199,9 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
     // Process tags array from string
     const formData = {
       ...values,
-      tags: values.tags ? values.tags.filter(tag => tag.trim() !== "") : [],
+      tags: values.tags ? values.tags.filter((tag) => tag.trim() !== "") : [],
     };
-    
+
     create.mutate(formData);
   };
 
@@ -208,16 +210,19 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold">Create New Post</h2>
+            <h2 className="text-xl font-bold">Create Field Note</h2>
             <p className="text-xs text-muted-foreground">
-              Write a new blog post or story
+              Write a new essay for Journeys
             </p>
           </div>
           <div className="flex items-center gap-x-2">
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={generateAIDescription}
-              disabled={generateAIDescriptionMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+              disabled={
+                generateAIDescriptionMutation.isPending ||
+                (!form.getValues("content") && !form.getValues("title"))
+              }
               variant="secondary"
             >
               {generateAIDescriptionMutation.isPending ? (
@@ -232,10 +237,13 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
                 </>
               )}
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={generateAITitle}
-              disabled={generateAITitleMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+              disabled={
+                generateAITitleMutation.isPending ||
+                (!form.getValues("content") && !form.getValues("title"))
+              }
               variant="secondary"
             >
               {generateAITitleMutation.isPending ? (
@@ -250,10 +258,13 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
                 </>
               )}
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={generateAITags}
-              disabled={generateAITagsMutation.isPending || (!form.getValues("content") && !form.getValues("title"))}
+              disabled={
+                generateAITagsMutation.isPending ||
+                (!form.getValues("content") && !form.getValues("title"))
+              }
               variant="secondary"
             >
               {generateAITagsMutation.isPending ? (
@@ -269,11 +280,11 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
               )}
             </Button>
             <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? "Creating..." : "Create Post"}
+              {create.isPending ? "Creating..." : "Create Field Note"}
             </Button>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="space-y-6 lg:col-span-3">
             <FormField
@@ -283,7 +294,7 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Post title" />
+                    <Input {...field} placeholder="Field note title" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -302,11 +313,11 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
                       value={field.value || ""}
                       rows={3}
                       className="resize-none"
-                      placeholder="Post description"
+                      placeholder="Field note description"
                     />
                   </FormControl>
                   <FormDescription>
-                    A short description of your post (optional)
+                    A short description of this field note (optional)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -321,7 +332,7 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
                   <FormLabel>Slug</FormLabel>
                   <div className="flex gap-2">
                     <FormControl className="flex-1">
-                      <Input {...field} placeholder="Post slug" />
+                      <Input {...field} placeholder="Field note slug" />
                     </FormControl>
                     <Button
                       type="button"
@@ -341,11 +352,14 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
                       }}
                       disabled={generateAISlugMutation.isPending}
                     >
-                      {generateAISlugMutation.isPending ? "Generating..." : "Generate"}
+                      {generateAISlugMutation.isPending
+                        ? "Generating..."
+                        : "Generate"}
                     </Button>
                   </div>
                   <FormDescription>
-                    URL-friendly identifier for your post. Will be automatically generated from title if left empty.
+                    URL-friendly identifier for this field note. It will be
+                    generated from the title if left empty.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -374,26 +388,27 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                <FormLabel>Tags</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter tags separated by commas"
-                    value={field.value?.join(", ") || ""}
-                    onChange={(e) => {
-                      const tagsString = e.target.value;
-                      const tagsArray = tagsString
-                        .split(",")
-                        .map((tag) => tag.trim())
-                        .filter((tag) => tag !== "");
-                      field.onChange(tagsArray);
-                    }}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Enter tags separated by commas (e.g. travel, photography, story) or use AI Tags button to generate automatically
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter tags separated by commas"
+                      value={field.value?.join(", ") || ""}
+                      onChange={(e) => {
+                        const tagsString = e.target.value;
+                        const tagsArray = tagsString
+                          .split(",")
+                          .map((tag) => tag.trim())
+                          .filter((tag) => tag !== "");
+                        field.onChange(tagsArray);
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter tags separated by commas (e.g. travel, photography,
+                    story) or use AI Tags button to generate automatically
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
             />
           </div>
@@ -401,7 +416,7 @@ export const CreatePostSection = ({ onCreateSuccess }: CreatePostSectionProps) =
           <div className="flex flex-col gap-y-8 lg:col-span-2">
             <div className="flex flex-col gap-4 bg-muted rounded-xl overflow-hidden p-4">
               <p className="text-sm text-muted-foreground">
-                {`Posts are public by default. Fill in the details above and click 'Create Post' to publish.`}
+                {`Field notes are public by default. Fill in the details above and publish when the photographs and words belong together.`}
               </p>
             </div>
           </div>

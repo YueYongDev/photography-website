@@ -1,15 +1,29 @@
+"use client";
+
 import type { ReactNode } from "react";
 
+import {
+  SiteLocaleProvider,
+  useSiteLocale,
+} from "@/modules/site/i18n/site-locale";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import styles from "./public-site.module.css";
 
-export const SiteShell = ({ children }: { children: ReactNode }) => {
+const SiteShellContent = ({ children }: { children: ReactNode }) => {
+  const { locale } = useSiteLocale();
+
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-locale={locale}>
       <SiteHeader />
       <main className={styles.main}>{children}</main>
       <SiteFooter />
     </div>
   );
 };
+
+export const SiteShell = ({ children }: { children: ReactNode }) => (
+  <SiteLocaleProvider>
+    <SiteShellContent>{children}</SiteShellContent>
+  </SiteLocaleProvider>
+);

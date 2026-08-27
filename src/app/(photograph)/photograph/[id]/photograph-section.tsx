@@ -7,6 +7,11 @@ import { useRouter } from "next/navigation";
 
 import BlurImage from "@/components/blur-image";
 import { formatExposureTime } from "@/lib/utils";
+import {
+  localizeCountryName,
+  localizePlaceName,
+  useSiteLocale,
+} from "@/modules/site/i18n/site-locale";
 import styles from "@/modules/site/ui/public-site.module.css";
 import { trpc } from "@/trpc/client";
 
@@ -14,23 +19,29 @@ interface Props {
   id: string;
 }
 
-const LoadingState = () => (
-  <div className={styles.state}>
-    <div>
-      <h1>Preparing the photograph.</h1>
-      <p>The full-resolution frame and its field metadata are loading.</p>
+const LoadingState = () => {
+  const { copy } = useSiteLocale();
+  return (
+    <div className={styles.state}>
+      <div>
+        <h1>{copy.photo.loadingTitle}</h1>
+        <p>{copy.photo.loadingDescription}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-const ErrorState = () => (
-  <div className={styles.state}>
-    <div>
-      <h1>This photograph could not be opened.</h1>
-      <p>It may be private, unavailable, or temporarily out of reach.</p>
+const ErrorState = () => {
+  const { copy } = useSiteLocale();
+  return (
+    <div className={styles.state}>
+      <div>
+        <h1>{copy.photo.errorTitle}</h1>
+        <p>{copy.photo.errorDescription}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const PhotographSection = ({ id }: Props) => {
   return (
@@ -43,41 +54,47 @@ export const PhotographSection = ({ id }: Props) => {
 };
 
 const PhotographSectionSuspense = ({ id }: Props) => {
+  const { copy, locale } = useSiteLocale();
   const router = useRouter();
   const [data] = trpc.photos.getOne.useSuspenseQuery({ id });
 
   if (!data) return <ErrorState />;
 
   const date = data.dateTimeOriginal
-    ? new Date(data.dateTimeOriginal).toLocaleDateString("en-US", {
+    ? new Date(data.dateTimeOriginal).toLocaleDateString(locale, {
         year: "numeric",
         month: "long",
         day: "numeric",
       })
-    : "Archive";
-  const location = [data.city, data.country].filter(Boolean).join(", ") || "Location not recorded";
+    : copy.common.archive;
+  const location = [
+    data.city ? localizePlaceName(data.city, locale) : null,
+    data.country
+      ? localizeCountryName(data.country, data.countryCode, locale)
+      : null,
+  ].filter(Boolean).join(locale === "zh-CN" ? "，" : ", ") || copy.photo.locationUnknown;
 
   const specs = [
-    ["Camera", [data.make, data.model].filter(Boolean).join(" ") || "Not recorded"],
-    ["Lens", data.lensModel || "Not recorded"],
-    ["Focal length", data.focalLength35mm ? `${data.focalLength35mm}mm` : "—"],
-    ["Aperture", data.fNumber ? `ƒ/${data.fNumber}` : "—"],
-    ["Exposure", data.exposureTime ? formatExposureTime(data.exposureTime) : "—"],
-    ["Sensitivity", data.iso ? `ISO ${data.iso}` : "—"],
-    ["Date", date],
-    ["Place", location],
+    [copy.photo.camera, [data.make, data.model].filter(Boolean).join(" ") || copy.common.notRecorded],
+    [copy.photo.lens, data.lensModel || copy.common.notRecorded],
+    [copy.photo.focalLength, data.focalLength35mm ? `${data.focalLength35mm}mm` : "—"],
+    [copy.photo.aperture, data.fNumber ? `ƒ/${data.fNumber}` : "—"],
+    [copy.photo.exposure, data.exposureTime ? formatExposureTime(data.exposureTime) : "—"],
+    [copy.photo.sensitivity, data.iso ? `ISO ${data.iso}` : "—"],
+    [copy.photo.date, date],
+    [copy.common.place, location],
   ];
 
   return (
     <section className={`${styles.page} ${styles.photoPage}`}>
       <button type="button" onClick={() => router.back()} className={styles.photoBack}>
-        <ArrowLeft size={15} strokeWidth={1.4} /> Back to the archive
+        <ArrowLeft size={15} strokeWidth={1.4} /> {copy.photo.back}
       </button>
 
       <figure className={styles.photoFigure}>
         <BlurImage
           src={data.url}
-          alt={data.title || "Photograph"}
+          alt={data.title || copy.photo.photograph}
           width={data.width}
           height={data.height}
           blurhash={data.blurData}
@@ -87,9 +104,9 @@ const PhotographSectionSuspense = ({ id }: Props) => {
 
       <div className={styles.photoInfo}>
         <div>
-          <p className={styles.eyebrow}>Photograph / {data.countryCode || "Archive"}</p>
-          <h1>{data.title || "Untitled"}</h1>
-          <p>{data.description || "A frame from the photographic archive."}</p>
+          <p className={styles.eyebrow}>{copy.photo.photograph} / {data.countryCode || copy.common.archive}</p>
+          <h1>{data.title || copy.common.untitled}</h1>
+          <p>{locale === "en" && data.description ? data.description : copy.photo.fallbackDescription}</p>
         </div>
 
         <div className={styles.photoSpecs}>
