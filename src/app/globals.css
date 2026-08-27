@@ -130,7 +130,7 @@
 @layer base {
   :root {
     /* Shared archive palette used by both the public site and Studio. */
-    --archive-paper: #fafaf8;
+    --archive-paper: #ffffff;
     --archive-surface: #ffffff;
     --archive-mist: #e9edec;
     --archive-ink: #202422;

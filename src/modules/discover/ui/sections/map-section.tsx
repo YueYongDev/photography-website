@@ -16,6 +16,26 @@ import { PhotoListDrawer } from "./photo-list-drawer";
 
 export const MapSection = () => <MapSectionContent />;
 
+const MapLoading = () => {
+  const { copy } = useSiteLocale();
+
+  return (
+    <div
+      className={styles.mapLoading}
+      role="status"
+      aria-live="polite"
+      aria-label={copy.map.loadingMap}
+    >
+      <div className={styles.mapLoadingCompass} aria-hidden="true">
+        <span />
+        <span />
+        <i />
+      </div>
+      <p>{copy.map.loadingMap}</p>
+    </div>
+  );
+};
+
 const MapFallback = () => {
   const { copy } = useSiteLocale();
   return (
@@ -158,13 +178,14 @@ const MapSectionContent = () => {
     return cityGroups.find((group) => group.key === activeLocation.key)?.photos ?? [];
   }, [photos, cityGroups, activeLocation]);
 
-  if (!data || query.isError) return <MapFallback />;
+  if (!data && !query.isError) return <MapLoading />;
+  if (query.isError) return <MapFallback />;
 
   return (
     <div className="relative size-full">
       <MapComponent
         id="discoverMap"
-        initialViewState={{ longitude: 121.2816980216146, latitude: 31.31395498607465, zoom: 3 }}
+        initialViewState={{ longitude: 121.2816980216146, latitude: 31.31395498607465, zoom: 2 }}
         markers={markers}
       />
       <PhotoListDrawer

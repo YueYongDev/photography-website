@@ -1,6 +1,6 @@
 .shell {
-  --studio-paper: var(--archive-paper, #fafaf8);
-  --studio-surface: #fbfbf8;
+  --studio-paper: var(--archive-paper, #ffffff);
+  --studio-surface: #ffffff;
   --studio-surface-strong: #ffffff;
   --studio-ink: var(--archive-ink, #202422);
   --studio-muted: rgba(32, 36, 33, 0.56);
@@ -11,14 +11,14 @@
   --studio-accent-soft: #dce3e0;
   --studio-danger: #a64e42;
 
-  --background: 48 23% 96%;
+  --background: 0 0% 100%;
   --foreground: 150 6% 13%;
-  --card: 60 20% 99%;
+  --card: 0 0% 100%;
   --card-foreground: 150 6% 13%;
-  --popover: 60 20% 99%;
+  --popover: 0 0% 100%;
   --popover-foreground: 150 6% 13%;
   --primary: 150 6% 13%;
-  --primary-foreground: 48 23% 96%;
+  --primary-foreground: 0 0% 100%;
   --secondary: 48 18% 92%;
   --secondary-foreground: 150 6% 13%;
   --muted: 48 14% 92%;
@@ -28,7 +28,7 @@
   --border: 150 5% 84%;
   --input: 150 5% 78%;
   --ring: 157 8% 50%;
-  --sidebar-background: 48 23% 96%;
+  --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 150 6% 13%;
   --sidebar-accent: 150 10% 89%;
   --sidebar-accent-foreground: 150 6% 13%;
@@ -49,13 +49,7 @@
 .workspace {
   min-width: 0;
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 82% 0%,
-      rgba(120, 137, 132, 0.08),
-      transparent 25rem
-    ),
-    var(--studio-paper);
+  background: var(--studio-paper);
 }
 
 .workspaceMain {
@@ -75,7 +69,7 @@
   gap: 1rem;
   padding: 0 1.5rem;
   border-bottom: 1px solid var(--studio-line);
-  background: rgba(250, 250, 248, 0.9);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(18px);
 }
 
@@ -706,7 +700,7 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.38rem 0.5rem;
-  background: rgba(250, 250, 248, 0.88);
+  background: rgba(255, 255, 255, 0.88);
   color: var(--studio-ink);
   font-size: 0.5rem;
   letter-spacing: 0.08em;
@@ -723,7 +717,7 @@
   width: 1.9rem;
   height: 1.9rem;
   place-items: center;
-  background: rgba(250, 250, 248, 0.88);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(8px);
 }
 

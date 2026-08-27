@@ -1,6 +1,6 @@
 import type { ImageLoader, ImageLoaderProps } from "next/image";
 
-const qiniuHosts = new Set(["p.yueyong.fun", "cdn.ytools.xyz"]);
+const qiniuHosts = new Set(["cdn.ytools.xyz"]);
 
 export const qiniuImageLoader = ({ src, width, quality }: ImageLoaderProps) => {
   try {

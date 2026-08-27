@@ -18,8 +18,8 @@ export const SiteFooter = () => {
       <nav className={styles.footerNav} aria-label={copy.navigation.label}>
         <Link href="/">{copy.navigation.home}</Link>
         <Link href="/work">{copy.navigation.work}</Link>
-        <Link href="/journeys">{copy.navigation.journeys}</Link>
         <Link href="/travel">{copy.navigation.travel}</Link>
+        <Link href="/journeys">{copy.navigation.journeys}</Link>
         <Link href="/discover">{copy.navigation.map}</Link>
         <Link href="/about">{copy.navigation.about}</Link>
         <Link href="/dashboard">{copy.navigation.studio}</Link>

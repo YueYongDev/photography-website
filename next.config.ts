@@ -12,11 +12,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "p.yueyong.fun",
-        port: "",
-      },
-      {
-        protocol: "https",
         hostname: "cdn.ytools.xyz",
         port: "",
       },
