@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import styles from "../studio.module.css";
 import type { DashboardTravelCitySet } from "../components/travel-types";
 import { useLazyVisibility } from "@/hooks/use-lazy-visibility";
+import { useStudioLocale } from "../../i18n/studio-locale";
 
 const TravelMap = dynamic(
   () => import("../components/travel-map").then((module) => module.TravelMap),
@@ -33,19 +34,21 @@ const LazyTravelMap = ({ data }: { data: DashboardTravelCitySet[] }) => {
 };
 
 export const TravelSection = () => {
+  const { copy } = useStudioLocale();
   return (
-    <ErrorBoundary fallback={<p>Something went wrong</p>}>
+    <ErrorBoundary fallback={<p>{copy.overview.error}</p>}>
       <TravelSectionContent />
     </ErrorBoundary>
   );
 };
 
 export const TravelSectionSkeleton = () => {
+  const { copy } = useStudioLocale();
   return (
     <section className={styles.travelBlock}>
       <div className={styles.sectionLabel}>
-        <p>Recent geography</p>
-        <span>Places with coordinates</span>
+        <p>{copy.overview.recentGeography}</p>
+        <span>{copy.overview.coordinates}</span>
       </div>
       <div className={styles.travelGrid}>
         <div className={styles.travelList}>
@@ -63,6 +66,7 @@ export const TravelSectionSkeleton = () => {
 };
 
 const TravelSectionContent = () => {
+  const { copy } = useStudioLocale();
   const { data, isLoading } = trpc.travel.getCitySets.useQuery({
     limit: 4,
   });
@@ -74,8 +78,8 @@ const TravelSectionContent = () => {
   return (
     <section className={styles.travelBlock}>
       <div className={styles.sectionLabel}>
-        <p>Recent geography</p>
-        <span>Places with coordinates</span>
+        <p>{copy.overview.recentGeography}</p>
+        <span>{copy.overview.coordinates}</span>
       </div>
       <div className={styles.travelGrid}>
         <TravelPhotos data={data?.items || []} />

@@ -8,7 +8,12 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -161,6 +166,8 @@ const Sidebar = React.forwardRef<
     side?: "left" | "right"
     variant?: "sidebar" | "floating" | "inset"
     collapsible?: "offcanvas" | "icon" | "none"
+    mobileTitle?: string
+    mobileDescription?: string
   }
 >(
   (
@@ -168,6 +175,8 @@ const Sidebar = React.forwardRef<
       side = "left",
       variant = "sidebar",
       collapsible = "offcanvas",
+      mobileTitle = "Navigation",
+      mobileDescription = "Navigate between sections",
       className,
       children,
       ...props
@@ -205,6 +214,10 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
+            <SheetTitle className="sr-only">{mobileTitle}</SheetTitle>
+            <SheetDescription className="sr-only">
+              {mobileDescription}
+            </SheetDescription>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
@@ -260,8 +273,8 @@ Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
->(({ className, onClick, ...props }, ref) => {
+  React.ComponentProps<typeof Button> & { label?: string }
+>(({ className, label = "Toggle Sidebar", onClick, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -278,7 +291,7 @@ const SidebarTrigger = React.forwardRef<
       {...props}
     >
       <ViewVerticalIcon />
-      <span className="sr-only">Toggle Sidebar</span>
+      <span className="sr-only">{label}</span>
     </Button>
   )
 })

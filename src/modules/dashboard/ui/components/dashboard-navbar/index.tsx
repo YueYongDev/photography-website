@@ -1,18 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import UserButton from "@/modules/auth/components/user-button";
 import { ArrowUpRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import styles from "../../studio.module.css";
-
-const routeLabels = [
-  ["/dashboard", "Overview"],
-  ["/photos", "Photographs"],
-  ["/posts", "Journeys"],
-  ["/profile", "Account"],
-] as const;
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 export const DashboardNavbar = ({
   user,
@@ -20,23 +14,59 @@ export const DashboardNavbar = ({
   user: { name: string; image?: string | null };
 }) => {
   const pathname = usePathname();
+  const { isMobile, state } = useSidebar();
+  const { copy, locale, setLocale } = useStudioLocale();
+  const routeLabels = [
+    ["/studio/overview", copy.navigation.overview.label],
+    ["/studio/photos", copy.navigation.photos.label],
+    ["/studio/journeys", copy.navigation.journeys.label],
+    ["/studio/account", copy.navigation.account.label],
+  ] as const;
   const currentSection =
     routeLabels.find(([href]) =>
-      href === "/dashboard" ? pathname === href : pathname.startsWith(href),
-    )?.[1] ?? "Studio";
+      href === "/studio/overview" ? pathname === href : pathname.startsWith(href),
+    )?.[1] ?? copy.shell.studio;
 
   return (
     <header className={styles.topbar}>
       <div className={styles.topbarTrail}>
-        <SidebarTrigger className={styles.sidebarTrigger} />
-        <strong>Studio</strong>
+        {(isMobile || state === "collapsed") && (
+          <SidebarTrigger
+            className={styles.sidebarTrigger}
+            label={copy.shell.toggleSidebar}
+          />
+        )}
+        <strong>{copy.shell.studio}</strong>
         <span>/</span>
         <span>{currentSection}</span>
       </div>
 
       <div className={styles.topbarActions}>
+        <div
+          className={styles.languageSwitch}
+          aria-label={copy.language.label}
+          role="group"
+        >
+          <button
+            type="button"
+            aria-pressed={locale === "en"}
+            className={locale === "en" ? styles.languageActive : ""}
+            onClick={() => setLocale("en")}
+          >
+            {copy.language.english}
+          </button>
+          <span aria-hidden="true">/</span>
+          <button
+            type="button"
+            aria-pressed={locale === "zh-CN"}
+            className={locale === "zh-CN" ? styles.languageActive : ""}
+            onClick={() => setLocale("zh-CN")}
+          >
+            {copy.language.chinese}
+          </button>
+        </div>
         <Link href="/" className={styles.liveLink}>
-          View live site
+          {copy.shell.viewSite}
           <ArrowUpRight size={13} />
         </Link>
         <div>

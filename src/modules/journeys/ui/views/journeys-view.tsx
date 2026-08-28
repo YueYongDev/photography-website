@@ -22,6 +22,7 @@ type JourneyArchiveEntry = {
   meta: string;
   sortDate: string;
   isFieldNote: boolean;
+  isDraft: boolean;
 };
 
 export const JourneysView = ({
@@ -46,8 +47,11 @@ export const JourneysView = ({
       coverAlt: journey.coverAlt,
       route: journey.route,
       meta: `${copy.journeys.journeyLabel} · ${journey.country} · ${journey.dates}`,
-      sortDate: `${journey.year}-12-31`,
+      sortDate: /^\d{4}$/.test(journey.year)
+        ? `${journey.year}-12-31`
+        : "0000-01-01",
       isFieldNote: false,
+      isDraft: Boolean(journey.draft),
     })),
     ...stories
       .filter((story) => !journeySlugs.has(story.slug))
@@ -68,74 +72,153 @@ export const JourneysView = ({
           .join(" · "),
         sortDate: story.updatedAt,
         isFieldNote: true,
+        isDraft: false,
       })),
   ].sort((a, b) => b.sortDate.localeCompare(a.sortDate));
+  const featuredIndex = entries.findIndex((entry) => entry.coverImage);
+  const featuredEntry =
+    entries[featuredIndex >= 0 ? featuredIndex : 0] ?? null;
+  const archiveYears = entries
+    .map((entry) => Number(entry.sortDate.slice(0, 4)))
+    .filter((year) => Number.isInteger(year) && year > 0);
+  const yearRange =
+    archiveYears.length > 0
+      ? `${Math.min(...archiveYears)} — ${Math.max(...archiveYears)}`
+      : "—";
 
   return (
-    <section className={`${styles.page} ${styles.pageMist}`}>
-      <div className={styles.journeyIndexIntro}>
-        <div>
+    <section
+      className={`${styles.page} ${styles.pageMist} ${styles.journeysPage}`}
+    >
+      <header className={styles.journeyIndexIntro}>
+        <div className={styles.journeyIndexCopy}>
           <p className={styles.eyebrow}>{copy.journeys.eyebrow}</p>
-          <h1 className={styles.displayTitle}>
-            {copy.journeys.titleStart}
-            <br />
-            <em>{copy.journeys.titleEnd}</em>
-          </h1>
+          <div className={styles.journeyIndexCopyBody}>
+            <h1 className={styles.journeyIndexTitle}>
+              {copy.journeys.title}
+            </h1>
+            <p className={styles.journeyIndexDescription}>
+              {copy.journeys.descriptionLines.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </p>
+            {copy.journeys.attribution && (
+              <cite className={styles.journeyIndexAttribution}>
+                {copy.journeys.attribution}
+              </cite>
+            )}
+            <dl className={styles.journeyIndexStats}>
+              <div>
+                <dt>{copy.journeys.entriesLabel}</dt>
+                <dd>{String(entries.length).padStart(2, "0")}</dd>
+              </div>
+              <div>
+                <dt>{copy.journeys.yearsLabel}</dt>
+                <dd>{yearRange}</dd>
+              </div>
+            </dl>
+          </div>
         </div>
-      </div>
 
-      <div className={styles.journeyArchive}>
-        {entries.map((entry, index) => (
-          <article className={styles.journeyArchiveItem} key={entry.slug}>
+        {featuredEntry && (
+          <figure className={styles.journeyIndexFeature}>
             <Link
-              href={`/journeys/${entry.slug}`}
-              className={styles.journeyArchiveImage}
+              href={`/journeys/${featuredEntry.slug}`}
+              className={styles.journeyIndexFeatureImage}
+              aria-label={`${copy.journeys.read}: ${featuredEntry.title}`}
             >
-              {entry.coverImage ? (
+              {featuredEntry.coverImage ? (
                 <Image
-                  src={entry.coverImage}
-                  alt={entry.coverAlt}
+                  src={featuredEntry.coverImage}
+                  alt={featuredEntry.coverAlt}
                   fill
-                  loader={getArchiveImageLoader(entry.coverImage)}
-                  priority={index === 0}
-                  sizes="(min-width: 900px) 58vw, 92vw"
+                  loader={getArchiveImageLoader(featuredEntry.coverImage)}
+                  priority
+                  sizes="(min-width: 901px) 52vw, 92vw"
                   className={styles.imageCover}
                 />
               ) : (
                 <span className={styles.journeyArchivePlaceholder}>
-                  <small>{copy.journeys.fieldNote}</small>
-                  <strong>{entry.title}</strong>
+                  <small>{copy.journeys.coverPending}</small>
+                  <strong>{featuredEntry.title}</strong>
                 </span>
               )}
             </Link>
-
-            <div className={styles.journeyArchiveCopy}>
-              <span className={styles.journeyArchiveNumber}>
-                J{String(index + 1).padStart(2, "0")}
+            <figcaption className={styles.journeyIndexFeatureCaption}>
+              <span>
+                J
+                {String(
+                  featuredIndex >= 0 ? featuredIndex + 1 : 1,
+                ).padStart(2, "0")}{" "}
+                / {copy.journeys.featuredLabel}
               </span>
-              <div>
-                <p className={styles.journeyArchiveMeta}>{entry.meta}</p>
-                <h2>{entry.title}</h2>
-                {entry.route.length > 0 && (
-                  <div className={styles.journeyRoute}>
-                    {entry.route.map((place) => (
-                      <span key={place}>{place}</span>
-                    ))}
-                  </div>
+              <strong>{featuredEntry.title}</strong>
+            </figcaption>
+          </figure>
+        )}
+      </header>
+
+      <div className={styles.journeyArchive}>
+        {entries.map((entry, index) => {
+          if (entry === featuredEntry) {
+            return null;
+          }
+
+          return (
+            <article className={styles.journeyArchiveItem} key={entry.slug}>
+              <Link
+                href={`/journeys/${entry.slug}`}
+                className={styles.journeyArchiveImage}
+              >
+                {entry.coverImage ? (
+                  <Image
+                    src={entry.coverImage}
+                    alt={entry.coverAlt}
+                    fill
+                    loader={getArchiveImageLoader(entry.coverImage)}
+                    sizes="(min-width: 900px) 58vw, 92vw"
+                    className={styles.imageCover}
+                  />
+                ) : (
+                  <span className={styles.journeyArchivePlaceholder}>
+                    <small>
+                      {entry.isDraft
+                        ? copy.journeys.coverPending
+                        : copy.journeys.fieldNote}
+                    </small>
+                    <strong>{entry.title}</strong>
+                  </span>
                 )}
-                <Link
-                  href={`/journeys/${entry.slug}`}
-                  className={styles.textLink}
-                >
-                  {entry.isFieldNote
-                    ? copy.journeys.readNote
-                    : copy.journeys.read}{" "}
-                  <ArrowUpRight size={15} strokeWidth={1.4} />
-                </Link>
+              </Link>
+
+              <div className={styles.journeyArchiveCopy}>
+                <span className={styles.journeyArchiveNumber}>
+                  J{String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <p className={styles.journeyArchiveMeta}>{entry.meta}</p>
+                  <h2>{entry.title}</h2>
+                  {entry.route.length > 0 && (
+                    <div className={styles.journeyRoute}>
+                      {entry.route.map((place) => (
+                        <span key={place}>{place}</span>
+                      ))}
+                    </div>
+                  )}
+                  <Link
+                    href={`/journeys/${entry.slug}`}
+                    className={styles.textLink}
+                  >
+                    {entry.isFieldNote
+                      ? copy.journeys.readNote
+                      : copy.journeys.read}{" "}
+                    <ArrowUpRight size={15} strokeWidth={1.4} />
+                  </Link>
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

@@ -1,5 +1,5 @@
 .shell {
-  --studio-paper: var(--archive-paper, #ffffff);
+  --studio-paper: #eef1f0;
   --studio-surface: #ffffff;
   --studio-surface-strong: #ffffff;
   --studio-ink: var(--archive-ink, #202422);
@@ -8,7 +8,10 @@
   --studio-line: rgba(32, 36, 33, 0.14);
   --studio-line-strong: rgba(32, 36, 33, 0.24);
   --studio-accent: var(--archive-accent, #6e8085);
-  --studio-accent-soft: #dce3e0;
+  --studio-accent-soft: #e4e9e7;
+  --studio-radius-sm: 0.8rem;
+  --studio-radius: 1.25rem;
+  --studio-radius-lg: 1.75rem;
   --studio-danger: #a64e42;
 
   --background: 0 0% 100%;
@@ -46,10 +49,39 @@
   font-family: "Avenir Next", "Helvetica Neue", sans-serif;
 }
 
+.shell[data-locale="zh-CN"] {
+  font-family:
+    var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.shell[data-locale="zh-CN"]
+  :is(
+    .pageTitle,
+    .pageDescription,
+    .statValue,
+    .chartHeader h2,
+    .travelRowCopy h3,
+    .photoCopy h2,
+    .photoListPrimary > a,
+    .postTitle,
+    .profileAside h2,
+    .profileAside p,
+    .securityHead h3,
+    .sessionCopy strong,
+    .editorTitle,
+    .editorSectionHead h3
+  ) {
+  font-family: var(--font-noto-serif-sc), "Songti SC", "STSong", serif;
+}
+
 .workspace {
   min-width: 0;
+  margin: 0.75rem 0.75rem 0.75rem 0;
   overflow: hidden;
-  background: var(--studio-paper);
+  border: 1px solid rgba(32, 36, 33, 0.08);
+  border-radius: var(--studio-radius-lg);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 1.5rem 4rem rgba(32, 36, 33, 0.06);
 }
 
 .workspaceMain {
@@ -68,7 +100,8 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0 1.5rem;
-  border-bottom: 1px solid var(--studio-line);
+  border-bottom: 1px solid rgba(32, 36, 33, 0.09);
+  border-radius: var(--studio-radius-lg) var(--studio-radius-lg) 0 0;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(18px);
 }
@@ -101,10 +134,45 @@
 }
 
 .sidebarTrigger {
+  flex: 0 0 auto;
   width: 2rem;
   height: 2rem;
   border: 1px solid var(--studio-line);
   border-radius: 999px;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.sidebarTrigger:hover {
+  border-color: var(--studio-line-strong);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.languageSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--studio-muted);
+  font-size: 0.61rem;
+  letter-spacing: 0.06em;
+}
+
+.languageSwitch button {
+  padding: 0.35rem 0.15rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.languageSwitch button:hover,
+.languageSwitch .languageActive {
+  color: var(--studio-ink);
+}
+
+.languageSwitch .languageActive {
+  font-weight: 700;
 }
 
 .liveLink {
@@ -129,21 +197,32 @@
 }
 
 .sidebar [data-sidebar="sidebar"] {
-  border-right: 1px solid var(--studio-line);
+  border-right: 0;
   background: var(--studio-paper);
 }
 
 .sidebarHeader {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   padding: 1.7rem 1.4rem 1.2rem;
 }
 
 .sidebarBrand {
   display: grid;
+  min-width: 0;
+  flex: 1;
   grid-template-columns: 2.35rem 1fr;
   gap: 0.8rem;
   align-items: center;
   color: inherit;
   text-decoration: none;
+}
+
+.sidebarHeaderTrigger {
+  background: rgba(255, 255, 255, 0.42);
 }
 
 .brandMark {
@@ -209,7 +288,7 @@
   align-items: center;
   padding: 0.7rem 0.65rem !important;
   border: 1px solid transparent;
-  border-radius: 0 !important;
+  border-radius: var(--studio-radius) !important;
   background: transparent !important;
   transition:
     border-color 180ms ease,
@@ -218,13 +297,14 @@
 
 .sidebarNavLink:hover {
   border-color: var(--studio-line);
-  background: rgba(255, 255, 255, 0.42) !important;
+  background: rgba(255, 255, 255, 0.58) !important;
 }
 
 .sidebarNavLink[data-active="true"] {
-  border-color: var(--studio-line-strong);
+  border-color: rgba(32, 36, 33, 0.08);
   background: var(--studio-surface) !important;
   font-weight: inherit !important;
+  box-shadow: 0 0.65rem 1.5rem rgba(32, 36, 33, 0.055);
 }
 
 .navNumber {
@@ -328,6 +408,11 @@
   animation: studio-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.photoPage {
+  width: min(100%, 108rem);
+  padding-top: clamp(0.9rem, 1.3vw, 1.35rem);
+}
+
 @keyframes studio-enter {
   from {
     opacity: 0;
@@ -346,6 +431,28 @@
   align-items: end;
   padding-bottom: clamp(2.2rem, 4vw, 4rem);
   border-bottom: 1px solid var(--studio-line-strong);
+}
+
+.pageHeaderCompact {
+  align-items: end;
+  padding-bottom: clamp(0.75rem, 1.1vw, 1rem);
+}
+
+.pageHeaderCompact .eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.pageHeaderCompact .pageTitle {
+  max-width: none;
+  font-size: clamp(2.2rem, 3.25vw, 3.45rem);
+  line-height: 1;
+}
+
+.pageHeaderCompact .pageDescription {
+  margin-top: 0.4rem;
+  font-family: inherit;
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .pageHeaderCopy {
@@ -369,6 +476,7 @@
   font-weight: 400;
   letter-spacing: -0.055em;
   line-height: 0.92;
+  white-space: pre-line;
 }
 
 .pageDescription {
@@ -390,7 +498,7 @@
 .primaryAction,
 .secondaryAction {
   min-height: 2.65rem;
-  border-radius: 0 !important;
+  border-radius: 999px !important;
   padding: 0 1.05rem !important;
   font-size: 0.64rem !important;
   font-weight: 600 !important;
@@ -444,9 +552,8 @@
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
   margin: clamp(2.5rem, 5vw, 5rem) 0;
-  border-top: 1px solid var(--studio-line);
-  border-bottom: 1px solid var(--studio-line);
 }
 
 .stat {
@@ -455,15 +562,17 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 1.25rem 1.4rem 1.1rem;
-  border-right: 1px solid var(--studio-line);
+  border: 1px solid rgba(32, 36, 33, 0.08);
+  border-radius: var(--studio-radius);
+  background: rgba(255, 255, 255, 0.76);
 }
 
 .stat:first-child {
-  padding-left: 0;
+  padding-left: 1.4rem;
 }
 
 .stat:last-child {
-  border-right: 0;
+  border-right: 1px solid rgba(32, 36, 33, 0.08);
 }
 
 .statTop {
@@ -496,15 +605,18 @@
 .chartsGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
-  gap: 1px;
+  gap: 1rem;
   margin-bottom: clamp(3rem, 6vw, 6rem);
-  border: 1px solid var(--studio-line);
-  background: var(--studio-line);
+  background: transparent;
 }
 
 .chartPanel {
   min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(32, 36, 33, 0.08);
+  border-radius: var(--studio-radius-lg);
   background: var(--studio-surface);
+  box-shadow: 0 1rem 2.5rem rgba(32, 36, 33, 0.045);
 }
 
 .chartHeader {
@@ -550,8 +662,11 @@
   display: grid;
   min-height: 33rem;
   grid-template-columns: minmax(18rem, 0.72fr) minmax(0, 1.28fr);
-  border: 1px solid var(--studio-line);
+  overflow: hidden;
+  border: 1px solid rgba(32, 36, 33, 0.08);
+  border-radius: var(--studio-radius-lg);
   background: var(--studio-surface);
+  box-shadow: 0 1rem 2.5rem rgba(32, 36, 33, 0.045);
 }
 
 .travelList {
@@ -618,6 +733,7 @@
 .travelThumb {
   position: relative;
   overflow: hidden;
+  border-radius: var(--studio-radius-sm);
   aspect-ratio: 1.25;
   background: var(--studio-accent-soft);
 }
@@ -625,6 +741,7 @@
 .mapFrame {
   min-height: 30rem;
   overflow: hidden;
+  border-radius: 0 var(--studio-radius-lg) var(--studio-radius-lg) 0;
   filter: saturate(0.28) contrast(0.92);
 }
 
@@ -678,6 +795,7 @@
 .photoImage {
   position: relative;
   overflow: hidden;
+  border-radius: var(--studio-radius);
   background: var(--studio-accent-soft);
 }
 
@@ -700,6 +818,7 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.38rem 0.5rem;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.88);
   color: var(--studio-ink);
   font-size: 0.5rem;
@@ -717,6 +836,7 @@
   width: 1.9rem;
   height: 1.9rem;
   place-items: center;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(8px);
 }
@@ -769,6 +889,728 @@
   text-transform: none !important;
 }
 
+.photoLibrary {
+  min-width: 0;
+}
+
+.librarySummary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0.65rem 0 0.45rem;
+  overflow: hidden;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--studio-radius-sm);
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.libraryMetric {
+  min-width: 0;
+  padding: 0.58rem 0.85rem 0.52rem;
+  border-right: 1px solid var(--studio-line);
+}
+
+.libraryMetric:last-child {
+  border-right: 0;
+}
+
+.libraryMetric span {
+  display: block;
+  overflow: hidden;
+  color: var(--studio-muted);
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.libraryMetric strong {
+  display: block;
+  margin-top: 0.12rem;
+  font-family: "Iowan Old Style", Baskerville, serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.photoWorkspaceToolbar {
+  position: sticky;
+  z-index: 24;
+  top: 3.75rem;
+  margin: 0 -0.35rem 0.75rem;
+  padding: 0.4rem 0.35rem 0.35rem;
+  background: rgba(249, 250, 249, 0.9);
+  backdrop-filter: blur(18px);
+}
+
+.photoControlBar {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) auto auto auto auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.photoSearch,
+.photoSelectControl,
+.photoFilterButton,
+.densitySwitch {
+  min-height: 2.45rem;
+  border: 1px solid var(--studio-line-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.photoSearch {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 0.75rem;
+  color: var(--studio-muted);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.photoSearch:focus-within {
+  border-color: var(--studio-accent);
+  box-shadow: 0 0 0 3px rgba(110, 128, 133, 0.12);
+}
+
+.photoSearch input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--studio-ink);
+  font: inherit;
+  font-size: 0.7rem;
+}
+
+.photoSearch input::placeholder {
+  color: var(--studio-faint);
+}
+
+.photoSearch input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.photoSearch button {
+  display: grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--studio-accent-soft);
+  color: var(--studio-muted);
+  cursor: pointer;
+}
+
+.photoSelectControl {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.45rem 0 0.75rem;
+  color: var(--studio-muted);
+}
+
+.photoSelectControl select {
+  min-width: 6.5rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--studio-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.62rem;
+}
+
+.photoFilterButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.8rem;
+  color: var(--studio-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.61rem;
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.photoFilterButton[data-active] {
+  border-color: var(--studio-ink);
+  background: var(--studio-ink);
+  color: white;
+}
+
+.densitySwitch {
+  display: flex;
+  padding: 0.2rem;
+}
+
+.densitySwitch button {
+  display: grid;
+  width: 2rem;
+  min-height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--studio-faint);
+  cursor: pointer;
+}
+
+.densitySwitch button[data-active] {
+  background: var(--studio-accent-soft);
+  color: var(--studio-ink);
+}
+
+.selectionBar {
+  display: flex;
+  min-height: 2.1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.3rem;
+  padding: 0.2rem 0.45rem 0.2rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--studio-radius-sm);
+  color: var(--studio-muted);
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.selectionBar[data-active] {
+  border-color: rgba(32, 36, 33, 0.18);
+  background: var(--studio-ink);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.selectAllControl {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  font-size: 0.61rem;
+  letter-spacing: 0.035em;
+}
+
+.selectionBar[data-active] .selectAllControl button {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.selectionBar[data-active] .selectAllControl button[data-state="checked"],
+.selectionBar[data-active] .selectAllControl button[data-state="indeterminate"] {
+  background: white;
+  color: var(--studio-ink);
+}
+
+.selectionHint {
+  font-size: 0.57rem;
+  letter-spacing: 0.055em;
+}
+
+.batchActions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.batchActions button {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.32rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 0.62rem;
+  background: rgba(255, 255, 255, 0.11);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.55rem;
+  white-space: nowrap;
+}
+
+.batchActions button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.batchActions button:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
+
+.batchActions .clearSelection {
+  width: 1.75rem;
+  padding: 0;
+  background: white;
+  color: var(--studio-ink);
+}
+
+.photoListViewport {
+  overflow-x: auto;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--studio-radius-sm);
+  background: rgba(255, 255, 255, 0.7);
+  scrollbar-color: var(--studio-line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.photoList {
+  min-width: 68rem;
+}
+
+.photoListHeader,
+.photoListRow {
+  display: grid;
+  grid-template-columns:
+    2rem 4.5rem minmax(12rem, 1.8fr) 6.5rem minmax(7rem, 0.8fr)
+    7rem minmax(8rem, 1fr) 6.5rem 4rem;
+  gap: 0.75rem;
+  align-items: center;
+  padding-inline: 0.75rem;
+}
+
+.photoListHeader {
+  min-height: 2.45rem;
+  border-bottom: 1px solid var(--studio-line-strong);
+  background: rgba(238, 241, 240, 0.76);
+  color: var(--studio-muted);
+  font-size: 0.49rem;
+  font-weight: 600;
+  letter-spacing: 0.085em;
+  text-transform: uppercase;
+}
+
+.photoListRow {
+  position: relative;
+  min-height: 4.7rem;
+  border-bottom: 1px solid var(--studio-line);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.photoListRow:last-child {
+  border-bottom: 0;
+}
+
+.photoListRow:hover {
+  background: rgba(238, 241, 240, 0.58);
+}
+
+.photoListRow[data-selected] {
+  background: rgba(110, 128, 133, 0.12);
+  box-shadow: inset 3px 0 0 var(--studio-ink);
+}
+
+.photoListRow > * {
+  min-width: 0;
+}
+
+.photoListSelect {
+  display: grid;
+  place-items: center;
+}
+
+.photoListThumb {
+  position: relative;
+  display: block;
+  width: 4.5rem;
+  overflow: hidden;
+  border-radius: 0.42rem;
+  aspect-ratio: 4 / 3;
+  background: var(--studio-accent-soft);
+}
+
+.photoListThumb img {
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.photoListRow:hover .photoListThumb img {
+  transform: scale(1.04);
+}
+
+.photoListPrimary {
+  min-width: 0;
+}
+
+.photoListPrimary > a {
+  display: block;
+  overflow: hidden;
+  color: var(--studio-ink);
+  font-family: "Iowan Old Style", Baskerville, serif;
+  font-size: 0.88rem;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photoListPrimary > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.photoListPrimary p {
+  overflow: hidden;
+  margin: 0.25rem 0 0;
+  color: var(--studio-muted);
+  font-size: 0.5rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photoListStatus {
+  display: inline-flex;
+  min-height: 1.55rem;
+  align-items: center;
+  gap: 0.32rem;
+  border: 1px solid rgba(63, 102, 83, 0.22);
+  border-radius: 999px;
+  padding: 0 0.48rem;
+  background: rgba(230, 241, 235, 0.8);
+  color: #315344;
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  white-space: nowrap;
+}
+
+.photoListStatus[data-private] {
+  border-color: var(--studio-line);
+  background: rgba(32, 36, 33, 0.06);
+  color: var(--studio-muted);
+}
+
+.photoListTextCell {
+  overflow: hidden;
+  color: var(--studio-muted);
+  font-size: 0.54rem;
+  letter-spacing: 0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photoListTextCell span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photoListFavoriteCell {
+  min-width: 0;
+}
+
+.photoListFavorite {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--studio-faint);
+  font-size: 0.5rem;
+  white-space: nowrap;
+}
+
+.photoListFavorite[data-active] {
+  color: var(--studio-ink);
+}
+
+.photoListActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.photoListActions a {
+  display: inline-flex;
+  min-height: 1.85rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  border: 1px solid var(--studio-line-strong);
+  border-radius: 999px;
+  padding: 0 0.55rem;
+  background: white;
+  color: var(--studio-ink);
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.photoListActions a:hover {
+  background: var(--studio-ink);
+  color: white;
+}
+
+.photoManagerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
+  gap: 1.05rem 0.85rem;
+  align-items: start;
+}
+
+.photoManagerGridCompact {
+  grid-template-columns: repeat(auto-fill, minmax(min(9.25rem, 100%), 1fr));
+  gap: 0.72rem 0.6rem;
+}
+
+.photoManagerCard {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(32, 36, 33, 0.11);
+  border-radius: var(--studio-radius-sm);
+  background: rgba(255, 255, 255, 0.76);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.photoManagerCard:hover {
+  border-color: var(--studio-line-strong);
+  box-shadow: 0 0.65rem 1.8rem rgba(32, 36, 33, 0.08);
+  transform: translateY(-1px);
+}
+
+.photoManagerCard[data-selected] {
+  border-color: var(--studio-ink);
+  box-shadow: 0 0 0 2px var(--studio-ink);
+}
+
+.photoManagerImage {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #dfe4e2;
+}
+
+.photoManagerGridCompact .photoManagerImage {
+  aspect-ratio: 1;
+}
+
+.photoManagerImageLink {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.photoManagerImage img {
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), filter 180ms ease;
+}
+
+.photoManagerCard:hover .photoManagerImage img {
+  transform: scale(1.025);
+  filter: brightness(0.88);
+}
+
+.photoSelectBox {
+  position: absolute;
+  z-index: 3;
+  top: 0.55rem;
+  left: 0.55rem;
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border-radius: 0.42rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 2px 8px rgba(20, 24, 22, 0.14);
+  backdrop-filter: blur(8px);
+}
+
+.photoSelectBox button {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-color: rgba(32, 36, 33, 0.55);
+  box-shadow: none;
+}
+
+.photoStatusBadge {
+  position: absolute;
+  z-index: 2;
+  bottom: 0.55rem;
+  left: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.45rem;
+  padding: 0 0.48rem;
+  border-radius: 999px;
+  background: rgba(245, 250, 247, 0.9);
+  color: #263c33;
+  font-size: 0.49rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.photoStatusBadge[data-private] {
+  background: rgba(36, 39, 37, 0.82);
+  color: white;
+}
+
+.photoFavoriteMark {
+  position: absolute;
+  z-index: 2;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--studio-ink);
+  box-shadow: 0 2px 8px rgba(20, 24, 22, 0.14);
+  backdrop-filter: blur(8px);
+}
+
+.photoQuickEdit {
+  position: absolute;
+  z-index: 3;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  display: inline-flex;
+  min-height: 1.65rem;
+  align-items: center;
+  gap: 0.32rem;
+  border-radius: 999px;
+  padding: 0 0.55rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--studio-ink);
+  font-size: 0.51rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  text-decoration: none;
+  transform: translateY(4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.photoManagerCard:hover .photoQuickEdit,
+.photoQuickEdit:focus-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.photoManagerMeta {
+  position: relative;
+  min-width: 0;
+  padding: 0.72rem 0.75rem 0.78rem;
+}
+
+.photoManagerMeta > a {
+  display: block;
+  overflow: hidden;
+  color: var(--studio-ink);
+  font-family: "Iowan Old Style", Baskerville, serif;
+  font-size: 0.93rem;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photoManagerMeta > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.photoManagerMeta p {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.28rem;
+  margin: 0.3rem 0 0;
+  color: var(--studio-muted);
+  font-size: 0.51rem;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+
+.photoManagerMeta p span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.photoManagerGridCompact .photoManagerMeta {
+  padding: 0.58rem 0.6rem 0.62rem;
+}
+
+.photoManagerGridCompact .photoManagerMeta > a {
+  font-size: 0.8rem;
+}
+
+.photoManagerGridCompact .photoManagerMeta p {
+  font-size: 0.46rem;
+}
+
+.photoManagerGridCompact .photoQuickEdit span {
+  display: none;
+}
+
+.selectedIndicator {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.66rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  border-radius: 999px;
+  padding: 0.18rem 0.35rem;
+  background: var(--studio-ink);
+  color: white;
+  font-size: 0.44rem;
+  letter-spacing: 0.04em;
+}
+
+.photoEmptyState {
+  display: grid;
+  min-height: 18rem;
+  place-items: center;
+  border: 1px dashed var(--studio-line-strong);
+  border-radius: var(--studio-radius);
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--studio-muted);
+  text-align: center;
+}
+
+.photoEmptyState > div {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+}
+
+.photoEmptyState h2 {
+  margin: 0;
+  font-family: "Iowan Old Style", Baskerville, serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+
+.photoEmptyState button {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  padding: 0 0 0.14rem;
+  background: transparent;
+  color: var(--studio-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .skeletonBlock {
   background: linear-gradient(
     90deg,
@@ -803,7 +1645,8 @@
 }
 
 .postList {
-  border-top: 1px solid var(--studio-line-strong);
+  display: grid;
+  gap: 0.8rem;
 }
 
 .postRow {
@@ -814,10 +1657,22 @@
     );
   gap: clamp(1rem, 2.5vw, 2.5rem);
   align-items: center;
-  padding: 1.5rem 0;
-  border-bottom: 1px solid var(--studio-line);
+  padding: 1rem;
+  border: 1px solid rgba(32, 36, 33, 0.08);
+  border-radius: var(--studio-radius);
+  background: rgba(255, 255, 255, 0.76);
   color: inherit;
   text-decoration: none;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 220ms ease;
+}
+
+.postRow:hover {
+  border-color: var(--studio-line-strong);
+  box-shadow: 0 1rem 2rem rgba(32, 36, 33, 0.055);
+  transform: translateY(-2px);
 }
 
 .postRow:hover .postTitle {
@@ -836,6 +1691,7 @@
 .postImage {
   position: relative;
   overflow: hidden;
+  border-radius: var(--studio-radius-sm);
   aspect-ratio: 1.5;
   background: var(--studio-accent-soft);
 }
@@ -923,12 +1779,15 @@
 }
 
 .securitySection {
-  padding: 0 0 2.8rem;
-  border-top: 1px solid var(--studio-line-strong);
+  padding: 1.5rem;
+  border: 1px solid rgba(32, 36, 33, 0.08);
+  border-radius: var(--studio-radius);
+  background: rgba(255, 255, 255, 0.76);
 }
 
 .securitySection + .securitySection {
-  padding-top: 2.8rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
 }
 
 .securityHead {
@@ -1008,7 +1867,7 @@
 .quietButton {
   min-height: 2.2rem;
   border: 1px solid var(--studio-line-strong) !important;
-  border-radius: 0 !important;
+  border-radius: 999px !important;
   background: transparent !important;
   color: var(--studio-ink) !important;
   font-size: 0.58rem !important;
@@ -1026,26 +1885,21 @@
   width: min(100%, 90rem);
   margin: 0 auto;
   padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 2.2vw, 2rem) 5rem;
+  overflow-anchor: none;
 }
 
 .editorPage :global(input),
 .editorPage :global(textarea) {
-  border-radius: 0;
+  border-radius: var(--studio-radius-sm);
   background: var(--studio-surface-strong);
 }
 
 .editorPage :global([role="combobox"]) {
-  border-radius: 0;
+  border-radius: var(--studio-radius-sm);
 }
 
 .editorPage :global(button) {
-  border-radius: 0;
-}
-
-.editorPage :global(.rounded-xl),
-.editorPage :global(.rounded-lg),
-.editorPage :global(.rounded-md) {
-  border-radius: 0 !important;
+  border-radius: 999px;
 }
 
 .editorHeader {
@@ -1089,7 +1943,7 @@
 .editorSecondaryButton,
 .editorPrimaryButton {
   min-height: 2.45rem;
-  border-radius: 0 !important;
+  border-radius: 999px !important;
   font-size: 0.61rem !important;
   letter-spacing: 0.055em;
   text-transform: uppercase;
@@ -1115,7 +1969,7 @@
 .editorAsideCard {
   overflow: hidden;
   border: 1px solid var(--studio-line);
-  border-radius: 0 !important;
+  border-radius: var(--studio-radius-lg) !important;
   background: var(--studio-surface) !important;
 }
 
@@ -1132,15 +1986,25 @@
   overflow: hidden;
 }
 
+.editorSectionDisclosure {
+  overflow: hidden;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--studio-radius);
+  background: var(--studio-surface);
+}
+
 .editorSectionHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.8rem 1rem;
-  border-top: 1px solid var(--studio-line);
-  border-bottom: 1px solid var(--studio-line);
+  border: 0;
   border-radius: 0 !important;
   background: var(--studio-surface) !important;
+}
+
+.editorSectionDisclosure[data-state="open"] .editorSectionHead {
+  border-bottom: 1px solid var(--studio-line);
 }
 
 .editorSectionHead h3 {
@@ -1150,12 +2014,24 @@
 }
 
 .editorSectionBody {
-  border-bottom: 1px solid var(--studio-line);
+  border: 0;
   border-radius: 0 !important;
   background: var(--studio-surface) !important;
 }
 
 @media (max-width: 1100px) {
+  .photoControlBar {
+    grid-template-columns: minmax(12rem, 1fr) auto auto;
+  }
+
+  .photoFilterButton {
+    justify-self: start;
+  }
+
+  .densitySwitch {
+    justify-self: end;
+  }
+
   .photoCardLandscape {
     grid-column: span 7;
   }
@@ -1191,6 +2067,28 @@
     grid-template-columns: 1fr;
   }
 
+  .pageHeaderCompact {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+  }
+
+  .photoControlBar {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .photoSearch {
+    grid-column: 1 / -1;
+  }
+
+  .photoManagerCard .photoQuickEdit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .selectionHint {
+    display: none;
+  }
+
   .pageActions {
     justify-content: flex-start;
   }
@@ -1200,15 +2098,15 @@
   }
 
   .stat:nth-child(2) {
-    border-right: 0;
+    border-right: 1px solid rgba(32, 36, 33, 0.08);
   }
 
   .stat:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--studio-line);
+    border-bottom: 1px solid rgba(32, 36, 33, 0.08);
   }
 
   .stat:nth-child(3) {
-    padding-left: 0;
+    padding-left: 1.4rem;
   }
 
   .chartsGrid {
@@ -1234,8 +2132,127 @@
     padding-top: 2.2rem;
   }
 
+  .photoPage {
+    padding: 1.15rem 0.85rem 4rem;
+  }
+
+  .workspace {
+    margin: 0.4rem;
+    border-radius: 1.35rem;
+  }
+
+  .topbar {
+    border-radius: 1.35rem 1.35rem 0 0;
+  }
+
   .pageTitle {
     font-size: clamp(2.9rem, 15vw, 4.5rem);
+  }
+
+  .pageHeaderCompact {
+    grid-template-columns: 1fr;
+  }
+
+  .pageHeaderCompact .pageTitle {
+    font-size: 2.5rem;
+  }
+
+  .pageHeaderCompact .pageDescription {
+    max-width: 28rem;
+  }
+
+  .librarySummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .libraryMetric:nth-child(2) {
+    border-right: 0;
+  }
+
+  .libraryMetric:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--studio-line);
+  }
+
+  .photoWorkspaceToolbar {
+    margin-inline: -0.15rem;
+    padding-inline: 0.15rem;
+  }
+
+  .photoControlBar {
+    display: flex;
+    overflow-x: auto;
+    align-items: center;
+    padding-bottom: 0.1rem;
+    scrollbar-width: none;
+  }
+
+  .photoControlBar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .photoSearch {
+    min-width: min(18rem, calc(100vw - 2rem));
+  }
+
+  .photoSelectControl,
+  .photoFilterButton,
+  .densitySwitch {
+    flex: 0 0 auto;
+  }
+
+  .selectionBar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .selectionBar[data-active] {
+    padding: 0.55rem;
+  }
+
+  .batchActions {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 0.1rem;
+  }
+
+  .photoManagerGrid,
+  .photoManagerGridCompact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.72rem 0.55rem;
+  }
+
+  .photoManagerImage,
+  .photoManagerGridCompact .photoManagerImage {
+    aspect-ratio: 1;
+  }
+
+  .photoManagerMeta {
+    padding: 0.58rem 0.6rem 0.62rem;
+  }
+
+  .photoManagerMeta > a {
+    font-size: 0.82rem;
+  }
+
+  .photoManagerMeta p {
+    font-size: 0.45rem;
+  }
+
+  .photoManagerMeta p span:nth-child(2),
+  .photoManagerMeta p span:last-child,
+  .selectedIndicator,
+  .photoQuickEdit span {
+    display: none;
+  }
+
+  .photoStatusBadge {
+    font-size: 0;
+  }
+
+  .photoStatusBadge svg {
+    width: 0.72rem;
+    height: 0.72rem;
   }
 
   .photoGrid {

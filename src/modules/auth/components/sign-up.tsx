@@ -77,7 +77,7 @@ export default function SignUp() {
       email: values.email,
       password: values.password,
       name: values.username,
-      callbackURL: "/profile",
+      callbackURL: "/studio/account",
       fetchOptions: {
         onResponse: () => {
           setLoading(false);

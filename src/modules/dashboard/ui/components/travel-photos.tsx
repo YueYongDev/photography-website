@@ -2,6 +2,7 @@ import BlurImage from "@/components/blur-image";
 import { useMapStore } from "@/hooks/use-map-store";
 import type { DashboardTravelCitySet } from "./travel-types";
 import styles from "../studio.module.css";
+import { useStudioLocale } from "../../i18n/studio-locale";
 
 interface TravelPhotosProps {
   data: DashboardTravelCitySet[];
@@ -10,6 +11,7 @@ interface TravelPhotosProps {
 export const TravelPhotos = ({ data }: TravelPhotosProps) => {
   const getMap = useMapStore((state) => state.getMap);
   const city = getMap("city");
+  const { copy, locale } = useStudioLocale();
 
   const handleHover = (citySet: DashboardTravelCitySet) => {
     if (!citySet.coverPhoto.longitude || !citySet.coverPhoto.latitude) return;
@@ -40,13 +42,13 @@ export const TravelPhotos = ({ data }: TravelPhotosProps) => {
               {citySet.coverPhoto.dateTimeOriginal &&
                 new Date(
                   citySet.coverPhoto.dateTimeOriginal
-                ).toLocaleDateString("en-US", {
+                ).toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
                 })}
             </p>
-            <span>{citySet.photoCount} frames</span>
+            <span>{copy.overview.frames(citySet.photoCount)}</span>
           </div>
 
           <div

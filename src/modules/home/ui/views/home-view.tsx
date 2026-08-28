@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import type { CSSProperties } from "react";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import {
   localizeCountryName,
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
+import { HomeJourneysCarousel } from "@/modules/home/ui/components/home-journeys-carousel";
 import styles from "@/modules/site/ui/public-site.module.css";
 
 export type HomeSelectedPhoto = {
@@ -22,12 +24,41 @@ export type HomeSelectedPhoto = {
   aspectRatio: number | null;
 };
 
+const getHomeWorkOrientationClass = (aspectRatio: number) => {
+  if (aspectRatio < 0.96) return styles.homeWorkCardPortrait;
+  if (aspectRatio <= 1.08) return styles.homeWorkCardSquare;
+  return styles.homeWorkCardLandscape;
+};
+
+const getHomeWorkAspectRatio = (photo: HomeSelectedPhoto) =>
+  photo.width && photo.height
+    ? photo.width / photo.height
+    : photo.aspectRatio && photo.aspectRatio > 0
+      ? photo.aspectRatio
+      : 1.18;
+
+const getHomeWorkGalleryStyle = (aspectRatios: number[]): CSSProperties => {
+  const totalAspectRatio = aspectRatios.reduce(
+    (total, aspectRatio) => total + aspectRatio,
+    0,
+  );
+  const totalGapRem = Math.max(0, aspectRatios.length - 1);
+
+  return {
+    maxWidth: `${Math.min(
+      104,
+      totalAspectRatio * 32 + totalGapRem,
+    )}rem`,
+  };
+};
+
 export const HomeView = ({
   selectedPhotos,
 }: {
   selectedPhotos: HomeSelectedPhoto[];
 }) => {
   const { copy, locale } = useSiteLocale();
+  const selectedPhotoAspectRatios = selectedPhotos.map(getHomeWorkAspectRatio);
 
   return (
     <>
@@ -61,10 +92,11 @@ export const HomeView = ({
             <span>{locale === "zh-CN" ? "香港" : "Hong Kong"}</span>
           </figcaption>
         </figure>
-
       </section>
 
-      <section className={`${styles.section} ${styles.sectionWhite}`}>
+      <section
+        className={`${styles.section} ${styles.sectionWhite} ${styles.homeWorkSection}`}
+      >
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>{copy.home.workEyebrow}</p>
           <h2>{copy.home.workTitle}</h2>
@@ -78,94 +110,96 @@ export const HomeView = ({
             </div>
           </div>
         ) : (
-          <div className={styles.homeWorkGrid}>
-            {selectedPhotos.map((entry, index) => {
-              const localizedEntry = copy.home.workEntries[index];
-              const title =
-                entry.title || localizedEntry?.title || copy.common.untitled;
-              const aspectRatio =
-                entry.width && entry.height
-                  ? entry.width / entry.height
-                  : entry.aspectRatio && entry.aspectRatio > 0
-                    ? entry.aspectRatio
-                    : 1.18;
-              return (
-                <Link
-                  href={`/photograph/${entry.id}`}
-                  className={styles.homeWorkCard}
-                  key={entry.id}
-                >
-                  <div className={styles.homeWorkImage} style={{ aspectRatio }}>
-                    <Image
-                      src={entry.url}
-                      alt={title}
-                      fill
-                      loader={getArchiveImageLoader(entry.url)}
-                      placeholder={entry.blurData ? "blur" : "empty"}
-                      blurDataURL={entry.blurData || undefined}
-                      sizes="(min-width: 900px) 45vw, 90vw"
-                      className={styles.imageContain}
-                    />
-                  </div>
-                  <div className={styles.homeWorkMeta}>
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <h3>{title}</h3>
-                  </div>
-                </Link>
-              );
-            })}
+          <div
+            className={styles.homeWorkGallery}
+            style={getHomeWorkGalleryStyle(selectedPhotoAspectRatios)}
+          >
+            <div
+              className={styles.homeWorkGrid}
+              style={{
+                gridTemplateColumns: selectedPhotoAspectRatios
+                  .map((aspectRatio) => `${aspectRatio}fr`)
+                  .join(" "),
+              }}
+            >
+              {selectedPhotos.map((entry, index) => {
+                const localizedEntry = copy.home.workEntries[index];
+                const title =
+                  entry.title || localizedEntry?.title || copy.common.untitled;
+                const aspectRatio = selectedPhotoAspectRatios[index];
+                const cardStyle = {
+                  "--home-work-narrow-width": `${Math.min(
+                    48,
+                    aspectRatio * 30,
+                  )}rem`,
+                } as CSSProperties;
+
+                return (
+                  <Link
+                    href={`/photograph/${entry.id}`}
+                    className={`${styles.homeWorkCard} ${getHomeWorkOrientationClass(aspectRatio)}`}
+                    key={entry.id}
+                    style={cardStyle}
+                  >
+                    <div
+                      className={styles.homeWorkImage}
+                      style={{ aspectRatio }}
+                    >
+                      <Image
+                        src={entry.url}
+                        alt={title}
+                        fill
+                        loader={getArchiveImageLoader(entry.url)}
+                        placeholder={entry.blurData ? "blur" : "empty"}
+                        blurDataURL={entry.blurData || undefined}
+                        sizes="(min-width: 1101px) 34vw, 88vw"
+                        className={styles.imageContain}
+                      />
+                    </div>
+                    <div className={styles.homeWorkMeta}>
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <h3>{title}</h3>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className={styles.homeWorkFooter}>
+              <Link href="/work" className={styles.textLink}>
+                {copy.home.workLink}{" "}
+                <ArrowUpRight size={15} strokeWidth={1.4} />
+              </Link>
+            </div>
           </div>
         )}
-
-        <div style={{ marginTop: "5rem" }}>
-          <Link href="/work" className={styles.textLink}>
-            {copy.home.workLink} <ArrowUpRight size={15} strokeWidth={1.4} />
-          </Link>
-        </div>
       </section>
 
-      <section className={`${styles.section} ${styles.sectionMist}`}>
+      <section
+        className={`${styles.section} ${styles.sectionMist} ${styles.homeJourneysSection}`}
+      >
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>{copy.home.journeysEyebrow}</p>
           <h2>{copy.home.journeysTitle}</h2>
         </div>
 
-        <Link
-          href="/journeys/newzealand-2026"
-          className={styles.journeyFeature}
-        >
-          <Image
-            src="/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg"
-            alt={
-              locale === "zh-CN"
-                ? "通往奥拉基的公路，新西兰南岛 2026 旅行记录"
-                : "New Zealand 2026 journey"
-            }
-            fill
-            sizes="90vw"
-            className={styles.imageCover}
-          />
-          <div className={styles.journeyShade} />
-          <div className={styles.journeyOverlay}>
-            <span>{copy.home.journalMeta}</span>
-            <h3>{copy.home.journalTitle}</h3>
-          </div>
-        </Link>
+        <HomeJourneysCarousel />
       </section>
 
-      <section className={`${styles.section} ${styles.sectionWhite}`}>
-        <div className={styles.sectionHead}>
+      <section
+        className={`${styles.section} ${styles.sectionWhite} ${styles.homePlacesSection}`}
+      >
+        <div className={styles.homePlacesHead}>
           <p className={styles.eyebrow}>{copy.home.travelEyebrow}</p>
           <h2>{copy.home.travelTitle}</h2>
         </div>
 
-        <div className={styles.atlasTeaser}>
-          <h3>{copy.home.travelPrompt}</h3>
+        <div className={styles.homePlacesList}>
           <div className={styles.atlasLines}>
             {[
-              { name: "New Zealand", code: "NZ", href: "/travel/nz" },
-              { name: "Uzbekistan", code: "UZ", href: "/travel/uz" },
-              { name: "Australia", code: "AU", href: "/travel/au" },
+              { name: "New Zealand", code: "NZ", href: "/places/nz" },
+              { name: "Uzbekistan", code: "UZ", href: "/places/uz" },
+              { name: "Australia", code: "AU", href: "/places/au" },
             ].map((country, index) => (
               <Link
                 href={country.href}

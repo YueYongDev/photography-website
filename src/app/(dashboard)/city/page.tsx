@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-const LegacyCityPage = () => redirect("/discover");
+const LegacyCityPage = () => redirect("/map");
 
 export default LegacyCityPage;

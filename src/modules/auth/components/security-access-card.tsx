@@ -12,6 +12,7 @@ import { client } from "@/modules/auth/lib/auth-client";
 import type { Session } from "../lib/auth-types";
 import ChangePassword from "./dialogs/change-password";
 import EditUserDialog from "./dialogs/edit-user";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 const SecurityAccessCard = ({
   session,
@@ -23,13 +24,14 @@ const SecurityAccessCard = ({
   const router = useRouter();
   const [isTerminating, setIsTerminating] = useState<string>();
   const sessionsWithDevices = activeSessions.filter((item) => item.userAgent);
+  const { copy } = useStudioLocale();
 
   return (
     <div className={styles.securityStack}>
       <section className={styles.securitySection}>
         <div className={styles.securityHead}>
-          <h3>Active sessions</h3>
-          <p>{sessionsWithDevices.length} trusted device{sessionsWithDevices.length === 1 ? "" : "s"}</p>
+          <h3>{copy.account.activeSessions}</h3>
+          <p>{copy.account.trustedDevices(sessionsWithDevices.length)}</p>
         </div>
 
         <div className={styles.sessionList}>
@@ -41,8 +43,8 @@ const SecurityAccessCard = ({
             const isCurrentSession = activeSession.id === session?.session.id;
             const isMobile = device.type === "mobile" || device.type === "tablet";
             const deviceName = isMobile
-              ? [device.vendor, device.model].filter(Boolean).join(" ") || "Mobile device"
-              : [browser.name, operatingSystem.name].filter(Boolean).join(" on ") || "Desktop browser";
+              ? [device.vendor, device.model].filter(Boolean).join(" ") || copy.account.mobile
+              : [browser.name, operatingSystem.name].filter(Boolean).join(" / ") || copy.account.desktop;
 
             return (
               <div className={styles.sessionRow} key={activeSession.id}>
@@ -53,7 +55,7 @@ const SecurityAccessCard = ({
                   <strong>{deviceName}</strong>
                   <span>
                     {isCurrentSession ? <i className={styles.currentDot} /> : null}
-                    {isCurrentSession ? "Current session" : "Authenticated session"}
+                    {isCurrentSession ? copy.account.current : copy.account.authenticated}
                   </span>
                 </div>
                 <Button
@@ -82,9 +84,9 @@ const SecurityAccessCard = ({
                   {isTerminating === activeSession.id ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : isCurrentSession ? (
-                    "Sign out"
+                    copy.account.signOut
                   ) : (
-                    "Terminate"
+                    copy.account.terminate
                   )}
                 </Button>
               </div>
@@ -95,8 +97,8 @@ const SecurityAccessCard = ({
 
       <section className={styles.securitySection}>
         <div className={styles.securityHead}>
-          <h3>Account details</h3>
-          <p>Identity + password</p>
+          <h3>{copy.account.accountDetails}</h3>
+          <p>{copy.account.identityPassword}</p>
         </div>
         <div className={styles.accountActions}>
           <ChangePassword triggerClassName={styles.quietButton} />

@@ -31,11 +31,15 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
       <div className={styles.travelIntro}>
         <div>
           <p className={styles.eyebrow}>{copy.travel.eyebrow}</p>
-          <h1 className={styles.displayTitle}>
-            {copy.travel.titleStart}
-            <br />
-            <em>{copy.travel.titleEnd}</em>
-          </h1>
+          <h1 className={styles.displayTitle}>{copy.travel.title}</h1>
+        </div>
+        <div className={styles.travelLede}>
+          <p className={styles.lede}>{copy.travel.description}</p>
+          {copy.travel.attribution && (
+            <cite className={styles.travelAttribution}>
+              {copy.travel.attribution}
+            </cite>
+          )}
         </div>
       </div>
 
@@ -56,10 +60,10 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
         </div>
 
         <div className={styles.viewSwitch} aria-label={copy.travel.viewsLabel}>
-          <Link href="/travel" className={styles.viewActive}>
+          <Link href="/places" className={styles.viewActive} aria-current="page">
             <Rows3 size={15} strokeWidth={1.5} /> {copy.travel.countries}
           </Link>
-          <Link href="/discover">
+          <Link href="/map">
             <Map size={15} strokeWidth={1.5} /> {copy.travel.cityMap}
           </Link>
         </div>
@@ -68,7 +72,7 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
       <div className={styles.countryArchive}>
         {countries.map((country, index) => (
           <Link
-            href={`/travel/${country.code.toLowerCase()}`}
+            href={`/places/${country.code.toLowerCase()}`}
             className={styles.countryArchiveItem}
             key={country.code}
           >

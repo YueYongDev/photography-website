@@ -6,7 +6,19 @@ import {
   photosUpdateSchema,
   photosInsertSchema,
 } from "@/db/schema/photos";
-import { and, desc, eq, lt, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  inArray,
+  like,
+  lt,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 import {
   baseProcedure,
   createTRPCRouter,
@@ -282,13 +294,13 @@ export const photosRouter = createTRPCRouter({
       return updatedPhoto;
     }),
 
-  getOne: baseProcedure
+  getOne: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ input }) => {
       const [photo] = await db
         .select()
         .from(photos)
-        .where(and(eq(photos.id, input.id), eq(photos.visibility, "public")));
+        .where(eq(photos.id, input.id));
       return photo;
     }),
 
@@ -358,19 +370,49 @@ export const photosRouter = createTRPCRouter({
           .object({ id: z.string().uuid(), updatedAt: z.date() })
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
+        search: z.string().trim().max(120).optional(),
+        visibility: z.enum(["all", "public", "private"]).default("all"),
+        favoriteOnly: z.boolean().default(false),
+        sort: z.enum(["newest", "oldest"]).default("newest"),
       }),
     )
     .query(async ({ input }) => {
-      const { cursor, limit } = input;
-      const whereClause = cursor
+      const { cursor, favoriteOnly, limit, search, sort, visibility } = input;
+      const isAscending = sort === "oldest";
+      const searchTerm = search
+        ? `%${search.replace(/[\\%_]/g, "\\$&")}%`
+        : undefined;
+      const cursorClause = cursor
         ? or(
-            lt(photos.updatedAt, cursor.updatedAt),
+            isAscending
+              ? gt(photos.updatedAt, cursor.updatedAt)
+              : lt(photos.updatedAt, cursor.updatedAt),
             and(
               eq(photos.updatedAt, cursor.updatedAt),
-              lt(photos.id, cursor.id),
+              isAscending
+                ? gt(photos.id, cursor.id)
+                : lt(photos.id, cursor.id),
             ),
           )
         : undefined;
+      const searchClause = searchTerm
+        ? or(
+            like(photos.title, searchTerm),
+            like(photos.description, searchTerm),
+            like(photos.city, searchTerm),
+            like(photos.country, searchTerm),
+            like(photos.make, searchTerm),
+            like(photos.model, searchTerm),
+          )
+        : undefined;
+      const whereClause = and(
+        visibility === "all"
+          ? undefined
+          : eq(photos.visibility, visibility),
+        favoriteOnly ? eq(photos.isFavorite, true) : undefined,
+        searchClause,
+        cursorClause,
+      );
 
       const data = await db
         .select({
@@ -395,7 +437,10 @@ export const photosRouter = createTRPCRouter({
         })
         .from(photos)
         .where(whereClause)
-        .orderBy(desc(photos.updatedAt))
+        .orderBy(
+          isAscending ? asc(photos.updatedAt) : desc(photos.updatedAt),
+          isAscending ? asc(photos.id) : desc(photos.id),
+        )
         .limit(limit + 1);
       const hasMore = data.length > limit;
       const items = hasMore ? data.slice(0, -1) : data;
@@ -405,6 +450,42 @@ export const photosRouter = createTRPCRouter({
         : null;
 
       return { items, nextCursor };
+    }),
+
+  getStudioStats: protectedProcedure.query(async () => {
+    const [stats] = await db
+      .select({
+        total: sql<number>`count(*)`.mapWith(Number),
+        public: sql<number>`coalesce(sum(case when ${photos.visibility} = 'public' then 1 else 0 end), 0)`.mapWith(Number),
+        private: sql<number>`coalesce(sum(case when ${photos.visibility} = 'private' then 1 else 0 end), 0)`.mapWith(Number),
+        favorite: sql<number>`coalesce(sum(case when ${photos.isFavorite} = true then 1 else 0 end), 0)`.mapWith(Number),
+      })
+      .from(photos);
+
+    return stats ?? { total: 0, public: 0, private: 0, favorite: 0 };
+  }),
+
+  bulkUpdate: protectedProcedure
+    .input(
+      z.object({
+        ids: z.array(z.string().uuid()).min(1).max(100),
+        changes: z
+          .object({
+            visibility: z.enum(["public", "private"]).optional(),
+            isFavorite: z.boolean().optional(),
+          })
+          .strict()
+          .refine((changes) => Object.keys(changes).length > 0),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      await db
+        .update(photos)
+        .set({ ...input.changes, updatedAt: new Date() })
+        .where(inArray(photos.id, input.ids));
+
+      revalidateTag(PUBLIC_PHOTOS_CACHE_TAG, { expire: 0 });
+      return { updated: input.ids.length };
     }),
 
   getLikedPhotos: baseProcedure

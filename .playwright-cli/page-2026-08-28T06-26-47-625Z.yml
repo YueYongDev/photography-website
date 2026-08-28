@@ -1,0 +1,313 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong Photography home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: Photographs
+      - generic [ref=e6]:
+        - navigation "Primary navigation" [ref=e7]:
+          - link "Work" [ref=e8] [cursor=pointer]:
+            - /url: /work
+          - link "Places" [ref=e9] [cursor=pointer]:
+            - /url: /places
+          - link "Map" [ref=e10] [cursor=pointer]:
+            - /url: /map
+          - link "Journeys" [ref=e11] [cursor=pointer]:
+            - /url: /journeys
+          - link "About" [ref=e12] [cursor=pointer]:
+            - /url: /about
+        - group "Language" [ref=e13]:
+          - button "EN" [pressed] [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - generic:
+            - region "Map" [ref=e54]
+            - button "Map marker" [ref=e799]:
+              - button "Open Sydney, 8 photographs" [ref=e801] [cursor=pointer]:
+                - generic [ref=e802]: "01"
+            - button "Map marker" [ref=e804]:
+              - button "Open London, 1 photographs" [ref=e806] [cursor=pointer]:
+                - generic [ref=e807]: "02"
+            - button "Map marker" [ref=e809]:
+              - button "Open Anqing, 1 photographs" [ref=e811] [cursor=pointer]:
+                - generic [ref=e812]: "03"
+            - button "Map marker" [ref=e814]:
+              - button "Open Beijing, 2 photographs" [ref=e816] [cursor=pointer]:
+                - generic [ref=e817]: "04"
+            - button "Map marker" [ref=e819]:
+              - button "Open Bortala Mongol Autonomous Prefecture, 3 photographs" [ref=e821] [cursor=pointer]:
+                - generic [ref=e822]: "05"
+            - button "Map marker" [ref=e824]:
+              - button "Open Chongqing, 3 photographs" [ref=e826] [cursor=pointer]:
+                - generic [ref=e827]: "06"
+            - button "Map marker" [ref=e829]:
+              - button "Open Dali Bai Autonomous Prefecture, 2 photographs" [ref=e831] [cursor=pointer]:
+                - generic [ref=e832]: "07"
+            - button "Map marker" [ref=e834]:
+              - button "Open Dalian, 3 photographs" [ref=e836] [cursor=pointer]:
+                - generic [ref=e837]: "08"
+            - button "Map marker" [ref=e839]:
+              - button "Open Hangzhou, 31 photographs" [ref=e841] [cursor=pointer]:
+                - generic [ref=e842]: "09"
+            - button "Map marker" [ref=e844]:
+              - button "Open Ili Kazakh Autonomous Prefecture, 1 photographs" [ref=e846] [cursor=pointer]:
+                - generic [ref=e847]: "10"
+            - button "Map marker" [ref=e849]:
+              - button "Open Nanjing, 3 photographs" [ref=e851] [cursor=pointer]:
+                - generic [ref=e852]: "11"
+            - button "Map marker" [ref=e854]:
+              - button "Open Ningbo, 4 photographs" [ref=e856] [cursor=pointer]:
+                - generic [ref=e857]: "12"
+            - button "Map marker" [ref=e859]:
+              - button "Open Shanghai, 4 photographs" [ref=e861] [cursor=pointer]:
+                - generic [ref=e862]: "13"
+            - button "Map marker" [ref=e864]:
+              - button "Open Shaoxing, 1 photographs" [ref=e866] [cursor=pointer]:
+                - generic [ref=e867]: "14"
+            - button "Map marker" [ref=e869]:
+              - button "Open Tianjin, 1 photographs" [ref=e871] [cursor=pointer]:
+                - generic [ref=e872]: "15"
+            - button "Map marker" [ref=e874]:
+              - button "Open Ürümqi, 1 photographs" [ref=e876] [cursor=pointer]:
+                - generic [ref=e877]: "16"
+            - button "Map marker" [ref=e879]:
+              - button "Open Wuhan, 2 photographs" [ref=e881] [cursor=pointer]:
+                - generic [ref=e882]: "17"
+            - button "Map marker" [ref=e884]:
+              - button "Open Xiamen, 1 photographs" [ref=e886] [cursor=pointer]:
+                - generic [ref=e887]: "18"
+            - button "Map marker" [ref=e889]:
+              - button "Open Xihu District, 1 photographs" [ref=e891] [cursor=pointer]:
+                - generic [ref=e892]: "19"
+            - button "Map marker" [ref=e894]:
+              - button "Open Cambridge, 1 photographs" [ref=e896] [cursor=pointer]:
+                - generic [ref=e897]: "20"
+            - button "Map marker" [ref=e899]:
+              - button "Open Dover, 1 photographs" [ref=e901] [cursor=pointer]:
+                - generic [ref=e902]: "21"
+            - button "Map marker" [ref=e904]:
+              - button "Open Edinburgh, 2 photographs" [ref=e906] [cursor=pointer]:
+                - generic [ref=e907]: "22"
+            - button "Map marker" [ref=e909]:
+              - button "Open London, 6 photographs" [ref=e911] [cursor=pointer]:
+                - generic [ref=e912]: "23"
+            - button "Map marker" [ref=e914]:
+              - button "Open Oxford, 2 photographs" [ref=e916] [cursor=pointer]:
+                - generic [ref=e917]: "24"
+            - button "Map marker" [ref=e919]:
+              - button "Open Hong Kong, 3 photographs" [ref=e921] [cursor=pointer]:
+                - generic [ref=e922]: "25"
+            - button "Map marker" [ref=e924]:
+              - button "Open Akureyri, 3 photographs" [ref=e926] [cursor=pointer]:
+                - generic [ref=e927]: "26"
+            - button "Map marker" [ref=e929]:
+              - button "Open Höfn, 1 photographs" [ref=e931] [cursor=pointer]:
+                - generic [ref=e932]: "27"
+            - button "Map marker" [ref=e934]:
+              - button "Open Hvolsvöllur, 1 photographs" [ref=e936] [cursor=pointer]:
+                - generic [ref=e937]: "28"
+            - button "Map marker" [ref=e939]:
+              - button "Open Kirkjubæjarklaustur, 3 photographs" [ref=e941] [cursor=pointer]:
+                - generic [ref=e942]: "29"
+            - button "Map marker" [ref=e944]:
+              - button "Open Mývatn, 1 photographs" [ref=e946] [cursor=pointer]:
+                - generic [ref=e947]: "30"
+            - button "Map marker" [ref=e949]:
+              - button "Open Öræfasveit, 2 photographs" [ref=e951] [cursor=pointer]:
+                - generic [ref=e952]: "31"
+            - button "Map marker" [ref=e954]:
+              - button "Open Reykjavík, 2 photographs" [ref=e956] [cursor=pointer]:
+                - generic [ref=e957]: "32"
+            - button "Map marker" [ref=e959]:
+              - button "Open Selfoss, 1 photographs" [ref=e961] [cursor=pointer]:
+                - generic [ref=e962]: "33"
+            - button "Map marker" [ref=e964]:
+              - button "Open Snæfellsbær, 1 photographs" [ref=e966] [cursor=pointer]:
+                - generic [ref=e967]: "34"
+            - button "Map marker" [ref=e969]:
+              - button "Open Vík í Mýrdal, 2 photographs" [ref=e971] [cursor=pointer]:
+                - generic [ref=e972]: "35"
+            - button "Map marker" [ref=e974]:
+              - button "Open Kyoto, 4 photographs" [ref=e976] [cursor=pointer]:
+                - generic [ref=e977]: "36"
+            - button "Map marker" [ref=e979]:
+              - button "Open Osaka, 3 photographs" [ref=e981] [cursor=pointer]:
+                - generic [ref=e982]: "37"
+            - button "Map marker" [ref=e984]:
+              - button "Open Saga, 11 photographs" [ref=e986] [cursor=pointer]:
+                - generic [ref=e987]: "38"
+            - button "Map marker" [ref=e989]:
+              - button "Open Yamanashi, 1 photographs" [ref=e991] [cursor=pointer]:
+                - generic [ref=e992]: "39"
+            - button "Map marker" [ref=e994]:
+              - button "Open K. Rampayan Village, 1 photographs" [ref=e996] [cursor=pointer]:
+                - generic [ref=e997]: "40"
+            - button "Map marker" [ref=e999]:
+              - button "Open Kota Kinabalu, 3 photographs" [ref=e1001] [cursor=pointer]:
+                - generic [ref=e1002]: "41"
+            - button "Map marker" [ref=e1004]:
+              - button "Open Oslo, 1 photographs" [ref=e1006] [cursor=pointer]:
+                - generic [ref=e1007]: "42"
+            - button "Map marker" [ref=e1009]:
+              - button "Open Reine, 1 photographs" [ref=e1011] [cursor=pointer]:
+                - generic [ref=e1012]: "43"
+            - button "Map marker" [ref=e1014]:
+              - button "Open Aoraki / Mount Cook, 1 photographs" [ref=e1016] [cursor=pointer]:
+                - generic [ref=e1017]: "44"
+            - button "Map marker" [ref=e1019]:
+              - button "Open Arrowtown, 2 photographs" [ref=e1021] [cursor=pointer]:
+                - generic [ref=e1022]: "45"
+            - button "Map marker" [ref=e1024]:
+              - button "Open Canterbury, 3 photographs" [ref=e1026] [cursor=pointer]:
+                - generic [ref=e1027]: "46"
+            - button "Map marker" [ref=e1029]:
+              - button "Open Glenorchy, 1 photographs" [ref=e1031] [cursor=pointer]:
+                - generic [ref=e1032]: "47"
+            - button "Map marker" [ref=e1034]:
+              - button "Open Lake Tekapo, 5 photographs" [ref=e1036] [cursor=pointer]:
+                - generic [ref=e1037]: "48"
+            - button "Map marker" [ref=e1039]:
+              - button "Open Otago, 5 photographs" [ref=e1041] [cursor=pointer]:
+                - generic [ref=e1042]: "49"
+            - button "Map marker" [ref=e1044]:
+              - button "Open Wānaka, 4 photographs" [ref=e1046] [cursor=pointer]:
+                - generic [ref=e1047]: "50"
+            - button "Map marker" [ref=e1049]:
+              - button "Open Beyoğlu, 4 photographs" [ref=e1051] [cursor=pointer]:
+                - generic [ref=e1052]: "51"
+            - button "Map marker" [ref=e1054]:
+              - button "Open Kadıköy, 1 photographs" [ref=e1056] [cursor=pointer]:
+                - generic [ref=e1057]: "52"
+            - button "Map marker" [ref=e1059]:
+              - button "Open Osmangazi, 2 photographs" [ref=e1061] [cursor=pointer]:
+                - generic [ref=e1062]: "53"
+            - button "Map marker" [ref=e1064]:
+              - button "Open Üsküdar, 1 photographs" [ref=e1066] [cursor=pointer]:
+                - generic [ref=e1067]: "54"
+            - button "Map marker" [ref=e1069]:
+              - button "Open Bukhara, 2 photographs" [ref=e1071] [cursor=pointer]:
+                - generic [ref=e1072]: "55"
+            - button "Map marker" [ref=e1074]:
+              - button "Open Samarkand City, 9 photographs" [ref=e1076] [cursor=pointer]:
+                - generic [ref=e1077]: "56"
+            - button "Map marker" [ref=e1079]:
+              - button "Open Tashkent, 3 photographs" [ref=e1081] [cursor=pointer]:
+                - generic [ref=e1082]: "57"
+          - group [ref=e55]:
+            - generic "Toggle attribution" [ref=e56] [cursor=pointer]
+            - generic [ref=e57]:
+              - text: ©
+              - link "CARTO" [ref=e58] [cursor=pointer]:
+                - /url: https://carto.com/about-carto/
+              - text: ", ©"
+              - link "OpenStreetMap" [ref=e59] [cursor=pointer]:
+                - /url: http://www.openstreetmap.org/about/
+              - text: contributors
+        - generic:
+          - paragraph: MAP / SPATIAL ARCHIVE
+          - heading "Every frame, somewhere." [level=1]
+          - generic: The same photographic archive, read spatially. Move from a complete world view to the places where each frame was made.
+        - generic "Mapped archive summary":
+          - generic:
+            - generic: Countries
+            - strong: "12"
+          - generic:
+            - generic: Cities
+            - strong: "57"
+          - generic:
+            - generic: Frames
+            - strong: "173"
+        - generic "Filter the map by country" [ref=e60]:
+          - button "ALL" [ref=e61] [cursor=pointer]
+          - button "AU" [ref=e62] [cursor=pointer]
+          - button "CA" [ref=e63] [cursor=pointer]
+          - button "CN" [ref=e64] [cursor=pointer]
+          - button "GB" [ref=e65] [cursor=pointer]
+          - button "HK" [ref=e66] [cursor=pointer]
+          - button "IS" [ref=e67] [cursor=pointer]
+          - button "JP" [ref=e68] [cursor=pointer]
+          - button "MY" [ref=e69] [cursor=pointer]
+          - button "NO" [ref=e70] [cursor=pointer]
+          - button "NZ" [ref=e71] [cursor=pointer]
+          - button "TR" [ref=e72] [cursor=pointer]
+          - button "UZ" [ref=e73] [cursor=pointer]
+        - generic [ref=e74]:
+          - button "Overview" [ref=e75] [cursor=pointer]
+          - button "Globe" [pressed] [ref=e80] [cursor=pointer]
+          - button "Atlas" [ref=e86] [cursor=pointer]
+        - button "Hide archive" [expanded] [ref=e89] [cursor=pointer]
+        - complementary [ref=e94]:
+          - generic [ref=e96]:
+            - generic [ref=e97]: MAP INDEX / 57
+            - heading "Hangzhou" [level=2] [ref=e1084]
+          - generic [ref=e99]:
+            - button "All mapped cities" [ref=e1085] [cursor=pointer]
+            - generic [ref=e1088]:
+              - generic [ref=e1089]: People's Republic of China
+              - generic [ref=e1090]: 31 Frames
+            - generic [ref=e1091]:
+              - link "静谧的弧光" [ref=e1092] [cursor=pointer]:
+                - /url: /photograph/d0c7bfd3-0ced-4604-9cf4-3e485967e0bb
+                - img "静谧的弧光" [ref=e1094]
+                - generic [ref=e1095]: "01"
+              - link "暮色中的守望" [ref=e1096] [cursor=pointer]:
+                - /url: /photograph/1830c77e-5b8a-40ca-9405-2477e24ddf2a
+                - img "暮色中的守望" [ref=e1098]
+                - generic [ref=e1099]: "02"
+              - link "林间漫步" [ref=e1100] [cursor=pointer]:
+                - /url: /photograph/5265071e-141a-4b13-abcf-a98fe8193ac7
+                - img "林间漫步" [ref=e1102]
+                - generic [ref=e1103]: "03"
+              - link "暮色里的静谧" [ref=e1104] [cursor=pointer]:
+                - /url: /photograph/8893e837-93a0-4bad-a723-d5e3f0f429d4
+                - img "暮色里的静谧" [ref=e1106]
+                - generic [ref=e1107]: "04"
+              - link "绿意穿透" [ref=e1108] [cursor=pointer]:
+                - /url: /photograph/ad9f2eb1-2a6c-4dcb-8a87-01c8c740ab26
+                - img "绿意穿透" [ref=e1110]
+                - generic [ref=e1111]: "05"
+              - link "湖光潋滟，步履轻盈" [ref=e1112] [cursor=pointer]:
+                - /url: /photograph/1fc9b75b-7fbb-4a81-b1d1-306530c257c7
+                - img "湖光潋滟，步履轻盈" [ref=e1114]
+                - generic [ref=e1115]: "06"
+            - link "Open city collection Hangzhou" [ref=e1116] [cursor=pointer]:
+              - /url: /places/cn/hangzhou
+              - generic [ref=e1117]:
+                - generic [ref=e1118]: Open city collection
+                - text: Hangzhou
+    - contentinfo [ref=e25]:
+      - generic [ref=e26]:
+        - heading "YUEYONG" [level=2] [ref=e27]
+        - paragraph [ref=e28]: Photographs / Places / Journeys
+      - navigation "Primary navigation" [ref=e29]:
+        - link "Home" [ref=e30] [cursor=pointer]:
+          - /url: /
+        - link "Work" [ref=e31] [cursor=pointer]:
+          - /url: /work
+        - link "Places" [ref=e32] [cursor=pointer]:
+          - /url: /places
+        - link "Map" [ref=e33] [cursor=pointer]:
+          - /url: /map
+        - link "Journeys" [ref=e34] [cursor=pointer]:
+          - /url: /journeys
+        - link "About" [ref=e35] [cursor=pointer]:
+          - /url: /about
+        - link "Studio" [ref=e36] [cursor=pointer]:
+          - /url: /studio/overview
+      - generic [ref=e37]:
+        - paragraph [ref=e38]: Software Engineer / Photographer
+        - link "Email" [ref=e39] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e40] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e41] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e42]:
+        - generic [ref=e43]: © 2026 YueYong
+        - generic [ref=e44]: Photographs
+  - region "Notifications alt+T"
+  - alert [ref=e45]

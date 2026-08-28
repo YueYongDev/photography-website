@@ -6,8 +6,8 @@ import { getCurrentSession } from "@/modules/auth/lib/auth";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - Dashboard",
-    default: "Dashboard",
+    template: "%s — Studio",
+    default: "Studio",
   },
 };
 
@@ -43,7 +43,7 @@ const DashboardSessionError = () => (
       </div>
       <div className="flex items-center justify-center gap-3">
         <a
-          href="/dashboard"
+          href="/studio/overview"
           className="rounded-full bg-foreground px-5 py-2.5 text-sm text-background"
         >
           Try again

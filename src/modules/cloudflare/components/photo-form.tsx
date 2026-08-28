@@ -107,6 +107,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
       await Promise.all([
         utils.photos.getMany.invalidate(),
         utils.photos.getManyWithPrivate.invalidate(),
+        utils.photos.getStudioStats.invalidate(),
       ]);
       onCreateSuccess?.();
     },

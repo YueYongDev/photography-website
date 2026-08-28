@@ -37,15 +37,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { postsUpdateSchema } from "@/db/schema/posts";
 import { toast } from "sonner";
 import styles from "@/modules/dashboard/ui/studio.module.css";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 interface FormSectionProps {
   postId: string;
 }
 
 export const FormSection = ({ postId }: FormSectionProps) => {
+  const { copy } = useStudioLocale();
   return (
     <Suspense fallback={<FormSectionSkeleton />}>
-      <ErrorBoundary fallback={<p>Something went wrong</p>}>
+      <ErrorBoundary fallback={<p>{copy.overview.error}</p>}>
         <FormSectionSuspense postId={postId} />
       </ErrorBoundary>
     </Suspense>
@@ -75,6 +77,7 @@ const FormSectionSkeleton = () => {
 
 const FormSectionSuspense = ({ postId }: FormSectionProps) => {
   const router = useRouter();
+  const { copy } = useStudioLocale();
   const utils = trpc.useUtils();
   const [post] = trpc.posts.getOne.useSuspenseQuery({ postId });
 
@@ -143,7 +146,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
       toast.success("Field note updated");
       utils.posts.getMany.invalidate();
       utils.posts.getOne.invalidate({ postId });
-      router.push("/posts");
+      router.push("/studio/journeys");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -153,7 +156,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
     onSuccess: () => {
       toast.success("Field note deleted");
       utils.posts.getMany.invalidate();
-      router.push("/posts");
+      router.push("/studio/journeys");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -258,9 +261,9 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className={styles.editorHeader}>
             <div className={styles.editorHeaderCopy}>
-              <h1 className={styles.editorTitle}>Story details</h1>
+              <h1 className={styles.editorTitle}>{copy.editor.storyDetails}</h1>
               <p className={styles.editorDescription}>
-                Manage your post details
+                {copy.editor.storyDescription}
               </p>
             </div>
 
@@ -278,12 +281,12 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 {generateAIDescriptionMutation.isPending ? (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                    Generating...
+                    {copy.editor.generating}
                   </>
                 ) : (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4" />
-                    AI Description
+                    {copy.editor.aiDescription}
                   </>
                 )}
               </Button>
@@ -300,12 +303,12 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 {generateAITitleMutation.isPending ? (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                    Generating...
+                    {copy.editor.generating}
                   </>
                 ) : (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4" />
-                    AI Title
+                    {copy.editor.aiTitle}
                   </>
                 )}
               </Button>
@@ -322,12 +325,12 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 {generateAITagsMutation.isPending ? (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                    Generating...
+                    {copy.editor.generating}
                   </>
                 ) : (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4" />
-                    AI Tags
+                    {copy.editor.aiTags}
                   </>
                 )}
               </Button>
@@ -336,7 +339,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 className={styles.editorPrimaryButton}
                 disabled={update.isPending}
               >
-                {update.isPending ? "Saving..." : "Save"}
+                {update.isPending ? copy.editor.saving : copy.editor.save}
               </Button>
 
               <DropdownMenu>
@@ -350,7 +353,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                     onClick={() => remove.mutate({ id: postId })}
                   >
                     <TrashIcon className="size-4 mr-2" />
-                    Delete
+                    {copy.editor.delete}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -364,9 +367,9 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>{copy.editor.title}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Field note title" />
+                      <Input {...field} placeholder={copy.editor.title} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -378,10 +381,10 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 name="slug"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Slug</FormLabel>
+                    <FormLabel>{copy.editor.slug}</FormLabel>
                     <div className="flex gap-2">
                       <FormControl className="flex-1">
-                        <Input {...field} placeholder="Field note slug" />
+                        <Input {...field} placeholder={copy.editor.slug} />
                       </FormControl>
                       <Button
                         type="button"
@@ -402,8 +405,8 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                         disabled={generateAISlugMutation.isPending}
                       >
                         {generateAISlugMutation.isPending
-                          ? "Generating..."
-                          : "Generate"}
+                          ? copy.editor.generating
+                          : copy.editor.generate}
                       </Button>
                     </div>
                     <FormDescription>
@@ -419,14 +422,14 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{copy.editor.description}</FormLabel>
                     <FormControl>
                       <Textarea
                         {...field}
                         rows={3}
                         className="resize-none"
                         value={field.value || ""}
-                        placeholder="Field note description"
+                        placeholder={copy.editor.description}
                       />
                     </FormControl>
                     <FormDescription>
@@ -442,7 +445,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content</FormLabel>
+                    <FormLabel>{copy.editor.content}</FormLabel>
                     <FormControl>
                       <MarkdownEditorEnhanced
                         content={field.value || ""}
@@ -459,7 +462,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tags</FormLabel>
+                    <FormLabel>{copy.editor.tags}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter tags separated by commas"
@@ -493,7 +496,7 @@ const FormSectionSuspense = ({ postId }: FormSectionProps) => {
                   name="coverImage"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cover Image URL</FormLabel>
+                    <FormLabel>{copy.editor.coverImage}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}

@@ -3,9 +3,11 @@
 import { StatisticsCard } from "../components/statistics-card";
 import { trpc } from "@/trpc/client";
 import styles from "../studio.module.css";
+import { useStudioLocale } from "../../i18n/studio-locale";
 
 export const StatisticsSection = () => {
   const { data: summary, isLoading } = trpc.summary.getSummary.useQuery();
+  const { copy } = useStudioLocale();
 
   if (isLoading) {
     return (
@@ -40,24 +42,24 @@ export const StatisticsSection = () => {
     <div className={styles.statsGrid}>
       <StatisticsCard
         index="01"
-        title="Total photos"
+        title={copy.overview.totalPhotos}
         value={summary?.data?.photoCount || 0}
         direction={direction}
         percentage={growthPercentage}
       />
       <StatisticsCard
         index="02"
-        title="Mapped places"
+        title={copy.overview.mappedPlaces}
         value={summary?.data?.cityCount || 0}
       />
       <StatisticsCard
         index="03"
-        title="Journey notes"
+        title={copy.overview.journeyNotes}
         value={summary?.data?.postCount || 0}
       />
       <StatisticsCard
         index="04"
-        title="Selected work"
+        title={copy.overview.selectedWork}
         value={summary?.data?.favoriteCount || 0}
       />
     </div>

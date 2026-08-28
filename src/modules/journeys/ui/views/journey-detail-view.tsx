@@ -75,15 +75,26 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
       </header>
 
       <figure className={styles.journeyDetailHero}>
-        <Image
-          src={content.coverImage}
-          alt={content.coverAlt}
-          fill
-          loader={getArchiveImageLoader(content.coverImage)}
-          priority
-          sizes="100vw"
-          className={styles.imageCover}
-        />
+        {content.coverImage ? (
+          <Image
+            src={content.coverImage}
+            alt={content.coverAlt}
+            fill
+            loader={getArchiveImageLoader(content.coverImage)}
+            priority
+            sizes="100vw"
+            className={styles.imageCover}
+          />
+        ) : (
+          <div
+            className={styles.journeyDetailHeroPlaceholder}
+            role="img"
+            aria-label={content.coverAlt}
+          >
+            <span>{content.countryCode}</span>
+            <strong>{copy.journeys.coverPending}</strong>
+          </div>
+        )}
         <figcaption>
           <span>{content.country}</span>
           <span>{content.route.join(" · ")}</span>
@@ -210,7 +221,7 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
         <p className={styles.eyebrow}>{copy.journey.coda}</p>
         <blockquote>{content.closing}</blockquote>
         <Link
-          href={`/travel/${content.countryCode.toLowerCase()}`}
+          href={`/places/${content.countryCode.toLowerCase()}`}
           className={styles.textLink}
         >
           {copy.journey.browseByPlace(content.country)}{" "}

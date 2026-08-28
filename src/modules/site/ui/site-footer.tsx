@@ -18,11 +18,11 @@ export const SiteFooter = () => {
       <nav className={styles.footerNav} aria-label={copy.navigation.label}>
         <Link href="/">{copy.navigation.home}</Link>
         <Link href="/work">{copy.navigation.work}</Link>
+        <Link href="/places">{copy.navigation.travel}</Link>
+        <Link href="/map">{copy.navigation.map}</Link>
         <Link href="/journeys">{copy.navigation.journeys}</Link>
-        <Link href="/travel">{copy.navigation.travel}</Link>
-        <Link href="/discover">{copy.navigation.map}</Link>
         <Link href="/about">{copy.navigation.about}</Link>
-        <Link href="/dashboard">{copy.navigation.studio}</Link>
+        <Link href="/studio/overview">{copy.navigation.studio}</Link>
       </nav>
 
       <div className={styles.footerMeta}>

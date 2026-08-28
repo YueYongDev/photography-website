@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogOut, Loader2 } from "lucide-react";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 const UserButton = ({
   user,
@@ -19,6 +20,7 @@ const UserButton = ({
 }) => {
   const router = useRouter();
   const [isSignOut, setIsSignOut] = useState<boolean>(false);
+  const { copy } = useStudioLocale();
 
   return (
     <DropdownMenu modal={false}>
@@ -55,7 +57,7 @@ const UserButton = ({
               ) : (
                 <div className="flex items-center gap-2">
                   <LogOut size={16} />
-                  Sign Out
+                  {copy.common.signOut}
                 </div>
               )}
             </span>

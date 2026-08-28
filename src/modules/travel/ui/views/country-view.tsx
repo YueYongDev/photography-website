@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowUpRight, Map } from "lucide-react";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
@@ -18,9 +18,11 @@ import {
 } from "@/modules/travel/lib/country-groups";
 import { CountryGalleryViewer } from "@/modules/travel/ui/components/country-gallery-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
+import { trpc } from "@/trpc/client";
 
 export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
   const { copy, locale } = useSiteLocale();
+  const utils = trpc.useUtils();
   const [selectedCity, setSelectedCity] = useState<TravelCityEntry | null>(null);
   const countryName = localizeCountryName(country.name, country.code, locale);
   const fallbackHref =
@@ -28,11 +30,28 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
       ? "/journeys/newzealand-2026"
       : country.code === "UZ"
         ? "/journeys/uzbekistan-2026"
-        : "/discover";
+        : "/map";
+  const selectedCityIndex = selectedCity
+    ? country.cities.findIndex((city) => city.id === selectedCity.id)
+    : -1;
+  const nextCity =
+    selectedCityIndex >= 0 ? country.cities[selectedCityIndex + 1] : undefined;
+
+  useEffect(() => {
+    if (!nextCity) return;
+
+    void utils.photos.getCitySetByCity.prefetch({
+      city: nextCity.city,
+      countryCode: country.code,
+    });
+
+    const nextCover = new window.Image();
+    nextCover.src = nextCity.image.url;
+  }, [country.code, nextCity, utils.photos.getCitySetByCity]);
 
   return (
     <section className={styles.page}>
-      <Link href="/travel" className={styles.journeyBack}>
+      <Link href="/places" className={styles.journeyBack}>
         <ArrowLeft size={15} strokeWidth={1.4} /> {copy.country.all}
       </Link>
 
@@ -111,7 +130,7 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
         })}
       </div>
 
-      <Link href="/discover" className={styles.countryMapLink}>
+      <Link href="/map" className={styles.countryMapLink}>
         <Map size={17} strokeWidth={1.4} />
         <span>{copy.country.mapLink}</span>
         <ArrowUpRight size={16} strokeWidth={1.4} />
@@ -126,10 +145,13 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
           detailsHref={
             selectedCity.id.startsWith("fallback-")
               ? fallbackHref
-              : `/travel/${country.code.toLowerCase()}/${toPlaceSlug(selectedCity.city)}`
+              : `/places/${country.code.toLowerCase()}/${toPlaceSlug(selectedCity.city)}`
           }
           locale={locale}
           onClose={() => setSelectedCity(null)}
+          onNextCollection={
+            nextCity ? () => setSelectedCity(nextCity) : undefined
+          }
         />
       )}
     </section>

@@ -31,7 +31,7 @@ export const generateMetadata = async ({
   const { countryCode, citySlug } = await params;
   const { country, city } = await findCity(countryCode, citySlug);
   return {
-    title: city ? `${city.city} · ${country?.name}` : "Place · Travel",
+    title: city ? `${city.city} · ${country?.name}` : "Place · Places",
     description: city
       ? `Photographs from ${city.city}, ${country?.name}.`
       : undefined,

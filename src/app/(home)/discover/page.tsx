@@ -1,12 +1,5 @@
-import { DiscoverView } from "@/modules/discover/ui/views/discover-view";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = {
-  title: "Map",
-  description: "Map of photographed cities.",
-};
-
-const DiscoverPage = () => <DiscoverView />;
+const DiscoverPage = () => redirect("/map");
 
 export default DiscoverPage;

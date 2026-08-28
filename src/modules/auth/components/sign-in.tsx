@@ -59,7 +59,7 @@ export default function SignIn() {
         // session cookie has been committed. A client-side router transition
         // can reuse the unauthenticated RSC response and bounce between the
         // sign-in and dashboard routes.
-        callbackURL: "/dashboard",
+        callbackURL: "/studio/overview",
       },
       {
         onSuccess: () => {

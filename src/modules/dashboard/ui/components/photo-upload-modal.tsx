@@ -7,6 +7,7 @@ import { PhotoUploader } from "@/modules/cloudflare/components/photo-uploader";
 import { ImagePlus } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 export const PhotoUploadModal = ({
   isOpen,
@@ -20,6 +21,7 @@ export const PhotoUploadModal = ({
   triggerLabel?: string;
 }) => {
   const [internalIsUploading, setInternalIsUploading] = useState(false);
+  const { copy } = useStudioLocale();
   const isControlled = isOpen !== undefined && onClose !== undefined;
   const isUploading = isControlled ? isOpen : internalIsUploading;
 
@@ -34,7 +36,7 @@ export const PhotoUploadModal = ({
   return (
     <>
       <ResponsiveModal
-        title="Upload a photo"
+        title={copy.photos.uploadTitle}
         open={isUploading}
         onOpenChange={setIsUploading}
         className="h-[80vh] w-[80vw] max-w-none"

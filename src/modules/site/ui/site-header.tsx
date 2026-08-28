@@ -9,9 +9,9 @@ import styles from "./public-site.module.css";
 
 const navigation = [
   { key: "work", href: "/work" },
+  { key: "travel", href: "/places" },
+  { key: "map", href: "/map" },
   { key: "journeys", href: "/journeys" },
-  { key: "travel", href: "/travel" },
-  { key: "map", href: "/discover" },
   { key: "about", href: "/about" },
 ] as const;
 
@@ -48,6 +48,7 @@ export const SiteHeader = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={`${styles.navLink} ${active ? styles.navLinkActive : ""}`}
                 >
                   {copy.navigation[item.key]}
@@ -90,12 +91,21 @@ export const SiteHeader = () => {
 
       {menuOpen && (
         <nav id="site-mobile-menu" className={styles.mobilePanel} aria-label={copy.navigation.label}>
-          {navigation.map((item, index) => (
-            <Link key={item.href} href={item.href}>
-              {copy.navigation[item.key]}
-              <span>{String(index + 1).padStart(2, "0")}</span>
-            </Link>
-          ))}
+          {navigation.map((item, index) => {
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+              >
+                {copy.navigation[item.key]}
+                <span>{String(index + 1).padStart(2, "0")}</span>
+              </Link>
+            );
+          })}
         </nav>
       )}
     </>

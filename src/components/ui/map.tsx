@@ -180,6 +180,8 @@ type MapMarkerProps = {
   onMouseEnter?: (e: MouseEvent) => void;
   /** Callback when mouse leaves marker */
   onMouseLeave?: (e: MouseEvent) => void;
+  /** Accessible label applied to the interactive marker element. */
+  ariaLabel?: string;
   /** Callback when marker drag starts (requires draggable: true) */
   onDragStart?: (lngLat: { lng: number; lat: number }) => void;
   /** Callback during marker drag (requires draggable: true) */
@@ -195,6 +197,7 @@ function MapMarker({
   onClick,
   onMouseEnter,
   onMouseLeave,
+  ariaLabel,
   onDragStart,
   onDrag,
   onDragEnd,
@@ -211,6 +214,8 @@ function MapMarker({
     if (!isLoaded || !map) return;
 
     const container = document.createElement("div");
+    if (ariaLabel) container.setAttribute("aria-label", ariaLabel);
+    if (onClick) container.tabIndex = 0;
     markerElementRef.current = container;
 
     const marker = new MapLibreGL.Marker({
@@ -224,10 +229,16 @@ function MapMarker({
     markerRef.current = marker;
 
     const handleClick = (e: MouseEvent) => onClick?.(e);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!onClick || (e.key !== "Enter" && e.key !== " ")) return;
+      e.preventDefault();
+      container.click();
+    };
     const handleMouseEnter = (e: MouseEvent) => onMouseEnter?.(e);
     const handleMouseLeave = (e: MouseEvent) => onMouseLeave?.(e);
 
     container.addEventListener("click", handleClick);
+    container.addEventListener("keydown", handleKeyDown);
     container.addEventListener("mouseenter", handleMouseEnter);
     container.addEventListener("mouseleave", handleMouseLeave);
 
@@ -252,6 +263,7 @@ function MapMarker({
 
     return () => {
       container.removeEventListener("click", handleClick);
+      container.removeEventListener("keydown", handleKeyDown);
       container.removeEventListener("mouseenter", handleMouseEnter);
       container.removeEventListener("mouseleave", handleMouseLeave);
 
@@ -273,6 +285,11 @@ function MapMarker({
   useEffect(() => {
     markerRef.current?.setDraggable(draggable);
   }, [draggable]);
+
+  useEffect(() => {
+    if (!markerElementRef.current || !ariaLabel) return;
+    markerElementRef.current.setAttribute("aria-label", ariaLabel);
+  }, [ariaLabel]);
 
   useEffect(() => {
     if (!markerRef.current) return;

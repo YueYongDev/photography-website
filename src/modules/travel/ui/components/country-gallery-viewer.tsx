@@ -26,6 +26,7 @@ type Props = {
   detailsHref: string;
   locale: SiteLocale;
   onClose: () => void;
+  onNextCollection?: () => void;
 };
 
 const viewerCopy = {
@@ -55,6 +56,7 @@ export const CountryGalleryViewer = ({
   detailsHref,
   locale,
   onClose,
+  onNextCollection,
 }: Props) => {
   const copy = viewerCopy[locale];
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -110,6 +112,22 @@ export const CountryGalleryViewer = ({
 
   const closeViewer = useCallback(() => onClose(), [onClose]);
 
+  const goNext = useCallback(() => {
+    if (activeIndex < photos.length - 1) {
+      goTo(activeIndex + 1);
+      return;
+    }
+
+    if (onNextCollection) {
+      // Keep the full-screen viewer mounted while the collection changes.
+      // Reset both the DOM track and React state before the parent swaps city
+      // data so the next collection starts at frame one without a stale paint.
+      trackRef.current?.scrollTo({ left: 0, behavior: "auto" });
+      setActiveIndex(0);
+      onNextCollection();
+    }
+  }, [activeIndex, goTo, onNextCollection, photos.length]);
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -127,14 +145,14 @@ export const CountryGalleryViewer = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeViewer();
       if (event.key === "ArrowLeft") goTo(activeIndex - 1);
-      if (event.key === "ArrowRight") goTo(activeIndex + 1);
+      if (event.key === "ArrowRight") goNext();
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activeIndex, closeViewer, goTo]);
+  }, [activeIndex, closeViewer, goNext, goTo]);
 
   const handleScroll = () => {
     const track = trackRef.current;
@@ -153,11 +171,14 @@ export const CountryGalleryViewer = ({
       : event.deltaY;
     if (Math.abs(directionValue) < 10) return;
 
-    event.preventDefault();
     const now = Date.now();
     if (now - wheelLockRef.current < 420) return;
     wheelLockRef.current = now;
-    goTo(activeIndex + (directionValue > 0 ? 1 : -1));
+    if (directionValue > 0) {
+      goNext();
+    } else {
+      goTo(activeIndex - 1);
+    }
   };
 
   const activePhoto = photos[activeIndex] ?? photos[0];
@@ -226,7 +247,7 @@ export const CountryGalleryViewer = ({
         })}
       </div>
 
-      {photos.length > 1 && (
+      {(photos.length > 1 || onNextCollection) && (
         <>
           <button
             type="button"
@@ -240,8 +261,8 @@ export const CountryGalleryViewer = ({
           <button
             type="button"
             className={`${styles.countryViewerNav} ${styles.countryViewerNext}`}
-            onClick={() => goTo(activeIndex + 1)}
-            disabled={activeIndex === photos.length - 1}
+            onClick={goNext}
+            disabled={activeIndex === photos.length - 1 && !onNextCollection}
             aria-label={copy.next}
           >
             <ArrowRight size={20} strokeWidth={1.25} />

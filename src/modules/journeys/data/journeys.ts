@@ -24,30 +24,32 @@ export type JourneyMeta = {
   dates: string;
   year: string;
   route: string[];
-  coverImage: string;
+  coverImage: string | null;
   coverAlt: string;
   intro: string;
   chapters: JourneyChapter[];
   frames: JourneyFrame[];
   closing: string;
+  draft?: boolean;
 };
 
 export const journeys: JourneyMeta[] = [
   {
     slug: "newzealand-2026",
-    title: "South Island",
-    subtitle: "Seven days beneath the Southern Alps",
+    title: "New Zealand, 2026",
+    subtitle: "Road notes from Aotearoa",
     description:
-      "A road journal through autumn light, glacial water, and the long distances between Queenstown and Aoraki.",
+      "A working New Zealand road journal, beginning with the route from Queenstown to Aoraki.",
     country: "New Zealand",
     countryCode: "NZ",
     dates: "26 April — 02 May 2026",
     year: "2026",
     route: ["Queenstown", "Glenorchy", "Wānaka", "Tekapo", "Aoraki"],
-    coverImage: "/journeys/newzealand-2026/photos/01-cover-mt-cook.jpg",
-    coverAlt: "The road toward Aoraki / Mount Cook",
+    coverImage: "https://cdn.ytools.xyz/photos/IMG_4019-1778341297651.jpg",
+    coverAlt:
+      "A solitary figure standing beside Lake Tekapo with snow-covered mountains beyond",
     intro:
-      "The South Island was not a checklist of viewpoints. It was a week measured in changing weather, roadside pauses, and the moment a familiar landscape became briefly personal.",
+      "The first edit covers the South Island route from Queenstown to Aoraki. North Island photographs will be added as the wider New Zealand project is organised.",
     chapters: [
       {
         number: "01",
@@ -172,6 +174,194 @@ export const journeys: JourneyMeta[] = [
     frames: [],
     closing:
       "All grandeur is temporary. What remains is the possibility of looking closely enough to leave a small, honest record of having passed through.",
+  },
+  {
+    slug: "norway-2025",
+    title: "Norway, 2025",
+    subtitle: "Flam / Geiranger / Lofoten",
+    description:
+      "A working edit from the western fjords and the road north to Lofoten.",
+    country: "Norway",
+    countryCode: "NO",
+    dates: "18 — 27 November 2025",
+    year: "2025",
+    route: ["Flam", "Geiranger", "Lofoten"],
+    coverImage:
+      "https://images.pexels.com/photos/28010247/pexels-photo-28010247/free-photo-of-nyksund-1.jpeg?auto=compress&cs=tinysrgb&w=2400",
+    coverAlt: "Misty mountains and sea near Nyksund in northern Norway",
+    intro:
+      "This first edit follows the route north: villages at water level, ferry crossings and the weather between them.",
+    chapters: [
+      {
+        number: "01",
+        title: "Water level",
+        place: "Flam",
+        paragraphs: [
+          "Harbour, railway and road photographs are grouped here. The final captions and sequence are still being checked.",
+        ],
+      },
+      {
+        number: "02",
+        title: "Between ferries",
+        place: "Geiranger",
+        paragraphs: [
+          "This chapter follows the crossings and the short stops between the fjords.",
+        ],
+      },
+      {
+        number: "03",
+        title: "Red cabins",
+        place: "Lofoten",
+        paragraphs: [
+          "The Lofoten edit begins in the fishing villages, then moves outward to the coast.",
+        ],
+      },
+    ],
+    frames: [],
+    closing: "Final photographs and field notes will replace this working edit.",
+    draft: true,
+  },
+  {
+    slug: "iceland-2025",
+    title: "Iceland, 2025",
+    subtitle: "Reykjavik / Vik / Snaefellsnes",
+    description:
+      "A first edit of volcanic ground, roadside weather and the long blue hours around the coast.",
+    country: "Iceland",
+    countryCode: "IS",
+    dates: "03 — 10 October 2025",
+    year: "2025",
+    route: ["Reykjavik", "Vik", "Snaefellsnes"],
+    coverImage:
+      "https://cdn.ytools.xyz/photos/a56af6d2ade2f278587b32d922431071-1759831612512.JPG?imageView2/2/w/3840/q/75|imageslim",
+    coverAlt: "A photographer in a red jacket in Iceland's volcanic landscape",
+    intro:
+      "The current sequence is arranged by road and weather. Exact locations and captions are still being added.",
+    chapters: [
+      {
+        number: "01",
+        title: "First evening",
+        place: "Reykjavik",
+        paragraphs: [
+          "The opening pages begin at the edge of the city, before the drive south.",
+        ],
+      },
+      {
+        number: "02",
+        title: "South coast",
+        place: "Vik",
+        paragraphs: [
+          "Black ground, low cloud and brief stops along the coast make up the middle of the edit.",
+        ],
+      },
+      {
+        number: "03",
+        title: "Weather closing in",
+        place: "Snaefellsnes",
+        paragraphs: [
+          "The final group was made around the peninsula as the weather changed.",
+        ],
+      },
+    ],
+    frames: [],
+    closing: "Locations, dates and the final sequence are still being checked.",
+    draft: true,
+  },
+  {
+    slug: "japan-saga-2025",
+    title: "Saga, 2025",
+    subtitle: "Arita / Karatsu / Yobuko",
+    description:
+      "A working contact sheet from Saga: ceramic towns, harbour roads and the quieter edge of Kyushu.",
+    country: "Japan",
+    countryCode: "JP",
+    dates: "10 — 20 July 2025",
+    year: "2025",
+    route: ["Arita", "Karatsu", "Yobuko"],
+    coverImage:
+      "https://cdn.ytools.xyz/photos/IMG_5103-1758261902190.JPG?imageView2/2/w/3840/q/75|imageslim",
+    coverAlt: "A ceramic torii gate and shrine architecture in Saga, Japan",
+    intro:
+      "The edit starts in Arita and moves north toward the coast. Place names and captions are provisional.",
+    chapters: [
+      {
+        number: "01",
+        title: "Porcelain town",
+        place: "Arita",
+        paragraphs: [
+          "Kilns, shopfronts and ceramic details form the first group of photographs.",
+        ],
+      },
+      {
+        number: "02",
+        title: "Road to the coast",
+        place: "Karatsu",
+        paragraphs: [
+          "The second group leaves the town centre and follows the road toward the sea.",
+        ],
+      },
+      {
+        number: "03",
+        title: "Harbour",
+        place: "Yobuko",
+        paragraphs: [
+          "Boats, market streets and early-morning harbour frames close the draft.",
+        ],
+      },
+    ],
+    frames: [],
+    closing: "The photographs are here; the final order and notes are not yet fixed.",
+    draft: true,
+  },
+  {
+    slug: "london-2024",
+    title: "London, 2024",
+    subtitle: "Hyde Park Corner / Soho / The City",
+    description:
+      "A first London edit, beginning with buses, black cabs and the pace of the street.",
+    country: "United Kingdom",
+    countryCode: "GB",
+    dates: "2024",
+    year: "2024",
+    route: ["Hyde Park Corner", "Soho", "The City"],
+    coverImage:
+      "https://images.pexels.com/photos/31483738/pexels-photo-31483738/free-photo-of-busy-london-street-with-iconic-red-buses.jpeg?auto=compress&cs=tinysrgb&w=2400",
+    coverAlt:
+      "Red double-decker buses moving through Hyde Park Corner in London",
+    intro:
+      "The first sequence stays at street level. It follows the traffic from Hyde Park Corner into Soho, then ends among the stone facades and glass offices of the City.",
+    chapters: [
+      {
+        number: "01",
+        title: "At street level",
+        place: "Hyde Park Corner",
+        paragraphs: [
+          "The opening group stays close to the road: buses pulling away from the kerb, cyclists waiting at the lights and people crossing between lanes.",
+          "The red buses locate the city immediately. The photographs concentrate on the smaller intervals around them, where people and traffic briefly share the same frame.",
+        ],
+      },
+      {
+        number: "02",
+        title: "After the theatres",
+        place: "Soho",
+        paragraphs: [
+          "The streets narrow around Soho. Shopfronts, theatre signs and evening queues replace the wide junctions of the opening pages.",
+          "This part moves at walking pace, with the camera closer to faces and to the details that sit at the edge of the street.",
+        ],
+      },
+      {
+        number: "03",
+        title: "Stone and glass",
+        place: "The City",
+        paragraphs: [
+          "The final group shifts east. Older stone buildings hold their place beside newer glass, while commuters pass through the space between them.",
+          "These photographs are quieter and more structural. Repeated windows, dark coats and road markings give the sequence its rhythm.",
+        ],
+      },
+    ],
+    frames: [],
+    closing:
+      "The London edit currently ends in the City. More photographs can be added without changing the three-part structure.",
   },
 ];
 

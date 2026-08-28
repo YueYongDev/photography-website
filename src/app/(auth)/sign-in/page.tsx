@@ -11,7 +11,7 @@ const SignInPage = async () => {
   const session = await getCurrentSession();
 
   if (session) {
-    return redirect("/dashboard");
+    return redirect("/studio/overview");
   }
 
   return <SignIn />;

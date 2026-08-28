@@ -19,7 +19,7 @@ export const DashboardSidebarHeader = ({
     return (
       <SidebarMenuItem>
         <SidebarMenuButton tooltip="Your Profile" asChild>
-          <Link href="/profile">
+          <Link href="/studio/account">
             <UserAvatar
               imageUrl={user.image || ""}
               name={user.name ?? "User"}
@@ -32,7 +32,7 @@ export const DashboardSidebarHeader = ({
 
   return (
     <SidebarHeader className="flex items-center justify-between pb-4">
-      <Link href="/profile">
+      <Link href="/studio/account">
         <UserAvatar
           imageUrl={user.image || ""}
           name={user.name ?? "User"}

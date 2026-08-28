@@ -1,0 +1,2 @@
+[  193308ms] [WARNING] performance warning: READ-usage buffer was written, then fenced, but written again before being read back. This discarded the shadow copy that was created to accelerate readback. @ http://127.0.0.1:3001/_next/static/chunks/20kgo27lnyb5k.js:50
+[  193474ms] [WARNING] performance warning: READ-usage buffer was written, then fenced, but written again before being read back. This discarded the shadow copy that was created to accelerate readback. @ http://127.0.0.1:3001/_next/static/chunks/20kgo27lnyb5k.js:50

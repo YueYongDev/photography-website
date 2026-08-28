@@ -21,6 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { postsInsertSchema } from "@/db/schema/posts";
 import TiptapEditor from "@/components/tiptap-editor";
 import { SparklesIcon } from "lucide-react";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 interface CreatePostSectionProps {
   onCreateSuccess?: () => void;
@@ -30,6 +31,7 @@ export const CreatePostSection = ({
   onCreateSuccess,
 }: CreatePostSectionProps) => {
   const utils = trpc.useUtils();
+  const { copy } = useStudioLocale();
   const create = trpc.posts.create.useMutation({
     onSuccess: () => {
       toast.success("Field note created successfully");
@@ -210,9 +212,9 @@ export const CreatePostSection = ({
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold">Create Field Note</h2>
+            <h2 className="text-xl font-bold">{copy.journeys.createTitle}</h2>
             <p className="text-xs text-muted-foreground">
-              Write a new essay for Journeys
+              {copy.journeys.description}
             </p>
           </div>
           <div className="flex items-center gap-x-2">
@@ -228,12 +230,12 @@ export const CreatePostSection = ({
               {generateAIDescriptionMutation.isPending ? (
                 <>
                   <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                  Generating...
+                  {copy.editor.generating}
                 </>
               ) : (
                 <>
                   <SparklesIcon className="mr-2 h-4 w-4" />
-                  AI Description
+                  {copy.editor.aiDescription}
                 </>
               )}
             </Button>
@@ -249,12 +251,12 @@ export const CreatePostSection = ({
               {generateAITitleMutation.isPending ? (
                 <>
                   <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                  Generating...
+                  {copy.editor.generating}
                 </>
               ) : (
                 <>
                   <SparklesIcon className="mr-2 h-4 w-4" />
-                  AI Title
+                  {copy.editor.aiTitle}
                 </>
               )}
             </Button>
@@ -270,17 +272,17 @@ export const CreatePostSection = ({
               {generateAITagsMutation.isPending ? (
                 <>
                   <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                  Generating...
+                  {copy.editor.generating}
                 </>
               ) : (
                 <>
                   <SparklesIcon className="mr-2 h-4 w-4" />
-                  AI Tags
+                  {copy.editor.aiTags}
                 </>
               )}
             </Button>
             <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? "Creating..." : "Create Field Note"}
+              {create.isPending ? copy.editor.saving : copy.journeys.createTitle}
             </Button>
           </div>
         </div>
@@ -292,9 +294,9 @@ export const CreatePostSection = ({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>{copy.editor.title}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Field note title" />
+                    <Input {...field} placeholder={copy.editor.title} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -306,14 +308,14 @@ export const CreatePostSection = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{copy.editor.description}</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       value={field.value || ""}
                       rows={3}
                       className="resize-none"
-                      placeholder="Field note description"
+                      placeholder={copy.editor.description}
                     />
                   </FormControl>
                   <FormDescription>
@@ -329,10 +331,10 @@ export const CreatePostSection = ({
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Slug</FormLabel>
+                  <FormLabel>{copy.editor.slug}</FormLabel>
                   <div className="flex gap-2">
                     <FormControl className="flex-1">
-                      <Input {...field} placeholder="Field note slug" />
+                      <Input {...field} placeholder={copy.editor.slug} />
                     </FormControl>
                     <Button
                       type="button"
@@ -353,8 +355,8 @@ export const CreatePostSection = ({
                       disabled={generateAISlugMutation.isPending}
                     >
                       {generateAISlugMutation.isPending
-                        ? "Generating..."
-                        : "Generate"}
+                        ? copy.editor.generating
+                        : copy.editor.generate}
                     </Button>
                   </div>
                   <FormDescription>
@@ -371,7 +373,7 @@ export const CreatePostSection = ({
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel>{copy.editor.content}</FormLabel>
                   <FormControl>
                     <TiptapEditor
                       content={field.value || ""}
@@ -388,7 +390,7 @@ export const CreatePostSection = ({
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags</FormLabel>
+                  <FormLabel>{copy.editor.tags}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Enter tags separated by commas"

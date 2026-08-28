@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 // Helper function to convert image to base64
 const convertImageToBase64 = async (file: File): Promise<string> => {
@@ -38,6 +39,7 @@ const EditUserDialog = ({ triggerClassName }: { triggerClassName?: string }) => 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { copy } = useStudioLocale();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,17 +58,17 @@ const EditUserDialog = ({ triggerClassName }: { triggerClassName?: string }) => 
       <DialogTrigger asChild>
         <Button size="sm" className={cn("gap-2", triggerClassName)} variant="outline">
           <Edit size={13} />
-          Edit Profile
+          {copy.account.editProfile}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] w-11/12">
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
-          <DialogDescription>Update your profile information</DialogDescription>
+          <DialogTitle>{copy.account.editProfile}</DialogTitle>
+          <DialogDescription>{copy.account.profileDescription}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div>
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">{copy.account.fullName}</Label>
             <Input
               id="name"
               type="name"
@@ -78,13 +80,13 @@ const EditUserDialog = ({ triggerClassName }: { triggerClassName?: string }) => 
             />
           </div>
           <div>
-            <Label htmlFor="image">Profile Image</Label>
+            <Label htmlFor="image">{copy.account.profileImage}</Label>
             <div className="flex items-end gap-4">
               {imagePreview && (
                 <div className="relative w-16 h-16 rounded-sm overflow-hidden">
                   <Image
                     src={imagePreview}
-                    alt="Profile preview"
+                    alt={copy.account.profilePreview}
                     layout="fill"
                     objectFit="cover"
                   />
@@ -121,7 +123,7 @@ const EditUserDialog = ({ triggerClassName }: { triggerClassName?: string }) => 
                 name: name ? name : undefined,
                 fetchOptions: {
                   onSuccess: () => {
-                    toast.success("Profile updated successfully");
+                    toast.success(copy.account.profileUpdated);
                   },
                   onError: (error) => {
                     toast.error(error.error.message);
@@ -139,7 +141,7 @@ const EditUserDialog = ({ triggerClassName }: { triggerClassName?: string }) => 
             {isLoading ? (
               <Loader2 size={15} className="animate-spin" />
             ) : (
-              "Update"
+              copy.account.update
             )}
           </Button>
         </DialogFooter>

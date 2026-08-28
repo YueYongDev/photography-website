@@ -1,0 +1,487 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e799] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+      - generic [ref=e6]:
+        - group "语言" [ref=e800]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [active] [pressed] [ref=e16] [cursor=pointer]
+        - button "菜单" [ref=e801] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - generic:
+            - region "Map" [ref=e54]
+            - button "打开悉尼的 8 张照片" [ref=e802]:
+              - generic [ref=e803] [cursor=pointer]: "01"
+            - button "打开London的 1 张照片" [ref=e807]:
+              - generic [ref=e808] [cursor=pointer]: "02"
+            - button "打开Anqing的 1 张照片" [ref=e812]:
+              - generic [ref=e813] [cursor=pointer]: "03"
+            - button "打开Beijing的 2 张照片" [ref=e817]:
+              - generic [ref=e818] [cursor=pointer]: "04"
+            - button "打开Bortala Mongol Autonomous Prefecture的 3 张照片" [ref=e822]:
+              - generic [ref=e823] [cursor=pointer]: "05"
+            - button "打开Chongqing的 3 张照片" [ref=e827]:
+              - generic [ref=e828] [cursor=pointer]: "06"
+            - button "打开Dali Bai Autonomous Prefecture的 2 张照片" [ref=e832]:
+              - generic [ref=e833] [cursor=pointer]: "07"
+            - button "打开Dalian的 3 张照片" [ref=e837]:
+              - generic [ref=e838] [cursor=pointer]: "08"
+            - button "打开Hangzhou的 31 张照片" [ref=e842]:
+              - generic [ref=e843] [cursor=pointer]: "09"
+            - button "打开Ili Kazakh Autonomous Prefecture的 1 张照片" [ref=e847]:
+              - generic [ref=e848] [cursor=pointer]: "10"
+            - button "打开Nanjing的 3 张照片" [ref=e852]:
+              - generic [ref=e853] [cursor=pointer]: "11"
+            - button "打开Ningbo的 4 张照片" [ref=e857]:
+              - generic [ref=e858] [cursor=pointer]: "12"
+            - button "打开Shanghai的 4 张照片" [ref=e862]:
+              - generic [ref=e863] [cursor=pointer]: "13"
+            - button "打开Shaoxing的 1 张照片" [ref=e867]:
+              - generic [ref=e868] [cursor=pointer]: "14"
+            - button "打开Tianjin的 1 张照片" [ref=e872]:
+              - generic [ref=e873] [cursor=pointer]: "15"
+            - button "打开Ürümqi的 1 张照片" [ref=e877]:
+              - generic [ref=e878] [cursor=pointer]: "16"
+            - button "打开Wuhan的 2 张照片" [ref=e882]:
+              - generic [ref=e883] [cursor=pointer]: "17"
+            - button "打开Xiamen的 1 张照片" [ref=e887]:
+              - generic [ref=e888] [cursor=pointer]: "18"
+            - button "打开Xihu District的 1 张照片" [ref=e892]:
+              - generic [ref=e893] [cursor=pointer]: "19"
+            - button "打开Cambridge的 1 张照片" [ref=e897]:
+              - generic [ref=e898] [cursor=pointer]: "20"
+            - button "打开Dover的 1 张照片" [ref=e902]:
+              - generic [ref=e903] [cursor=pointer]: "21"
+            - button "打开Edinburgh的 2 张照片" [ref=e907]:
+              - generic [ref=e908] [cursor=pointer]: "22"
+            - button "打开London的 6 张照片" [ref=e912]:
+              - generic [ref=e913] [cursor=pointer]: "23"
+            - button "打开Oxford的 2 张照片" [ref=e917]:
+              - generic [ref=e918] [cursor=pointer]: "24"
+            - button "打开Hong Kong的 3 张照片" [ref=e922]:
+              - generic [ref=e923] [cursor=pointer]: "25"
+            - button "打开Akureyri的 3 张照片" [ref=e927]:
+              - generic [ref=e928] [cursor=pointer]: "26"
+            - button "打开Höfn的 1 张照片" [ref=e932]:
+              - generic [ref=e933] [cursor=pointer]: "27"
+            - button "打开Hvolsvöllur的 1 张照片" [ref=e937]:
+              - generic [ref=e938] [cursor=pointer]: "28"
+            - button "打开Kirkjubæjarklaustur的 3 张照片" [ref=e942]:
+              - generic [ref=e943] [cursor=pointer]: "29"
+            - button "打开Mývatn的 1 张照片" [ref=e947]:
+              - generic [ref=e948] [cursor=pointer]: "30"
+            - button "打开Öræfasveit的 2 张照片" [ref=e952]:
+              - generic [ref=e953] [cursor=pointer]: "31"
+            - button "打开Reykjavík的 2 张照片" [ref=e957]:
+              - generic [ref=e958] [cursor=pointer]: "32"
+            - button "打开Selfoss的 1 张照片" [ref=e962]:
+              - generic [ref=e963] [cursor=pointer]: "33"
+            - button "打开Snæfellsbær的 1 张照片" [ref=e967]:
+              - generic [ref=e968] [cursor=pointer]: "34"
+            - button "打开Vík í Mýrdal的 2 张照片" [ref=e972]:
+              - generic [ref=e973] [cursor=pointer]: "35"
+            - button "打开Kyoto的 4 张照片" [ref=e977]:
+              - generic [ref=e978] [cursor=pointer]: "36"
+            - button "打开Osaka的 3 张照片" [ref=e982]:
+              - generic [ref=e983] [cursor=pointer]: "37"
+            - button "打开Saga的 11 张照片" [ref=e987]:
+              - generic [ref=e988] [cursor=pointer]: "38"
+            - button "打开Yamanashi的 1 张照片" [ref=e992]:
+              - generic [ref=e993] [cursor=pointer]: "39"
+            - button "打开K. Rampayan Village的 1 张照片" [ref=e997]:
+              - generic [ref=e998] [cursor=pointer]: "40"
+            - button "打开Kota Kinabalu的 3 张照片" [ref=e1002]:
+              - generic [ref=e1003] [cursor=pointer]: "41"
+            - button "打开Oslo的 1 张照片" [ref=e1007]:
+              - generic [ref=e1008] [cursor=pointer]: "42"
+            - button "打开Reine的 1 张照片" [ref=e1012]:
+              - generic [ref=e1013] [cursor=pointer]: "43"
+            - button "打开奥拉基 / 库克山的 1 张照片" [ref=e1017]:
+              - generic [ref=e1018] [cursor=pointer]: "44"
+            - button "打开Arrowtown的 2 张照片" [ref=e1022]:
+              - generic [ref=e1023] [cursor=pointer]: "45"
+            - button "打开Canterbury的 3 张照片" [ref=e1027]:
+              - generic [ref=e1028] [cursor=pointer]: "46"
+            - button "打开格林诺奇的 1 张照片" [ref=e1032]:
+              - generic [ref=e1033] [cursor=pointer]: "47"
+            - button "打开蒂卡普湖的 5 张照片" [ref=e1037]:
+              - generic [ref=e1038] [cursor=pointer]: "48"
+            - button "打开Otago的 5 张照片" [ref=e1042]:
+              - generic [ref=e1043] [cursor=pointer]: "49"
+            - button "打开瓦纳卡的 4 张照片" [ref=e1047]:
+              - generic [ref=e1048] [cursor=pointer]: "50"
+            - button "打开Beyoğlu的 4 张照片" [ref=e1052]:
+              - generic [ref=e1053] [cursor=pointer]: "51"
+            - button "打开Kadıköy的 1 张照片" [ref=e1057]:
+              - generic [ref=e1058] [cursor=pointer]: "52"
+            - button "打开Osmangazi的 2 张照片" [ref=e1062]:
+              - generic [ref=e1063] [cursor=pointer]: "53"
+            - button "打开Üsküdar的 1 张照片" [ref=e1067]:
+              - generic [ref=e1068] [cursor=pointer]: "54"
+            - button "打开布哈拉的 2 张照片" [ref=e1072]:
+              - generic [ref=e1073] [cursor=pointer]: "55"
+            - button "打开Samarkand City的 9 张照片" [ref=e1077]:
+              - generic [ref=e1078] [cursor=pointer]: "56"
+            - button "打开塔什干的 3 张照片" [ref=e1082]:
+              - generic [ref=e1083] [cursor=pointer]: "57"
+        - generic:
+          - paragraph: 03 / 地图
+          - heading "每一帧， 都有坐标。" [level=1]
+        - generic "地图档案概览":
+          - generic:
+            - generic: 国家
+            - strong: "12"
+          - generic:
+            - generic: 城市
+            - strong: "57"
+          - generic:
+            - generic: 照片
+            - strong: "173"
+        - generic "按国家筛选地图" [ref=e1087]:
+          - button "全部" [ref=e1088] [cursor=pointer]
+          - button "AU" [ref=e62] [cursor=pointer]
+          - button "CA" [ref=e63] [cursor=pointer]
+          - button "CN" [ref=e64] [cursor=pointer]
+          - button "GB" [ref=e65] [cursor=pointer]
+          - button "HK" [ref=e66] [cursor=pointer]
+          - button "IS" [ref=e67] [cursor=pointer]
+          - button "JP" [ref=e68] [cursor=pointer]
+          - button "MY" [ref=e69] [cursor=pointer]
+          - button "NO" [ref=e70] [cursor=pointer]
+          - button "NZ" [ref=e71] [cursor=pointer]
+          - button "TR" [ref=e72] [cursor=pointer]
+          - button "UZ" [ref=e73] [cursor=pointer]
+        - generic [ref=e74]:
+          - button "世界视角" [ref=e1089] [cursor=pointer]
+          - button "地球" [pressed] [ref=e1090] [cursor=pointer]
+          - button "地图" [ref=e1091] [cursor=pointer]
+        - button [expanded] [ref=e1092] [cursor=pointer]
+        - complementary [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]: MAP INDEX / 57
+              - heading "地图档案" [level=2] [ref=e1093]
+            - button "收起档案" [ref=e1094]
+          - generic [ref=e99]:
+            - button "01 AU / 8 悉尼" [ref=e1097] [cursor=pointer]:
+              - generic [ref=e101]: "01"
+              - generic [ref=e104]:
+                - generic [ref=e105]: AU / 8
+                - strong [ref=e106]: 悉尼
+            - button "02 CA / 1 London" [ref=e110] [cursor=pointer]:
+              - generic [ref=e111]: "02"
+              - generic [ref=e114]:
+                - generic [ref=e115]: CA / 1
+                - strong [ref=e116]: London
+            - button "03 CN / 1 Anqing" [ref=e120] [cursor=pointer]:
+              - generic [ref=e121]: "03"
+              - generic [ref=e124]:
+                - generic [ref=e125]: CN / 1
+                - strong [ref=e126]: Anqing
+            - button "04 CN / 2 Beijing" [ref=e130] [cursor=pointer]:
+              - generic [ref=e131]: "04"
+              - generic [ref=e134]:
+                - generic [ref=e135]: CN / 2
+                - strong [ref=e136]: Beijing
+            - button "05 CN / 3 Bortala Mongol Autonomous Prefecture" [ref=e140] [cursor=pointer]:
+              - generic [ref=e141]: "05"
+              - generic [ref=e144]:
+                - generic [ref=e145]: CN / 3
+                - strong [ref=e146]: Bortala Mongol Autonomous Prefecture
+            - button "06 CN / 3 Chongqing" [ref=e150] [cursor=pointer]:
+              - generic [ref=e151]: "06"
+              - generic [ref=e154]:
+                - generic [ref=e155]: CN / 3
+                - strong [ref=e156]: Chongqing
+            - button "07 CN / 2 Dali Bai Autonomous Prefecture" [ref=e160] [cursor=pointer]:
+              - generic [ref=e161]: "07"
+              - generic [ref=e164]:
+                - generic [ref=e165]: CN / 2
+                - strong [ref=e166]: Dali Bai Autonomous Prefecture
+            - button "08 CN / 3 Dalian" [ref=e170] [cursor=pointer]:
+              - generic [ref=e171]: "08"
+              - generic [ref=e174]:
+                - generic [ref=e175]: CN / 3
+                - strong [ref=e176]: Dalian
+            - button "09 CN / 31 Hangzhou" [ref=e180] [cursor=pointer]:
+              - generic [ref=e181]: "09"
+              - generic [ref=e184]:
+                - generic [ref=e185]: CN / 31
+                - strong [ref=e186]: Hangzhou
+            - button "10 CN / 1 Ili Kazakh Autonomous Prefecture" [ref=e190] [cursor=pointer]:
+              - generic [ref=e191]: "10"
+              - generic [ref=e194]:
+                - generic [ref=e195]: CN / 1
+                - strong [ref=e196]: Ili Kazakh Autonomous Prefecture
+            - button "11 CN / 3 Nanjing" [ref=e200] [cursor=pointer]:
+              - generic [ref=e201]: "11"
+              - generic [ref=e204]:
+                - generic [ref=e205]: CN / 3
+                - strong [ref=e206]: Nanjing
+            - button "12 CN / 4 Ningbo" [ref=e210] [cursor=pointer]:
+              - generic [ref=e211]: "12"
+              - generic [ref=e214]:
+                - generic [ref=e215]: CN / 4
+                - strong [ref=e216]: Ningbo
+            - button "13 CN / 4 Shanghai" [ref=e220] [cursor=pointer]:
+              - generic [ref=e221]: "13"
+              - generic [ref=e224]:
+                - generic [ref=e225]: CN / 4
+                - strong [ref=e226]: Shanghai
+            - button "14 CN / 1 Shaoxing" [ref=e230] [cursor=pointer]:
+              - generic [ref=e231]: "14"
+              - generic [ref=e234]:
+                - generic [ref=e235]: CN / 1
+                - strong [ref=e236]: Shaoxing
+            - button "15 CN / 1 Tianjin" [ref=e240] [cursor=pointer]:
+              - generic [ref=e241]: "15"
+              - generic [ref=e247]:
+                - generic [ref=e248]: CN / 1
+                - strong [ref=e249]: Tianjin
+            - button "16 CN / 1 Ürümqi" [ref=e253] [cursor=pointer]:
+              - generic [ref=e254]: "16"
+              - generic [ref=e260]:
+                - generic [ref=e261]: CN / 1
+                - strong [ref=e262]: Ürümqi
+            - button "17 CN / 2 Wuhan" [ref=e266] [cursor=pointer]:
+              - generic [ref=e267]: "17"
+              - generic [ref=e273]:
+                - generic [ref=e274]: CN / 2
+                - strong [ref=e275]: Wuhan
+            - button "18 CN / 1 Xiamen" [ref=e279] [cursor=pointer]:
+              - generic [ref=e280]: "18"
+              - generic [ref=e286]:
+                - generic [ref=e287]: CN / 1
+                - strong [ref=e288]: Xiamen
+            - button "19 CN / 1 Xihu District" [ref=e292] [cursor=pointer]:
+              - generic [ref=e293]: "19"
+              - generic [ref=e299]:
+                - generic [ref=e300]: CN / 1
+                - strong [ref=e301]: Xihu District
+            - button "20 GB / 1 Cambridge" [ref=e305] [cursor=pointer]:
+              - generic [ref=e306]: "20"
+              - generic [ref=e312]:
+                - generic [ref=e313]: GB / 1
+                - strong [ref=e314]: Cambridge
+            - button "21 GB / 1 Dover" [ref=e318] [cursor=pointer]:
+              - generic [ref=e319]: "21"
+              - generic [ref=e325]:
+                - generic [ref=e326]: GB / 1
+                - strong [ref=e327]: Dover
+            - button "22 GB / 2 Edinburgh" [ref=e331] [cursor=pointer]:
+              - generic [ref=e332]: "22"
+              - generic [ref=e338]:
+                - generic [ref=e339]: GB / 2
+                - strong [ref=e340]: Edinburgh
+            - button "23 GB / 6 London" [ref=e344] [cursor=pointer]:
+              - generic [ref=e345]: "23"
+              - generic [ref=e351]:
+                - generic [ref=e352]: GB / 6
+                - strong [ref=e353]: London
+            - button "24 GB / 2 Oxford" [ref=e357] [cursor=pointer]:
+              - generic [ref=e358]: "24"
+              - generic [ref=e364]:
+                - generic [ref=e365]: GB / 2
+                - strong [ref=e366]: Oxford
+            - button "25 HK / 3 Hong Kong" [ref=e370] [cursor=pointer]:
+              - generic [ref=e371]: "25"
+              - generic [ref=e377]:
+                - generic [ref=e378]: HK / 3
+                - strong [ref=e379]: Hong Kong
+            - button "26 IS / 3 Akureyri" [ref=e383] [cursor=pointer]:
+              - generic [ref=e384]: "26"
+              - generic [ref=e390]:
+                - generic [ref=e391]: IS / 3
+                - strong [ref=e392]: Akureyri
+            - button "27 IS / 1 Höfn" [ref=e396] [cursor=pointer]:
+              - generic [ref=e397]: "27"
+              - generic [ref=e403]:
+                - generic [ref=e404]: IS / 1
+                - strong [ref=e405]: Höfn
+            - button "28 IS / 1 Hvolsvöllur" [ref=e409] [cursor=pointer]:
+              - generic [ref=e410]: "28"
+              - generic [ref=e416]:
+                - generic [ref=e417]: IS / 1
+                - strong [ref=e418]: Hvolsvöllur
+            - button "29 IS / 3 Kirkjubæjarklaustur" [ref=e422] [cursor=pointer]:
+              - generic [ref=e423]: "29"
+              - generic [ref=e429]:
+                - generic [ref=e430]: IS / 3
+                - strong [ref=e431]: Kirkjubæjarklaustur
+            - button "30 IS / 1 Mývatn" [ref=e435] [cursor=pointer]:
+              - generic [ref=e436]: "30"
+              - generic [ref=e442]:
+                - generic [ref=e443]: IS / 1
+                - strong [ref=e444]: Mývatn
+            - button "31 IS / 2 Öræfasveit" [ref=e448] [cursor=pointer]:
+              - generic [ref=e449]: "31"
+              - generic [ref=e455]:
+                - generic [ref=e456]: IS / 2
+                - strong [ref=e457]: Öræfasveit
+            - button "32 IS / 2 Reykjavík" [ref=e461] [cursor=pointer]:
+              - generic [ref=e462]: "32"
+              - generic [ref=e468]:
+                - generic [ref=e469]: IS / 2
+                - strong [ref=e470]: Reykjavík
+            - button "33 IS / 1 Selfoss" [ref=e474] [cursor=pointer]:
+              - generic [ref=e475]: "33"
+              - generic [ref=e481]:
+                - generic [ref=e482]: IS / 1
+                - strong [ref=e483]: Selfoss
+            - button "34 IS / 1 Snæfellsbær" [ref=e487] [cursor=pointer]:
+              - generic [ref=e488]: "34"
+              - generic [ref=e494]:
+                - generic [ref=e495]: IS / 1
+                - strong [ref=e496]: Snæfellsbær
+            - button "35 IS / 2 Vík í Mýrdal" [ref=e500] [cursor=pointer]:
+              - generic [ref=e501]: "35"
+              - generic [ref=e507]:
+                - generic [ref=e508]: IS / 2
+                - strong [ref=e509]: Vík í Mýrdal
+            - button "36 JP / 4 Kyoto" [ref=e513] [cursor=pointer]:
+              - generic [ref=e514]: "36"
+              - generic [ref=e520]:
+                - generic [ref=e521]: JP / 4
+                - strong [ref=e522]: Kyoto
+            - button "37 JP / 3 Osaka" [ref=e526] [cursor=pointer]:
+              - generic [ref=e527]: "37"
+              - generic [ref=e533]:
+                - generic [ref=e534]: JP / 3
+                - strong [ref=e535]: Osaka
+            - button "38 JP / 11 Saga" [ref=e539] [cursor=pointer]:
+              - generic [ref=e540]: "38"
+              - generic [ref=e546]:
+                - generic [ref=e547]: JP / 11
+                - strong [ref=e548]: Saga
+            - button "39 JP / 1 Yamanashi" [ref=e552] [cursor=pointer]:
+              - generic [ref=e553]: "39"
+              - generic [ref=e559]:
+                - generic [ref=e560]: JP / 1
+                - strong [ref=e561]: Yamanashi
+            - button "40 MY / 1 K. Rampayan Village" [ref=e565] [cursor=pointer]:
+              - generic [ref=e566]: "40"
+              - generic [ref=e572]:
+                - generic [ref=e573]: MY / 1
+                - strong [ref=e574]: K. Rampayan Village
+            - button "41 MY / 3 Kota Kinabalu" [ref=e578] [cursor=pointer]:
+              - generic [ref=e579]: "41"
+              - generic [ref=e585]:
+                - generic [ref=e586]: MY / 3
+                - strong [ref=e587]: Kota Kinabalu
+            - button "42 NO / 1 Oslo" [ref=e591] [cursor=pointer]:
+              - generic [ref=e592]: "42"
+              - generic [ref=e598]:
+                - generic [ref=e599]: NO / 1
+                - strong [ref=e600]: Oslo
+            - button "43 NO / 1 Reine" [ref=e604] [cursor=pointer]:
+              - generic [ref=e605]: "43"
+              - generic [ref=e611]:
+                - generic [ref=e612]: NO / 1
+                - strong [ref=e613]: Reine
+            - button "44 NZ / 1 奥拉基 / 库克山" [ref=e1098] [cursor=pointer]:
+              - generic [ref=e618]: "44"
+              - generic [ref=e624]:
+                - generic [ref=e625]: NZ / 1
+                - strong [ref=e626]: 奥拉基 / 库克山
+            - button "45 NZ / 2 Arrowtown" [ref=e630] [cursor=pointer]:
+              - generic [ref=e631]: "45"
+              - generic [ref=e637]:
+                - generic [ref=e638]: NZ / 2
+                - strong [ref=e639]: Arrowtown
+            - button "46 NZ / 3 Canterbury" [ref=e643] [cursor=pointer]:
+              - generic [ref=e644]: "46"
+              - generic [ref=e650]:
+                - generic [ref=e651]: NZ / 3
+                - strong [ref=e652]: Canterbury
+            - button "47 NZ / 1 格林诺奇" [ref=e1099] [cursor=pointer]:
+              - generic [ref=e657]: "47"
+              - generic [ref=e663]:
+                - generic [ref=e664]: NZ / 1
+                - strong [ref=e665]: 格林诺奇
+            - button "48 NZ / 5 蒂卡普湖" [ref=e1100] [cursor=pointer]:
+              - generic [ref=e670]: "48"
+              - generic [ref=e676]:
+                - generic [ref=e677]: NZ / 5
+                - strong [ref=e678]: 蒂卡普湖
+            - button "49 NZ / 5 Otago" [ref=e682] [cursor=pointer]:
+              - generic [ref=e683]: "49"
+              - generic [ref=e689]:
+                - generic [ref=e690]: NZ / 5
+                - strong [ref=e691]: Otago
+            - button "50 NZ / 4 瓦纳卡" [ref=e1101] [cursor=pointer]:
+              - generic [ref=e696]: "50"
+              - generic [ref=e702]:
+                - generic [ref=e703]: NZ / 4
+                - strong [ref=e704]: 瓦纳卡
+            - button "51 TR / 4 Beyoğlu" [ref=e708] [cursor=pointer]:
+              - generic [ref=e709]: "51"
+              - generic [ref=e715]:
+                - generic [ref=e716]: TR / 4
+                - strong [ref=e717]: Beyoğlu
+            - button "52 TR / 1 Kadıköy" [ref=e721] [cursor=pointer]:
+              - generic [ref=e722]: "52"
+              - generic [ref=e728]:
+                - generic [ref=e729]: TR / 1
+                - strong [ref=e730]: Kadıköy
+            - button "53 TR / 2 Osmangazi" [ref=e734] [cursor=pointer]:
+              - generic [ref=e735]: "53"
+              - generic [ref=e741]:
+                - generic [ref=e742]: TR / 2
+                - strong [ref=e743]: Osmangazi
+            - button "54 TR / 1 Üsküdar" [ref=e747] [cursor=pointer]:
+              - generic [ref=e748]: "54"
+              - generic [ref=e754]:
+                - generic [ref=e755]: TR / 1
+                - strong [ref=e756]: Üsküdar
+            - button "55 UZ / 2 布哈拉" [ref=e1102] [cursor=pointer]:
+              - generic [ref=e761]: "55"
+              - generic [ref=e767]:
+                - generic [ref=e768]: UZ / 2
+                - strong [ref=e769]: 布哈拉
+            - button "56 UZ / 9 Samarkand City" [ref=e773] [cursor=pointer]:
+              - generic [ref=e774]: "56"
+              - generic [ref=e780]:
+                - generic [ref=e781]: UZ / 9
+                - strong [ref=e782]: Samarkand City
+            - button "57 UZ / 3 塔什干" [ref=e1103] [cursor=pointer]:
+              - generic [ref=e787]: "57"
+              - generic [ref=e793]:
+                - generic [ref=e794]: UZ / 3
+                - strong [ref=e795]: 塔什干
+    - contentinfo [ref=e25]:
+      - generic [ref=e26]:
+        - heading "YUEYONG" [level=2] [ref=e27]
+        - paragraph [ref=e28]: 照片 / 足迹 / 旅程
+      - navigation "主导航" [ref=e1104]:
+        - link "首页" [ref=e1105] [cursor=pointer]:
+          - /url: /
+        - link "作品" [ref=e1106] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [ref=e1107] [cursor=pointer]:
+          - /url: /places
+        - link "地图" [ref=e1108] [cursor=pointer]:
+          - /url: /map
+        - link "旅程" [ref=e1109] [cursor=pointer]:
+          - /url: /journeys
+        - link "关于" [ref=e1110] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e1111] [cursor=pointer]:
+          - /url: /studio/overview
+      - generic [ref=e37]:
+        - paragraph [ref=e38]: 软件工程师 / 摄影
+        - link "邮箱" [ref=e1112] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e40] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e41] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e42]:
+        - generic [ref=e43]: © 2026 YueYong
+        - generic [ref=e44]: PHOTOGRAPHS
+  - region "Notifications alt+T"
+  - alert [ref=e45]

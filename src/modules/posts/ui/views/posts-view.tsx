@@ -12,37 +12,34 @@ import {
 import { CreatePostSection } from "../sections/create-post-section";
 import { StudioPageHeader } from "@/modules/dashboard/ui/components/studio-page-header";
 import styles from "@/modules/dashboard/ui/studio.module.css";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 export const PostsView = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { copy } = useStudioLocale();
 
   return (
     <div className={styles.page}>
       <StudioPageHeader
         index="03"
-        eyebrow="Journeys"
-        title={
-          <>
-            Journeys &<br />
-            field notes.
-          </>
-        }
-        description="Write the shorter essays that publish inside Journeys. Structured travel features keep their chapter format; these notes join the same public archive as a continuous read."
+        eyebrow={copy.journeys.eyebrow}
+        title={copy.journeys.title}
+        description={copy.journeys.description}
         actions={
           <Button
             className={styles.primaryAction}
             onClick={() => setIsCreateDialogOpen(true)}
           >
-            New field note
+            {copy.journeys.newNote}
           </Button>
         }
       />
       <PostsSection />
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto rounded-none">
+        <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto rounded-[1.5rem]">
           <DialogHeader>
-            <DialogTitle>Create Field Note</DialogTitle>
+            <DialogTitle>{copy.journeys.createTitle}</DialogTitle>
           </DialogHeader>
           <CreatePostSection
             onCreateSuccess={() => setIsCreateDialogOpen(false)}

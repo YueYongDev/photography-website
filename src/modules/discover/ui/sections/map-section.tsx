@@ -1,102 +1,224 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Globe2,
+  Layers3,
+  LocateFixed,
+  Map as MapIcon,
+  Search,
+  X,
+} from "lucide-react";
 
 import BlurImage from "@/components/blur-image";
-import MapComponent, { type MapProps } from "@/components/map";
 import {
+  Map,
+  MapMarker,
+  MarkerContent,
+  useMap,
+} from "@/components/ui/map";
+import type { Photo } from "@/db/schema/photos";
+import {
+  localizeCountryName,
   localizePlaceName,
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
 import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
-import styles from "@/modules/site/ui/public-site.module.css";
 import { trpc } from "@/trpc/client";
-import { PhotoListDrawer } from "./photo-list-drawer";
+import styles from "./map-experience.module.css";
 
-export const MapSection = () => <MapSectionContent />;
+type MapMode = "globe" | "atlas";
+
+const archiveMapStyles = {
+  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  dark: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+} as const;
+
+type CityGroup = {
+  key: string;
+  city: string;
+  country: string;
+  countryCode: string | null;
+  latitude: number;
+  longitude: number;
+  photos: Photo[];
+  representative: Photo;
+};
+
+const normalizeLocation = (value?: string | null) => {
+  if (!value) return null;
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+};
+
+const getCityLevelLocation = (photo: Pick<Photo, "countryCode" | "city" | "region">) =>
+  photo.countryCode?.toUpperCase() === "JP" ||
+  photo.countryCode?.toUpperCase() === "TW"
+    ? photo.region ?? photo.city
+    : photo.city ?? photo.region;
+
+const getCityHref = (group: CityGroup) =>
+  group.countryCode
+    ? `/places/${group.countryCode.toLowerCase()}/${toPlaceSlug(group.city)}`
+    : `/photograph/${group.representative.id}`;
+
+const MapSceneController = ({
+  mode,
+  panelOpen,
+  selectedGroup,
+  visibleGroups,
+  resetVersion,
+}: {
+  mode: MapMode;
+  panelOpen: boolean;
+  selectedGroup: CityGroup | null;
+  visibleGroups: CityGroup[];
+  resetVersion: number;
+}) => {
+  const { map, isLoaded } = useMap();
+
+  useEffect(() => {
+    if (!map || !isLoaded) return;
+
+    map.setProjection({ type: mode === "globe" ? "globe" : "mercator" });
+    map.setSky({
+      "sky-color": "#dbe2e1",
+      "horizon-color": "#f7f8f7",
+      "fog-color": "#edf0ef",
+      "sky-horizon-blend": 0.82,
+      "horizon-fog-blend": 0.72,
+      "atmosphere-blend": mode === "globe" ? 0.72 : 0,
+    });
+  }, [isLoaded, map, mode]);
+
+  useEffect(() => {
+    if (!map || !isLoaded) return;
+
+    const compact = window.matchMedia("(max-width: 760px)").matches;
+    const panelOffset: [number, number] = !panelOpen
+      ? [0, 0]
+      : compact
+        ? [0, -110]
+        : [-170, 0];
+
+    if (selectedGroup) {
+      map.flyTo({
+        center: [selectedGroup.longitude, selectedGroup.latitude],
+        zoom: mode === "globe" ? 5.4 : 7.2,
+        offset: panelOffset,
+        duration: 1450,
+        essential: true,
+      });
+      return;
+    }
+
+    if (visibleGroups.length > 0 && visibleGroups.length < 8) {
+      const longitudes = visibleGroups.map((group) => group.longitude);
+      const latitudes = visibleGroups.map((group) => group.latitude);
+      const west = Math.min(...longitudes);
+      const east = Math.max(...longitudes);
+      const south = Math.min(...latitudes);
+      const north = Math.max(...latitudes);
+
+      if (visibleGroups.length === 1) {
+        map.flyTo({
+          center: [visibleGroups[0].longitude, visibleGroups[0].latitude],
+          zoom: mode === "globe" ? 4 : 5.5,
+          offset: panelOffset,
+          duration: 1200,
+          essential: true,
+        });
+      } else {
+        map.fitBounds(
+          [
+            [west, south],
+            [east, north],
+          ],
+          {
+            padding: compact
+              ? { top: 120, right: 40, bottom: panelOpen ? 300 : 90, left: 40 }
+              : { top: 110, right: panelOpen ? 420 : 90, bottom: 110, left: 90 },
+            maxZoom: mode === "globe" ? 4.4 : 5.8,
+            duration: 1200,
+          },
+        );
+      }
+      return;
+    }
+
+    map.flyTo({
+      center: [48, 24],
+      zoom: mode === "globe" ? 1.25 : 1.7,
+      bearing: 0,
+      pitch: 0,
+      duration: 1200,
+      essential: true,
+    });
+  }, [isLoaded, map, mode, panelOpen, resetVersion, selectedGroup, visibleGroups]);
+
+  return null;
+};
 
 const MapLoading = () => {
   const { copy } = useSiteLocale();
 
   return (
-    <div
-      className={styles.mapLoading}
-      role="status"
-      aria-live="polite"
-      aria-label={copy.map.loadingMap}
-    >
-      <div className={styles.mapLoadingCompass} aria-hidden="true">
+    <section className={styles.state} role="status" aria-live="polite">
+      <div className={styles.stateGrid} aria-hidden="true" />
+      <div className={styles.loadingCompass} aria-hidden="true">
         <span />
         <span />
         <i />
       </div>
       <p>{copy.map.loadingMap}</p>
-    </div>
+    </section>
   );
 };
 
 const MapFallback = () => {
   const { copy } = useSiteLocale();
+
   return (
-    <div className={styles.mapFallback}>
-      <div className={styles.mapFallbackNote}>
-        <span>{copy.map.fallbackTitle}</span>
+    <section className={styles.state}>
+      <div className={styles.stateGrid} aria-hidden="true" />
+      <div className={styles.fallbackCard}>
+        <span>MAP / OFFLINE</span>
+        <h1>{copy.map.fallbackTitle}</h1>
         <p>{copy.map.fallbackDescription}</p>
+        <Link href="/places">
+          <ArrowLeft size={15} strokeWidth={1.4} /> {copy.map.browsePlaces}
+        </Link>
       </div>
-      <svg viewBox="0 0 1000 520" role="img" aria-label={copy.map.fallbackLabel}>
-      <path d="M0 120 H1000 M0 260 H1000 M0 400 H1000 M180 0 V520 M500 0 V520 M820 0 V520" />
-      <path className={styles.mapFallbackRoute} d="M150 360 C280 140 410 180 520 330 S730 390 850 150" />
-      {[
-        [150, 360, "TEKAPO", "44.0047° S"],
-        [355, 206, "WĀNAKA", "44.6943° S"],
-        [520, 330, "GLENORCHY", "44.8506° S"],
-        [850, 150, "AORAKI", "43.5950° S"],
-      ].map(([x, y, city, coordinate], index) => (
-        <g key={String(city)} transform={`translate(${x} ${y})`}>
-          <circle r="5" />
-          <text x="14" y="-5">{String(index + 1).padStart(2, "0")} / {city}</text>
-          <text x="14" y="13" className={styles.mapFallbackCoordinate}>{coordinate}</text>
-        </g>
-      ))}
-      </svg>
-    </div>
+    </section>
   );
 };
 
-const normalizeLocation = (value?: string | null) => {
-  if (!value) return null;
-  return value.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-};
-
-const getCityLevelLocation = (photo: {
-  countryCode?: string | null;
-  city?: string | null;
-  region?: string | null;
-}) =>
-  photo.countryCode?.toUpperCase() === "JP" || photo.countryCode?.toUpperCase() === "TW"
-    ? photo.region ?? photo.city
-    : photo.city ?? photo.region;
-
-const MapSectionContent = () => {
+export const MapSection = () => {
   const { copy, locale } = useSiteLocale();
-  const router = useRouter();
   const { data, ...query } = trpc.map.getMany.useInfiniteQuery(
-    { limit: 200 },
-    { getNextPageParam: (lastPage) => lastPage.nextCursor, retry: false }
+    { limit: 500 },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor, retry: false },
   );
-  const [activeLocation, setActiveLocation] = useState<{
-    key: string;
-    label: string;
-  } | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [activeCountryCode, setActiveCountryCode] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mode, setMode] = useState<MapMode>("globe");
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [resetVersion, setResetVersion] = useState(0);
 
   const photos = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
-    [data?.pages]
+    [data?.pages],
   );
 
-  const cityGroups = useMemo(() => {
-    const groups = new Map<string, typeof photos>();
+  const cityGroups = useMemo<CityGroup[]>(() => {
+    const groups = new globalThis.Map<string, Photo[]>();
 
     photos.forEach((photo) => {
       if (photo.latitude === null || photo.longitude === null) return;
@@ -106,98 +228,410 @@ const MapSectionContent = () => {
       groups.set(key, [...(groups.get(key) ?? []), photo]);
     });
 
-    return Array.from(groups.entries()).map(([key, groupPhotos]) => {
-      const representative = groupPhotos[0];
-      const location = getCityLevelLocation(representative) ?? copy.map.unknownPlace;
-      const latitude = groupPhotos.reduce((sum, photo) => sum + (photo.latitude ?? 0), 0) / groupPhotos.length;
-      const longitude = groupPhotos.reduce((sum, photo) => sum + (photo.longitude ?? 0), 0) / groupPhotos.length;
-      return {
-        key,
-        photos: groupPhotos,
-        representative,
-        city: location,
-        countryCode: representative.countryCode,
-        latitude,
-        longitude,
-      };
+    return Array.from(groups.entries())
+      .map(([key, groupPhotos]) => {
+        const representative = groupPhotos[0];
+        const city = getCityLevelLocation(representative) ?? copy.map.unknownPlace;
+
+        return {
+          key,
+          city,
+          country:
+            representative.country ??
+            representative.countryCode ??
+            copy.common.notRecorded,
+          countryCode: representative.countryCode,
+          latitude:
+            groupPhotos.reduce((sum, photo) => sum + (photo.latitude ?? 0), 0) /
+            groupPhotos.length,
+          longitude:
+            groupPhotos.reduce((sum, photo) => sum + (photo.longitude ?? 0), 0) /
+            groupPhotos.length,
+          photos: groupPhotos,
+          representative,
+        };
+      })
+      .sort((left, right) =>
+        `${left.countryCode ?? "ZZ"}-${left.city}`.localeCompare(
+          `${right.countryCode ?? "ZZ"}-${right.city}`,
+        ),
+      );
+  }, [copy.common.notRecorded, copy.map.unknownPlace, photos]);
+
+  const countries = useMemo(
+    () =>
+      Array.from(
+        new globalThis.Map(
+          cityGroups
+            .filter((group) => group.countryCode)
+            .map((group) => [
+              group.countryCode as string,
+              { code: group.countryCode as string, name: group.country },
+            ]),
+        ).values(),
+      ),
+    [cityGroups],
+  );
+
+  const visibleGroups = useMemo(
+    () =>
+      activeCountryCode
+        ? cityGroups.filter((group) => group.countryCode === activeCountryCode)
+        : cityGroups,
+    [activeCountryCode, cityGroups],
+  );
+
+  const normalizedQuery = normalizeLocation(searchQuery) ?? "";
+  const filteredGroups = useMemo(() => {
+    if (!normalizedQuery) return visibleGroups;
+
+    return visibleGroups.filter((group) => {
+      const searchable = [
+        localizePlaceName(group.city, locale),
+        localizeCountryName(group.country, group.countryCode, locale),
+        group.countryCode,
+      ];
+
+      return searchable.some((value) =>
+        normalizeLocation(value)?.includes(normalizedQuery),
+      );
     });
-  }, [copy.map.unknownPlace, photos]);
+  }, [locale, normalizedQuery, visibleGroups]);
 
-  const markers: MapProps["markers"] = cityGroups.map((group) => ({
-    id: group.key,
-    longitude: group.longitude,
-    latitude: group.latitude,
-    onClick: () => setActiveLocation({
-      key: group.key,
-      label: localizePlaceName(group.city, locale),
-    }),
-    element: (
-      <button
-        type="button"
-        className={styles.cityMapMarker}
-        aria-label={copy.map.markerLabel(
-          localizePlaceName(group.city, locale),
-          group.photos.length
-        )}
-      >
-        <span>{group.photos.length}</span>
-      </button>
-    ),
-    popupContent: (
-      <button
-        type="button"
-        className={styles.cityMapPopup}
-        onClick={() => {
-          if (group.countryCode && group.city !== copy.map.unknownPlace) {
-            router.push(`/travel/${group.countryCode.toLowerCase()}/${toPlaceSlug(group.city)}`);
-          } else {
-            router.push(`/photograph/${group.representative.id}`);
-          }
-        }}
-      >
-        <div>
-          <BlurImage
-            src={group.representative.url}
-            alt={group.representative.title || group.city}
-            fill
-            quality={50}
-            priority
-            blurhash={group.representative.blurData}
-            className={styles.imageCover}
-          />
-        </div>
-        <span>
-          {group.countryCode ?? copy.common.notRecorded} · {group.photos.length}{" "}
-          {copy.common.frames}
-        </span>
-        <strong>{localizePlaceName(group.city, locale)}</strong>
-        <small>{copy.map.openCity}</small>
-      </button>
-    ),
-  }));
+  const selectedGroup =
+    cityGroups.find((group) => group.key === selectedKey) ?? null;
+  const mappedPhotoCount = cityGroups.reduce(
+    (total, group) => total + group.photos.length,
+    0,
+  );
 
-  const filteredPhotos = useMemo(() => {
-    if (!activeLocation) return photos;
-    return cityGroups.find((group) => group.key === activeLocation.key)?.photos ?? [];
-  }, [photos, cityGroups, activeLocation]);
+  const selectCountry = (countryCode: string | null) => {
+    setActiveCountryCode(countryCode);
+    setSelectedKey(null);
+    setSearchQuery("");
+    setResetVersion((version) => version + 1);
+  };
+
+  const resetMap = () => {
+    setActiveCountryCode(null);
+    setSelectedKey(null);
+    setSearchQuery("");
+    setResetVersion((version) => version + 1);
+  };
 
   if (!data && !query.isError) return <MapLoading />;
   if (query.isError) return <MapFallback />;
 
   return (
-    <div className="relative size-full">
-      <MapComponent
-        id="discoverMap"
-        initialViewState={{ longitude: 121.2816980216146, latitude: 31.31395498607465, zoom: 2 }}
-        markers={markers}
-      />
-      <PhotoListDrawer
-        photos={filteredPhotos}
-        filterLabel={activeLocation?.label ?? null}
-        hasNextPage={query.hasNextPage || false}
-        isFetchingNextPage={query.isFetchingNextPage || false}
-        fetchNextPage={query.fetchNextPage}
-      />
-    </div>
+    <section className={styles.experience} data-panel-open={panelOpen}>
+      <div className={styles.mapCanvas}>
+        <Map
+          id="archiveMap"
+          center={[48, 24]}
+          zoom={1.25}
+          minZoom={0.7}
+          maxZoom={16}
+          dragRotate={false}
+          pitchWithRotate={false}
+          styles={archiveMapStyles}
+        >
+          <MapSceneController
+            mode={mode}
+            panelOpen={panelOpen}
+            selectedGroup={selectedGroup}
+            visibleGroups={visibleGroups}
+            resetVersion={resetVersion}
+          />
+
+          {visibleGroups.map((group) => {
+            const active = group.key === selectedKey;
+            const cityName = localizePlaceName(group.city, locale);
+
+            return (
+              <MapMarker
+                key={group.key}
+                longitude={group.longitude}
+                latitude={group.latitude}
+                ariaLabel={copy.map.markerLabel(cityName, group.photos.length)}
+                onClick={() => {
+                  setSelectedKey(group.key);
+                  setPanelOpen(true);
+                }}
+              >
+                <MarkerContent>
+                  <span
+                    className={`${styles.marker} ${active ? styles.markerActive : ""}`}
+                    aria-hidden="true"
+                  >
+                    <span />
+                  </span>
+                </MarkerContent>
+              </MapMarker>
+            );
+          })}
+        </Map>
+      </div>
+
+      <div className={styles.mapWash} aria-hidden="true" />
+
+      <header className={styles.mapIdentity}>
+        <span>{copy.discover.eyebrow}</span>
+        <h1>{copy.map.mappedArchive}</h1>
+      </header>
+
+      <button
+        type="button"
+        className={styles.exploreButton}
+        aria-expanded={panelOpen}
+        aria-controls="map-archive-panel"
+        tabIndex={panelOpen ? -1 : 0}
+        onClick={() => setPanelOpen(true)}
+      >
+        <Search size={15} strokeWidth={1.5} />
+        <span>{copy.map.explorePlaces}</span>
+        <strong>{String(visibleGroups.length).padStart(2, "0")}</strong>
+      </button>
+
+      <div className={styles.mapDock}>
+        <div className={styles.dockStats} aria-label={copy.map.archiveSummary}>
+          <span>
+            <strong>{String(countries.length).padStart(2, "0")}</strong>
+            <small>{copy.travel.countries}</small>
+          </span>
+          <span>
+            <strong>{String(cityGroups.length).padStart(2, "0")}</strong>
+            <small>{copy.travel.cities}</small>
+          </span>
+          <span>
+            <strong>{String(mappedPhotoCount).padStart(3, "0")}</strong>
+            <small>{copy.common.frames}</small>
+          </span>
+        </div>
+        <i aria-hidden="true" />
+        <div className={styles.dockControls}>
+          <button type="button" onClick={resetMap}>
+            <LocateFixed size={15} strokeWidth={1.5} />
+            <span>{copy.map.overview}</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === "globe"}
+            onClick={() => setMode("globe")}
+          >
+            <Globe2 size={15} strokeWidth={1.5} />
+            <span>{copy.map.globe}</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === "atlas"}
+            onClick={() => setMode("atlas")}
+          >
+            <MapIcon size={15} strokeWidth={1.5} />
+            <span>{copy.map.atlas}</span>
+          </button>
+        </div>
+      </div>
+
+      <aside
+        id="map-archive-panel"
+        className={styles.archivePanel}
+        aria-hidden={!panelOpen}
+        inert={!panelOpen}
+      >
+        <div className={styles.panelHeader}>
+          <div>
+            <span>
+              MAP INDEX / {String(visibleGroups.length).padStart(2, "0")}
+            </span>
+            <h2>
+              {selectedGroup
+                ? localizePlaceName(selectedGroup.city, locale)
+                : copy.map.mappedArchive}
+            </h2>
+          </div>
+          <button
+            type="button"
+            aria-label={copy.map.hideArchive}
+            onClick={() => setPanelOpen(false)}
+          >
+            <X size={17} strokeWidth={1.4} />
+          </button>
+        </div>
+
+        {selectedGroup ? (
+          <div className={styles.cityDetail}>
+            <button
+              type="button"
+              className={styles.backToIndex}
+              onClick={() => setSelectedKey(null)}
+            >
+              <ArrowLeft size={14} strokeWidth={1.5} /> {copy.map.allCities}
+            </button>
+
+            <div className={styles.cityDetailMeta}>
+              <span>
+                {localizeCountryName(
+                  selectedGroup.country,
+                  selectedGroup.countryCode,
+                  locale,
+                )}
+              </span>
+              <span>
+                {selectedGroup.photos.length} {copy.common.frames}
+              </span>
+            </div>
+
+            <div className={styles.photoGrid}>
+              {selectedGroup.photos.slice(0, 6).map((photo, index) => (
+                <Link
+                  href={`/photograph/${photo.id}`}
+                  className={styles.photoTile}
+                  key={photo.id}
+                  aria-label={photo.title || copy.city.photoAlt(selectedGroup.city)}
+                >
+                  <BlurImage
+                    src={photo.url}
+                    alt={photo.title || copy.city.photoAlt(selectedGroup.city)}
+                    fill
+                    quality={50}
+                    blurhash={photo.blurData}
+                    sizes="(max-width: 760px) 40vw, 12vw"
+                    className={styles.photoImage}
+                  />
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                </Link>
+              ))}
+            </div>
+
+            <Link href={getCityHref(selectedGroup)} className={styles.openCityLink}>
+              <span>
+                <small>{copy.map.openCollection}</small>
+                {localizePlaceName(selectedGroup.city, locale)}
+              </span>
+              <ArrowUpRight size={18} strokeWidth={1.4} />
+            </Link>
+
+            {query.hasNextPage && (
+              <button
+                type="button"
+                className={styles.loadMore}
+                disabled={query.isFetchingNextPage}
+                onClick={() => void query.fetchNextPage()}
+              >
+                <Layers3 size={15} strokeWidth={1.5} />
+                {query.isFetchingNextPage ? copy.map.loading : copy.map.loadMore}
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className={styles.panelControls}>
+              <div className={styles.searchField}>
+                <Search size={15} strokeWidth={1.4} aria-hidden="true" />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  aria-label={copy.map.searchPlaces}
+                  placeholder={copy.map.searchPlaces}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    aria-label={copy.map.clearSearch}
+                    onClick={() => setSearchQuery("")}
+                  >
+                    <X size={14} strokeWidth={1.4} />
+                  </button>
+                )}
+              </div>
+
+              <div className={styles.countryChips} aria-label={copy.map.filterCountry}>
+                <button
+                  type="button"
+                  className={!activeCountryCode ? styles.countryActive : ""}
+                  onClick={() => selectCountry(null)}
+                >
+                  {copy.map.allPlaces}
+                </button>
+                {countries.map((country) => (
+                  <button
+                    type="button"
+                    key={country.code}
+                    className={
+                      activeCountryCode === country.code ? styles.countryActive : ""
+                    }
+                    title={localizeCountryName(country.name, country.code, locale)}
+                    onClick={() => selectCountry(country.code)}
+                  >
+                    {country.code}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.resultsBar}>
+                <span>
+                  {activeCountryCode
+                    ? localizeCountryName(
+                        countries.find((country) => country.code === activeCountryCode)
+                          ?.name ?? activeCountryCode,
+                        activeCountryCode,
+                        locale,
+                      )
+                    : copy.map.allCities}
+                </span>
+                <strong>{String(filteredGroups.length).padStart(2, "0")}</strong>
+              </div>
+            </div>
+
+            <div className={styles.cityIndex}>
+              {filteredGroups.length === 0 ? (
+                <div className={styles.emptyResults}>
+                  <Search size={19} strokeWidth={1.2} />
+                  <p>{copy.map.noResults}</p>
+                </div>
+              ) : (
+                filteredGroups.map((group) => {
+                  const cityName = localizePlaceName(group.city, locale);
+
+                  return (
+                    <button
+                      type="button"
+                      className={styles.cityIndexItem}
+                      onClick={() => setSelectedKey(group.key)}
+                      key={group.key}
+                    >
+                      <span className={styles.cityIndexThumb}>
+                        <BlurImage
+                          src={group.representative.url}
+                          alt=""
+                          fill
+                          quality={35}
+                          blurhash={group.representative.blurData}
+                          sizes="64px"
+                          className={styles.photoImage}
+                        />
+                      </span>
+                      <span className={styles.cityIndexCopy}>
+                        <small>
+                          {localizeCountryName(
+                            group.country,
+                            group.countryCode,
+                            locale,
+                          )}{` · `}
+                          {group.photos.length} {copy.common.frames}
+                        </small>
+                        <strong>{cityName}</strong>
+                      </span>
+                      <ArrowUpRight size={15} strokeWidth={1.35} />
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
+      </aside>
+    </section>
   );
 };

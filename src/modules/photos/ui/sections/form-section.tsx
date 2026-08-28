@@ -48,6 +48,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import styles from "@/modules/dashboard/ui/studio.module.css";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 const MapComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
@@ -59,9 +60,10 @@ const MapComponent = dynamic(() => import("@/components/map"), {
 });
 
 export const FormSection = ({ photoId }: { photoId: string }) => {
+  const { copy } = useStudioLocale();
   return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <ErrorBoundary fallback={<p>Something went wrong</p>}>
+    <Suspense fallback={<p>{copy.common.loading}</p>}>
+      <ErrorBoundary fallback={<p>{copy.overview.error}</p>}>
         <FormSectionSuspense photoId={photoId} />
       </ErrorBoundary>
     </Suspense>
@@ -70,6 +72,7 @@ export const FormSection = ({ photoId }: { photoId: string }) => {
 
 const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   const router = useRouter();
+  const { copy } = useStudioLocale();
   const utils = trpc.useUtils();
   const [photo] = trpc.photos.getOne.useSuspenseQuery({ id: photoId });
   const photoAspectRatio =
@@ -85,6 +88,14 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   const [cameraInfoOpen, setCameraInfoOpen] = useState(false);
   const [exposureInfoOpen, setExposureInfoOpen] = useState(false);
 
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [photoId]);
+
   const update = trpc.photos.update.useMutation({
     onSuccess: async () => {
       toast.success("Photo updated");
@@ -92,9 +103,10 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
         utils.photos.getMany.invalidate(),
         utils.photos.getManyWithPrivate.invalidate(),
         utils.photos.getOne.invalidate({ id: photoId }),
+        utils.photos.getStudioStats.invalidate(),
       ]);
       // 保存成功后跳转回Photo页面
-      router.push("/photos");
+      router.push("/studio/photos");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -105,8 +117,9 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
       await Promise.all([
         utils.photos.getMany.invalidate(),
         utils.photos.getManyWithPrivate.invalidate(),
+        utils.photos.getStudioStats.invalidate(),
       ]);
-      router.push("/photos");
+      router.push("/studio/photos");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -222,9 +235,9 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className={styles.editorHeader}>
             <div className={styles.editorHeaderCopy}>
-              <h1 className={styles.editorTitle}>Photo details</h1>
+              <h1 className={styles.editorTitle}>{copy.editor.photoDetails}</h1>
               <p className={styles.editorDescription}>
-                Manage your photo details
+                {copy.editor.photoDescription}
               </p>
             </div>
             <div className={styles.editorActions}>
@@ -238,13 +251,13 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 {generateAIDescription.isPending ? (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                    <span className="hidden sm:inline">Generating...</span>
+                    <span className="hidden sm:inline">{copy.editor.generating}</span>
                     <span className="sm:hidden">...</span>
                   </>
                 ) : (
                   <>
                     <SparklesIcon className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">AI Description</span>
+                    <span className="hidden sm:inline">{copy.editor.aiDescription}</span>
                     <span className="sm:hidden">AI</span>
                   </>
                 )}
@@ -254,7 +267,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 className={styles.editorPrimaryButton}
                 disabled={update.isPending}
               >
-                Save
+                {copy.editor.save}
               </Button>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -267,7 +280,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                     onClick={() => remove.mutate({ id: photoId })}
                   >
                     <TrashIcon className="size-4 mr-2" />
-                    Delete
+                    {copy.editor.delete}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -301,7 +314,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   <div className="flex justify-between items-center gap-x-2">
                     <div className="flex flex-col gap-y-1">
                       <p className="text-sm text-muted-foreground">
-                        Photo link
+                        {copy.editor.photoLink}
                       </p>
                       <div className="flex items-center gap-x-2">
                         <Link href={photoPath}>
@@ -328,9 +341,13 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
               {/* Camera Info and Exposure Info */}
               <div className="flex flex-col gap-y-6">
                 {/* Camera Info Collapsible */}
-                <Collapsible open={cameraInfoOpen} onOpenChange={setCameraInfoOpen}>
+                <Collapsible
+                  className={styles.editorSectionDisclosure}
+                  open={cameraInfoOpen}
+                  onOpenChange={setCameraInfoOpen}
+                >
                   <div className={styles.editorSectionHead}>
-                    <h3 className="text-lg font-semibold">Camera Info</h3>
+                    <h3 className="text-lg font-semibold">{copy.editor.cameraInfo}</h3>
                     <CollapsibleTrigger asChild>
                       <Button variant="ghost" size="icon">
                         {cameraInfoOpen ? <ChevronDown /> : <ChevronRight />}
@@ -344,7 +361,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Camera Make</FormLabel>
+                            <FormLabel>{copy.editor.cameraMake}</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -362,7 +379,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Camera Model</FormLabel>
+                            <FormLabel>{copy.editor.cameraModel}</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -380,7 +397,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Lens</FormLabel>
+                            <FormLabel>{copy.editor.lens}</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -397,9 +414,13 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 </Collapsible>
 
                 {/* Exposure Info Collapsible */}
-                <Collapsible open={exposureInfoOpen} onOpenChange={setExposureInfoOpen}>
+                <Collapsible
+                  className={styles.editorSectionDisclosure}
+                  open={exposureInfoOpen}
+                  onOpenChange={setExposureInfoOpen}
+                >
                   <div className={styles.editorSectionHead}>
-                    <h3 className="text-lg font-semibold">Exposure Info</h3>
+                    <h3 className="text-lg font-semibold">{copy.editor.exposureInfo}</h3>
                     <CollapsibleTrigger asChild>
                       <Button variant="ghost" size="icon">
                         {exposureInfoOpen ? <ChevronDown /> : <ChevronRight />}
@@ -413,7 +434,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Focal Length (mm)</FormLabel>
+                            <FormLabel>{copy.editor.focalLength}</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -431,7 +452,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>f / Number</FormLabel>
+                            <FormLabel>{copy.editor.aperture}</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -450,7 +471,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>ISO</FormLabel>
+                            <FormLabel>{copy.editor.iso}</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -468,7 +489,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Shutter Speed</FormLabel>
+                            <FormLabel>{copy.editor.shutter}</FormLabel>
                             <FormControl>
                               <ExposureTimeInput
                                 value={field.value}
@@ -485,7 +506,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Exposure Compensation</FormLabel>
+                            <FormLabel>{copy.editor.compensation}</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -504,7 +525,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Date Taken</FormLabel>
+                            <FormLabel>{copy.editor.dateTaken}</FormLabel>
                             <FormControl>
                               <Input
                                 type="datetime-local"
@@ -535,9 +556,9 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>{copy.editor.title}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Photo title" />
+                      <Input {...field} placeholder={copy.editor.photoTitle} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -549,7 +570,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{copy.editor.description}</FormLabel>
                     <FormControl>
                       <Textarea {...field} rows={5} className="resize-none" />
                     </FormControl>
@@ -565,7 +586,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormLabel className="font-medium">Visibility</FormLabel>
+                      <FormLabel className="font-medium">{copy.editor.visibility}</FormLabel>
                       <FormControl>
                         <div className="flex space-x-4">
                           <div className="flex items-center space-x-2">
@@ -577,7 +598,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                               onChange={() => field.onChange("public")}
                               className="h-4 w-4"
                             />
-                            <label htmlFor="visibility-public" className="text-sm">Public</label>
+                            <label htmlFor="visibility-public" className="text-sm">{copy.editor.public}</label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <input
@@ -588,7 +609,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                               onChange={() => field.onChange("private")}
                               className="h-4 w-4"
                             />
-                            <label htmlFor="visibility-private" className="text-sm">Private</label>
+                            <label htmlFor="visibility-private" className="text-sm">{copy.editor.private}</label>
                           </div>
                         </div>
                       </FormControl>
@@ -601,7 +622,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormLabel className="font-medium">Favorite</FormLabel>
+                      <FormLabel className="font-medium">{copy.editor.favorite}</FormLabel>
                       <FormControl>
                         <div className="flex space-x-4">
                           <div className="flex items-center space-x-2">
@@ -613,7 +634,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                               onChange={() => field.onChange(true)}
                               className="h-4 w-4"
                             />
-                            <label htmlFor="favorite-yes" className="text-sm">Yes</label>
+                            <label htmlFor="favorite-yes" className="text-sm">{copy.editor.yes}</label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <input
@@ -624,7 +645,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                               onChange={() => field.onChange(false)}
                               className="h-4 w-4"
                             />
-                            <label htmlFor="favorite-no" className="text-sm">No</label>
+                            <label htmlFor="favorite-no" className="text-sm">{copy.editor.no}</label>
                           </div>
                         </div>
                       </FormControl>
@@ -638,14 +659,14 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 render={({ field }) => (
                   <FormItem>
                     <div className="mb-2 flex items-center justify-between">
-                      <FormLabel className="mb-0">GPS Coordinates</FormLabel>
+                      <FormLabel className="mb-0">{copy.editor.gps}</FormLabel>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={onPasteCoordinates}
                       >
-                        Paste coordinates
+                        {copy.editor.pasteCoordinates}
                       </Button>
                     </div>
                     <FormControl>
@@ -674,7 +695,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
               />
 
               <FormItem>
-                <FormLabel>Location</FormLabel>
+                <FormLabel>{copy.editor.location}</FormLabel>
                 <FormControl>
                   <div className="h-[200px] w-full rounded-md overflow-hidden border">
                     <Suspense fallback={<Skeleton className="h-full w-full" />}>
@@ -701,7 +722,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                       currentLocation.lat,
                       currentLocation.lng
                     )
-                    : "No GPS coordinates available"}
+                    : copy.editor.noCoordinates}
                 </FormDescription>
               </FormItem>
             </div>

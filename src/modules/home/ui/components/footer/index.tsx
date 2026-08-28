@@ -22,15 +22,15 @@ const Footer = () => {
           title="Pages"
           links={[
             { title: "Home", href: "/" },
-            { title: "Travel", href: "/travel" },
-            { title: "Discover", href: "/discover" },
+            { title: "Work", href: "/work" },
+            { title: "Places", href: "/places" },
             { title: "Journeys", href: "/journeys" },
             { title: "About", href: "/about" },
           ]}
         />
         <FooterNav
           title="CMS"
-          links={[{ title: "Dashboard", href: "/dashboard" }]}
+          links={[{ title: "Studio", href: "/studio/overview" }]}
         />
         <FooterNav
           title="Utility"

@@ -11,20 +11,20 @@ import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import { cleanImageUrl } from "@/lib/utils";
 import styles from "@/modules/dashboard/ui/studio.module.css";
 import { trpc } from "@/trpc/client";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
-export const PostsSection = () => (
-  <Suspense fallback={<PostsSectionSkeleton />}>
-    <ErrorBoundary
-      fallback={
-        <div className={styles.errorState}>
-          The journey-note index could not be opened.
-        </div>
-      }
-    >
-      <PostsSectionSuspense />
-    </ErrorBoundary>
-  </Suspense>
-);
+export const PostsSection = () => {
+  const { copy } = useStudioLocale();
+  return (
+    <Suspense fallback={<PostsSectionSkeleton />}>
+      <ErrorBoundary
+        fallback={<div className={styles.errorState}>{copy.journeys.error}</div>}
+      >
+        <PostsSectionSuspense />
+      </ErrorBoundary>
+    </Suspense>
+  );
+};
 
 const PostsSectionSkeleton = () => (
   <div className={styles.postList} aria-hidden="true">
@@ -45,6 +45,7 @@ const PostsSectionSkeleton = () => (
 );
 
 const PostsSectionSuspense = () => {
+  const { copy, locale } = useStudioLocale();
   const [posts, query] = trpc.posts.getMany.useSuspenseInfiniteQuery(
     { limit: 10 },
     { getNextPageParam: (lastPage) => lastPage.nextCursor },
@@ -54,7 +55,7 @@ const PostsSectionSuspense = () => {
   if (items.length === 0) {
     return (
       <div className={styles.emptyState}>
-        No field notes have been started yet.
+        {copy.journeys.empty}
       </div>
     );
   }
@@ -62,22 +63,22 @@ const PostsSectionSuspense = () => {
   return (
     <>
       <div className={styles.archiveToolbar}>
-        <span>{items.length} field notes loaded</span>
-        <span>Published inside Journeys</span>
+        <span>{copy.journeys.loaded(items.length)}</span>
+        <span>{copy.journeys.destination}</span>
       </div>
       <div className={styles.postList}>
         {items.map((post, index) => {
           const created = post.createdAt
-            ? new Date(post.createdAt).toLocaleDateString("en-US", {
+            ? new Date(post.createdAt).toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
                 year: "numeric",
                 month: "short",
                 day: "2-digit",
               })
-            : "No date";
+            : copy.journeys.noDate;
 
           return (
             <Link
-              href={`/posts/${post.id}`}
+              href={`/studio/journeys/${post.id}`}
               className={styles.postRow}
               key={post.id}
             >
@@ -87,7 +88,7 @@ const PostsSectionSuspense = () => {
               <div className={styles.postImage}>
                 <Image
                   src={cleanImageUrl(post.coverImage)}
-                  alt={post.title || "Field note cover"}
+                  alt={post.title || copy.journeys.untitled}
                   fill
                   loader={getArchiveImageLoader(cleanImageUrl(post.coverImage))}
                   quality={30}
@@ -97,11 +98,11 @@ const PostsSectionSuspense = () => {
               </div>
               <div className={styles.postCopy}>
                 <h2 className={styles.postTitle}>
-                  {post.title || "Untitled field note"}
+                  {post.title || copy.journeys.untitled}
                 </h2>
                 <p>
                   {post.description ||
-                    "A journey still waiting for its first note."}
+                    copy.journeys.waiting}
                 </p>
               </div>
               <div className={styles.postAside}>
@@ -111,12 +112,12 @@ const PostsSectionSuspense = () => {
                   ) : (
                     <Globe2Icon size={11} />
                   )}
-                  {post.visibility}
+                  {post.visibility === "private" ? copy.journeys.private : copy.journeys.public}
                 </span>
                 <span>{created}</span>
-                <span>Field note</span>
+                <span>{copy.journeys.fieldNote}</span>
                 <span className={styles.postTags}>
-                  {post.tags?.length ? post.tags.join(" · ") : "No tags"}
+                  {post.tags?.length ? post.tags.join(" · ") : copy.journeys.noTags}
                 </span>
               </div>
             </Link>

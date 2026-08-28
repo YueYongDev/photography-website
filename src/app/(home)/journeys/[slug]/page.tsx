@@ -38,7 +38,9 @@ export const generateMetadata = async ({
     return {
       title: journey.title,
       description: journey.description,
-      openGraph: { images: [journey.coverImage] },
+      openGraph: journey.coverImage
+        ? { images: [journey.coverImage] }
+        : undefined,
     };
   }
 

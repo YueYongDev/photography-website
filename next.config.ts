@@ -7,8 +7,21 @@ const nextConfig: NextConfig = {
   // root NFT trace that the standalone copier still expects.
   output: process.env.VERCEL ? undefined : "standalone",
   serverExternalPackages: ["qiniu"],
+  async redirects() {
+    return [
+      { source: "/studio", destination: "/studio/overview", permanent: true },
+      { source: "/dashboard", destination: "/studio/overview", permanent: true },
+      { source: "/photos/:path*", destination: "/studio/photos/:path*", permanent: true },
+      { source: "/posts/:path*", destination: "/studio/journeys/:path*", permanent: true },
+      { source: "/profile", destination: "/studio/account", permanent: true },
+      { source: "/travel/:path*", destination: "/places/:path*", permanent: true },
+      { source: "/discover", destination: "/map", permanent: true },
+      { source: "/places/map", destination: "/map", permanent: true },
+      { source: "/city", destination: "/map", permanent: true },
+    ];
+  },
   images: {
-    qualities: [25, 50, 75],
+    qualities: [25, 30, 35, 50, 75],
     remotePatterns: [
       {
         protocol: "https",

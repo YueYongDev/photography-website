@@ -9,12 +9,14 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import styles from "../studio.module.css";
+import { useStudioLocale } from "../../i18n/studio-locale";
 
 interface LineChartProps {
   data: Record<number, number>;
 }
 
 export function PhotosByYearLineChart({ data }: LineChartProps) {
+  const { copy } = useStudioLocale();
   const chartData = Object.entries(data)
     .map(([year, count]) => ({
       year,
@@ -24,7 +26,7 @@ export function PhotosByYearLineChart({ data }: LineChartProps) {
 
   const chartConfig = {
     photos: {
-      label: "Photos",
+      label: copy.overview.photos,
       color: "var(--studio-accent)",
     },
   } satisfies ChartConfig;
@@ -33,8 +35,8 @@ export function PhotosByYearLineChart({ data }: LineChartProps) {
     <section className={styles.chartPanel}>
       <header className={styles.chartHeader}>
         <div>
-          <h2>Photographs over time</h2>
-          <p>Frames added by year</p>
+          <h2>{copy.overview.photographsOverTime}</h2>
+          <p>{copy.overview.framesByYear}</p>
         </div>
         <span className={styles.chartIndex}>A / 01</span>
       </header>

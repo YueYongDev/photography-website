@@ -1,0 +1,207 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong 摄影首页" [ref=e799] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+      - generic [ref=e6]:
+        - group "语言" [ref=e800]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [pressed] [ref=e16] [cursor=pointer]
+        - button "菜单" [ref=e801] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - generic:
+            - region "Map" [ref=e54]
+            - button "打开Anqing的 1 张照片" [ref=e812]:
+              - generic [ref=e813] [cursor=pointer]: "01"
+            - button "打开Beijing的 2 张照片" [ref=e817]:
+              - generic [ref=e818] [cursor=pointer]: "02"
+            - button "打开Bortala Mongol Autonomous Prefecture的 3 张照片" [ref=e822]:
+              - generic [ref=e823] [cursor=pointer]: "03"
+            - button "打开Chongqing的 3 张照片" [ref=e827]:
+              - generic [ref=e828] [cursor=pointer]: "04"
+            - button "打开Dali Bai Autonomous Prefecture的 2 张照片" [ref=e832]:
+              - generic [ref=e833] [cursor=pointer]: "05"
+            - button "打开Dalian的 3 张照片" [ref=e837]:
+              - generic [ref=e838] [cursor=pointer]: "06"
+            - button "打开Hangzhou的 31 张照片" [ref=e842]:
+              - generic [ref=e843] [cursor=pointer]: "07"
+            - button "打开Ili Kazakh Autonomous Prefecture的 1 张照片" [ref=e847]:
+              - generic [ref=e848] [cursor=pointer]: "08"
+            - button "打开Nanjing的 3 张照片" [ref=e852]:
+              - generic [ref=e853] [cursor=pointer]: "09"
+            - button "打开Ningbo的 4 张照片" [ref=e857]:
+              - generic [ref=e858] [cursor=pointer]: "10"
+            - button "打开Shanghai的 4 张照片" [ref=e862]:
+              - generic [ref=e863] [cursor=pointer]: "11"
+            - button "打开Shaoxing的 1 张照片" [ref=e867]:
+              - generic [ref=e868] [cursor=pointer]: "12"
+            - button "打开Tianjin的 1 张照片" [ref=e872]:
+              - generic [ref=e873] [cursor=pointer]: "13"
+            - button "打开Ürümqi的 1 张照片" [ref=e877]:
+              - generic [ref=e878] [cursor=pointer]: "14"
+            - button "打开Wuhan的 2 张照片" [ref=e882]:
+              - generic [ref=e883] [cursor=pointer]: "15"
+            - button "打开Xiamen的 1 张照片" [ref=e887]:
+              - generic [ref=e888] [cursor=pointer]: "16"
+            - button "打开Xihu District的 1 张照片" [ref=e892]:
+              - generic [ref=e893] [cursor=pointer]: "17"
+        - generic:
+          - paragraph: 03 / 地图
+          - heading "每一帧， 都有坐标。" [level=1]
+        - generic "地图档案概览":
+          - generic:
+            - generic: 国家
+            - strong: "12"
+          - generic:
+            - generic: 城市
+            - strong: "57"
+          - generic:
+            - generic: 照片
+            - strong: "173"
+        - generic "按国家筛选地图" [ref=e1087]:
+          - button "全部" [ref=e1088] [cursor=pointer]
+          - button "AU" [ref=e62] [cursor=pointer]
+          - button "CA" [ref=e63] [cursor=pointer]
+          - button "CN" [active] [ref=e64] [cursor=pointer]
+          - button "GB" [ref=e65] [cursor=pointer]
+          - button "HK" [ref=e66] [cursor=pointer]
+          - button "IS" [ref=e67] [cursor=pointer]
+          - button "JP" [ref=e68] [cursor=pointer]
+          - button "MY" [ref=e69] [cursor=pointer]
+          - button "NO" [ref=e70] [cursor=pointer]
+          - button "NZ" [ref=e71] [cursor=pointer]
+          - button "TR" [ref=e72] [cursor=pointer]
+          - button "UZ" [ref=e73] [cursor=pointer]
+        - generic [ref=e74]:
+          - button "世界视角" [ref=e1089] [cursor=pointer]
+          - button "地球" [ref=e1090] [cursor=pointer]
+          - button "地图" [pressed] [ref=e1091] [cursor=pointer]
+        - button [expanded] [ref=e1092] [cursor=pointer]
+        - complementary [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]: MAP INDEX / 17
+              - heading "地图档案" [level=2] [ref=e1093]
+            - button "收起档案" [ref=e1094]
+          - generic [ref=e99]:
+            - button "01 CN / 1 Anqing" [ref=e1113] [cursor=pointer]:
+              - generic [ref=e121]: "01"
+              - generic [ref=e124]:
+                - generic [ref=e125]: CN / 1
+                - strong [ref=e126]: Anqing
+            - button "02 CN / 2 Beijing" [ref=e1114] [cursor=pointer]:
+              - generic [ref=e131]: "02"
+              - generic [ref=e134]:
+                - generic [ref=e135]: CN / 2
+                - strong [ref=e136]: Beijing
+            - button "03 CN / 3 Bortala Mongol Autonomous Prefecture" [ref=e1115] [cursor=pointer]:
+              - generic [ref=e141]: "03"
+              - generic [ref=e144]:
+                - generic [ref=e145]: CN / 3
+                - strong [ref=e146]: Bortala Mongol Autonomous Prefecture
+            - button "04 CN / 3 Chongqing" [ref=e1116] [cursor=pointer]:
+              - generic [ref=e151]: "04"
+              - generic [ref=e154]:
+                - generic [ref=e155]: CN / 3
+                - strong [ref=e156]: Chongqing
+            - button "05 CN / 2 Dali Bai Autonomous Prefecture" [ref=e1117] [cursor=pointer]:
+              - generic [ref=e161]: "05"
+              - generic [ref=e164]:
+                - generic [ref=e165]: CN / 2
+                - strong [ref=e166]: Dali Bai Autonomous Prefecture
+            - button "06 CN / 3 Dalian" [ref=e1118] [cursor=pointer]:
+              - generic [ref=e171]: "06"
+              - generic [ref=e174]:
+                - generic [ref=e175]: CN / 3
+                - strong [ref=e176]: Dalian
+            - button "07 CN / 31 Hangzhou" [ref=e1119] [cursor=pointer]:
+              - generic [ref=e181]: "07"
+              - generic [ref=e184]:
+                - generic [ref=e185]: CN / 31
+                - strong [ref=e186]: Hangzhou
+            - button "08 CN / 1 Ili Kazakh Autonomous Prefecture" [ref=e1120] [cursor=pointer]:
+              - generic [ref=e191]: "08"
+              - generic [ref=e194]:
+                - generic [ref=e195]: CN / 1
+                - strong [ref=e196]: Ili Kazakh Autonomous Prefecture
+            - button "09 CN / 3 Nanjing" [ref=e1121] [cursor=pointer]:
+              - generic [ref=e201]: "09"
+              - generic [ref=e204]:
+                - generic [ref=e205]: CN / 3
+                - strong [ref=e206]: Nanjing
+            - button "10 CN / 4 Ningbo" [ref=e1122] [cursor=pointer]:
+              - generic [ref=e211]: "10"
+              - generic [ref=e214]:
+                - generic [ref=e215]: CN / 4
+                - strong [ref=e216]: Ningbo
+            - button "11 CN / 4 Shanghai" [ref=e1123] [cursor=pointer]:
+              - generic [ref=e221]: "11"
+              - generic [ref=e224]:
+                - generic [ref=e225]: CN / 4
+                - strong [ref=e226]: Shanghai
+            - button "12 CN / 1 Shaoxing" [ref=e1124] [cursor=pointer]:
+              - generic [ref=e231]: "12"
+              - generic [ref=e234]:
+                - generic [ref=e235]: CN / 1
+                - strong [ref=e236]: Shaoxing
+            - button "13 CN / 1 Tianjin" [ref=e1125] [cursor=pointer]:
+              - generic [ref=e241]: "13"
+              - generic [ref=e247]:
+                - generic [ref=e248]: CN / 1
+                - strong [ref=e249]: Tianjin
+            - button "14 CN / 1 Ürümqi" [ref=e1126] [cursor=pointer]:
+              - generic [ref=e254]: "14"
+              - generic [ref=e260]:
+                - generic [ref=e261]: CN / 1
+                - strong [ref=e262]: Ürümqi
+            - button "15 CN / 2 Wuhan" [ref=e1127] [cursor=pointer]:
+              - generic [ref=e267]: "15"
+              - generic [ref=e273]:
+                - generic [ref=e274]: CN / 2
+                - strong [ref=e275]: Wuhan
+            - button "16 CN / 1 Xiamen" [ref=e1128] [cursor=pointer]:
+              - generic [ref=e280]: "16"
+              - generic [ref=e286]:
+                - generic [ref=e287]: CN / 1
+                - strong [ref=e288]: Xiamen
+            - button "17 CN / 1 Xihu District" [ref=e1129] [cursor=pointer]:
+              - generic [ref=e293]: "17"
+              - generic [ref=e299]:
+                - generic [ref=e300]: CN / 1
+                - strong [ref=e301]: Xihu District
+    - contentinfo [ref=e25]:
+      - generic [ref=e26]:
+        - heading "YUEYONG" [level=2] [ref=e27]
+        - paragraph [ref=e28]: 照片 / 足迹 / 旅程
+      - navigation "主导航" [ref=e1104]:
+        - link "首页" [ref=e1105] [cursor=pointer]:
+          - /url: /
+        - link "作品" [ref=e1106] [cursor=pointer]:
+          - /url: /work
+        - link "足迹" [ref=e1107] [cursor=pointer]:
+          - /url: /places
+        - link "地图" [ref=e1108] [cursor=pointer]:
+          - /url: /map
+        - link "旅程" [ref=e1109] [cursor=pointer]:
+          - /url: /journeys
+        - link "关于" [ref=e1110] [cursor=pointer]:
+          - /url: /about
+        - link "工作台" [ref=e1111] [cursor=pointer]:
+          - /url: /studio/overview
+      - generic [ref=e37]:
+        - paragraph [ref=e38]: 软件工程师 / 摄影
+        - link "邮箱" [ref=e1112] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e40] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e41] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e42]:
+        - generic [ref=e43]: © 2026 YueYong
+        - generic [ref=e44]: PHOTOGRAPHS
+  - region "Notifications alt+T"
+  - alert [ref=e45]

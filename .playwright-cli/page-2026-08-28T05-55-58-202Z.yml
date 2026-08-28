@@ -1,0 +1,385 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong Photography home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: Photographs
+      - generic [ref=e6]:
+        - navigation "Primary navigation" [ref=e7]:
+          - link "Work" [ref=e8] [cursor=pointer]:
+            - /url: /work
+          - link "Places" [ref=e9] [cursor=pointer]:
+            - /url: /places
+          - link "Journeys" [ref=e10] [cursor=pointer]:
+            - /url: /journeys
+          - link "About" [ref=e11] [cursor=pointer]:
+            - /url: /about
+        - group "Language" [ref=e12]:
+          - button "EN" [pressed] [ref=e13] [cursor=pointer]
+          - generic [ref=e14]: /
+          - button "中文" [ref=e15] [cursor=pointer]
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - paragraph [ref=e20]: 01 / Work
+            - heading "Selected photographs" [level=1] [ref=e21]
+          - generic [ref=e22]:
+            - paragraph [ref=e23]: A smaller edit drawn from photographs made in daily life and while travelling. This page follows one sequence rather than countries or cities.
+            - generic [ref=e24]:
+              - generic [ref=e25]:
+                - term [ref=e26]: Photographs
+                - definition [ref=e27]: "48"
+              - generic [ref=e28]:
+                - term [ref=e29]: Years
+                - definition [ref=e30]: 2025–2026
+              - generic [ref=e31]:
+                - term [ref=e32]: Places
+                - definition [ref=e33]: "22"
+            - link "Start with photograph 01" [ref=e34] [cursor=pointer]:
+              - /url: "#work-selection"
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - figure "01 / 冰川之河 Aoraki / Mount Cook · 2026" [ref=e40]:
+              - button "冰川之河 · View original" [ref=e41]:
+                - img "冰川之河" [ref=e43]
+              - generic [ref=e44]:
+                - strong [ref=e45]: 01 / 冰川之河
+                - generic [ref=e46]: Aoraki / Mount Cook · 2026
+            - figure "02 / 湖畔独影 Lake Tekapo · Archive" [ref=e47]:
+              - button "湖畔独影 · View original" [ref=e48]:
+                - img "湖畔独影" [ref=e50]
+              - generic [ref=e51]:
+                - strong [ref=e52]: 02 / 湖畔独影
+                - generic [ref=e53]: Lake Tekapo · Archive
+          - generic [ref=e54]:
+            - figure "03 / 湖畔沉思 Lake Tekapo · 2026" [ref=e55]:
+              - button "湖畔沉思 · View original" [ref=e56]:
+                - img "湖畔沉思" [ref=e58]
+              - generic [ref=e59]:
+                - strong [ref=e60]: 03 / 湖畔沉思
+                - generic [ref=e61]: Lake Tekapo · 2026
+            - figure "04 / 湖畔的宁静时光 Lake Tekapo · 2026" [ref=e62]:
+              - button "湖畔的宁静时光 · View original" [ref=e63]:
+                - img "湖畔的宁静时光" [ref=e65]
+              - generic [ref=e66]:
+                - strong [ref=e67]: 04 / 湖畔的宁静时光
+                - generic [ref=e68]: Lake Tekapo · 2026
+          - generic [ref=e69]:
+            - figure "05 / 暮色中的现代之家 Lake Tekapo · Archive" [ref=e70]:
+              - button "暮色中的现代之家 · View original" [ref=e71]:
+                - img "暮色中的现代之家" [ref=e73]
+              - generic [ref=e74]:
+                - strong [ref=e75]: 05 / 暮色中的现代之家
+                - generic [ref=e76]: Lake Tekapo · Archive
+            - figure "06 / 湖畔小镇的宁静时光 Lake Tekapo · 2026" [ref=e77]:
+              - button "湖畔小镇的宁静时光 · View original" [ref=e78]:
+                - img "湖畔小镇的宁静时光" [ref=e80]
+              - generic [ref=e81]:
+                - strong [ref=e82]: 06 / 湖畔小镇的宁静时光
+                - generic [ref=e83]: Lake Tekapo · 2026
+          - generic [ref=e84]:
+            - figure "07 / 蜿蜒的山谷之路 Location not recorded · Archive" [ref=e85]:
+              - button "蜿蜒的山谷之路 · View original" [ref=e86]:
+                - img "蜿蜒的山谷之路" [ref=e88]
+              - generic [ref=e89]:
+                - strong [ref=e90]: 07 / 蜿蜒的山谷之路
+                - generic [ref=e91]: Location not recorded · Archive
+            - figure "08 / 雪山的守护者 Location not recorded · 2026" [ref=e92]:
+              - button "雪山的守护者 · View original" [ref=e93]:
+                - img "雪山的守护者" [ref=e95]
+              - generic [ref=e96]:
+                - strong [ref=e97]: 08 / 雪山的守护者
+                - generic [ref=e98]: Location not recorded · 2026
+          - generic [ref=e99]:
+            - figure "09 / 湖畔树影下的宁静时光 Sydney · 2026" [ref=e100]:
+              - button "湖畔树影下的宁静时光 · View original" [ref=e101]:
+                - img "湖畔树影下的宁静时光" [ref=e103]
+              - generic [ref=e104]:
+                - strong [ref=e105]: 09 / 湖畔树影下的宁静时光
+                - generic [ref=e106]: Sydney · 2026
+            - figure "10 / 悉尼港湾的宁静时刻 Sydney · 2026" [ref=e107]:
+              - button "悉尼港湾的宁静时刻 · View original" [ref=e108]:
+                - img "悉尼港湾的宁静时刻" [ref=e110]
+              - generic [ref=e111]:
+                - strong [ref=e112]: 10 / 悉尼港湾的宁静时刻
+                - generic [ref=e113]: Sydney · 2026
+          - generic [ref=e114]:
+            - figure "11 / 城市脉搏中的宁静时刻 Sydney · 2026" [ref=e115]:
+              - button "城市脉搏中的宁静时刻 · View original" [ref=e116]:
+                - img "城市脉搏中的宁静时刻" [ref=e118]
+              - generic [ref=e119]:
+                - strong [ref=e120]: 11 / 城市脉搏中的宁静时刻
+                - generic [ref=e121]: Sydney · 2026
+            - figure "12 / 山野间的微笑 Location not recorded · 2026" [ref=e122]:
+              - button "山野间的微笑 · View original" [ref=e123]:
+                - img "山野间的微笑" [ref=e125]
+              - generic [ref=e126]:
+                - strong [ref=e127]: 12 / 山野间的微笑
+                - generic [ref=e128]: Location not recorded · 2026
+          - generic [ref=e129]:
+            - figure "13 / 悉尼之夜 Sydney · 2026" [ref=e130]:
+              - button "悉尼之夜 · View original" [ref=e131]:
+                - img "悉尼之夜" [ref=e133]
+              - generic [ref=e134]:
+                - strong [ref=e135]: 13 / 悉尼之夜
+                - generic [ref=e136]: Sydney · 2026
+            - figure "14 / 时光之旅 Sydney · 2026" [ref=e137]:
+              - button "时光之旅 · View original" [ref=e138]:
+                - img "时光之旅" [ref=e140]
+              - generic [ref=e141]:
+                - strong [ref=e142]: 14 / 时光之旅
+                - generic [ref=e143]: Sydney · 2026
+          - generic [ref=e144]:
+            - figure "15 / 橙黄余晖中的宁静海岸 Kota Kinabalu · 2026" [ref=e145]:
+              - button "橙黄余晖中的宁静海岸 · View original" [ref=e146]:
+                - img "橙黄余晖中的宁静海岸" [ref=e148]
+              - generic [ref=e149]:
+                - strong [ref=e150]: 15 / 橙黄余晖中的宁静海岸
+                - generic [ref=e151]: Kota Kinabalu · 2026
+            - figure "16 / 橙红余晖中的椰林 Kota Kinabalu · 2026" [ref=e152]:
+              - button "橙红余晖中的椰林 · View original" [ref=e153]:
+                - img "橙红余晖中的椰林" [ref=e155]
+              - generic [ref=e156]:
+                - strong [ref=e157]: 16 / 橙红余晖中的椰林
+                - generic [ref=e158]: Kota Kinabalu · 2026
+          - generic [ref=e159]:
+            - figure "17 / 日落下的浪漫 K. Rampayan Village · 2026" [ref=e160]:
+              - button "日落下的浪漫 · View original" [ref=e161]:
+                - img "日落下的浪漫" [ref=e163]
+              - generic [ref=e164]:
+                - strong [ref=e165]: 17 / 日落下的浪漫
+                - generic [ref=e166]: K. Rampayan Village · 2026
+            - figure "18 / 椰林海韵 Kota Kinabalu · 2026" [ref=e167]:
+              - button "椰林海韵 · View original" [ref=e168]:
+                - img "椰林海韵" [ref=e170]
+              - generic [ref=e171]:
+                - strong [ref=e172]: 18 / 椰林海韵
+                - generic [ref=e173]: Kota Kinabalu · 2026
+          - generic [ref=e174]:
+            - figure "19 / 午后阳光下的阅读角落 Xihu District · 2026" [ref=e175]:
+              - button "午后阳光下的阅读角落 · View original" [ref=e176]:
+                - img "午后阳光下的阅读角落" [ref=e178]
+              - generic [ref=e179]:
+                - strong [ref=e180]: 19 / 午后阳光下的阅读角落
+                - generic [ref=e181]: Xihu District · 2026
+            - figure "20 / 湖畔秋韵 Wānaka · Archive" [ref=e182]:
+              - button "湖畔秋韵 · View original" [ref=e183]:
+                - img "湖畔秋韵" [ref=e185]
+              - generic [ref=e186]:
+                - strong [ref=e187]: 20 / 湖畔秋韵
+                - generic [ref=e188]: Wānaka · Archive
+          - generic [ref=e189]:
+            - figure "21 / 秋日湖畔的宁静时光 Wānaka · Archive" [ref=e190]:
+              - button "秋日湖畔的宁静时光 · View original" [ref=e191]:
+                - img "秋日湖畔的宁静时光" [ref=e193]
+              - generic [ref=e194]:
+                - strong [ref=e195]: 21 / 秋日湖畔的宁静时光
+                - generic [ref=e196]: Wānaka · Archive
+            - figure "22 / 秋日湖畔的宁静时光 Wānaka · Archive" [ref=e197]:
+              - button "秋日湖畔的宁静时光 · View original" [ref=e198]:
+                - img "秋日湖畔的宁静时光" [ref=e200]
+              - generic [ref=e201]:
+                - strong [ref=e202]: 22 / 秋日湖畔的宁静时光
+                - generic [ref=e203]: Wānaka · Archive
+          - generic [ref=e204]:
+            - figure "23 / 秋日小镇的秘密 Arrowtown · Archive" [ref=e205]:
+              - button "秋日小镇的秘密 · View original" [ref=e206]:
+                - img "秋日小镇的秘密" [ref=e208]
+              - generic [ref=e209]:
+                - strong [ref=e210]: 23 / 秋日小镇的秘密
+                - generic [ref=e211]: Arrowtown · Archive
+            - figure "24 / 云顶之巅 Location not recorded · Archive" [ref=e212]:
+              - button "云顶之巅 · View original" [ref=e213]:
+                - img "云顶之巅" [ref=e215]
+              - generic [ref=e216]:
+                - strong [ref=e217]: 24 / 云顶之巅
+                - generic [ref=e218]: Location not recorded · Archive
+          - generic [ref=e219]:
+            - figure "25 / 湖畔秘境 Location not recorded · Archive" [ref=e220]:
+              - button "湖畔秘境 · View original" [ref=e221]:
+                - img "湖畔秘境" [ref=e223]
+              - generic [ref=e224]:
+                - strong [ref=e225]: 25 / 湖畔秘境
+                - generic [ref=e226]: Location not recorded · Archive
+            - figure "26 / 湖畔创意时光 Wānaka · 2026" [ref=e227]:
+              - button "湖畔创意时光 · View original" [ref=e228]:
+                - img "湖畔创意时光" [ref=e230]
+              - generic [ref=e231]:
+                - strong [ref=e232]: 26 / 湖畔创意时光
+                - generic [ref=e233]: Wānaka · 2026
+          - generic [ref=e234]:
+            - figure "27 / 城市边缘的宁静 Sydney · 2026" [ref=e235]:
+              - button "城市边缘的宁静 · View original" [ref=e236]:
+                - img "城市边缘的宁静" [ref=e238]
+              - generic [ref=e239]:
+                - strong [ref=e240]: 27 / 城市边缘的宁静
+                - generic [ref=e241]: Sydney · 2026
+            - figure "28 / 星河穹顶 Samarkand City · 2026" [ref=e242]:
+              - button "星河穹顶 · View original" [ref=e243]:
+                - img "星河穹顶" [ref=e245]
+              - generic [ref=e246]:
+                - strong [ref=e247]: 28 / 星河穹顶
+                - generic [ref=e248]: Samarkand City · 2026
+          - generic [ref=e249]:
+            - figure "29 / 金色穹顶下的秘密 Samarkand City · Archive" [ref=e250]:
+              - button "金色穹顶下的秘密 · View original" [ref=e251]:
+                - img "金色穹顶下的秘密" [ref=e253]
+              - generic [ref=e254]:
+                - strong [ref=e255]: 29 / 金色穹顶下的秘密
+                - generic [ref=e256]: Samarkand City · Archive
+            - figure "30 / 砖石上的历史回响 Samarkand City · Archive" [ref=e257]:
+              - button "砖石上的历史回响 · View original" [ref=e258]:
+                - img "砖石上的历史回响" [ref=e260]
+              - generic [ref=e261]:
+                - strong [ref=e262]: 30 / 砖石上的历史回响
+                - generic [ref=e263]: Samarkand City · Archive
+          - generic [ref=e264]:
+            - figure "31 / 古城秘境 Samarkand City · Archive" [ref=e265]:
+              - button "古城秘境 · View original" [ref=e266]:
+                - img "古城秘境" [ref=e268]
+              - generic [ref=e269]:
+                - strong [ref=e270]: 31 / 古城秘境
+                - generic [ref=e271]: Samarkand City · Archive
+            - figure "32 / 砖石与木雕的交响曲 Bukhara · 2026" [ref=e272]:
+              - button "砖石与木雕的交响曲 · View original" [ref=e273]:
+                - img "砖石与木雕的交响曲" [ref=e275]
+              - generic [ref=e276]:
+                - strong [ref=e277]: 32 / 砖石与木雕的交响曲
+                - generic [ref=e278]: Bukhara · 2026
+          - generic [ref=e279]:
+            - figure "33 / 极光之舞 Snæfellsbær · 2025" [ref=e280]:
+              - button "极光之舞 · View original" [ref=e281]:
+                - img "极光之舞" [ref=e283]
+              - generic [ref=e284]:
+                - strong [ref=e285]: 33 / 极光之舞
+                - generic [ref=e286]: Snæfellsbær · 2025
+            - figure "34 / 极光低语 Akureyri · 2025" [ref=e287]:
+              - button "极光低语 · View original" [ref=e288]:
+                - img "极光低语" [ref=e290]
+              - generic [ref=e291]:
+                - strong [ref=e292]: 34 / 极光低语
+                - generic [ref=e293]: Akureyri · 2025
+          - generic [ref=e294]:
+            - figure "35 / 极光之舞 Akureyri · 2025" [ref=e295]:
+              - button "极光之舞 · View original" [ref=e296]:
+                - img "极光之舞" [ref=e298]
+              - generic [ref=e299]:
+                - strong [ref=e300]: 35 / 极光之舞
+                - generic [ref=e301]: Akureyri · 2025
+            - figure "36 / 拥抱雨中风景 Hvolsvöllur · 2025" [ref=e302]:
+              - button "拥抱雨中风景 · View original" [ref=e303]:
+                - img "拥抱雨中风景" [ref=e305]
+              - generic [ref=e306]:
+                - strong [ref=e307]: 36 / 拥抱雨中风景
+                - generic [ref=e308]: Hvolsvöllur · 2025
+          - generic [ref=e309]:
+            - figure "37 / 海浪的低语 Vík í Mýrdal · 2025" [ref=e310]:
+              - button "海浪的低语 · View original" [ref=e311]:
+                - img "海浪的低语" [ref=e313]
+              - generic [ref=e314]:
+                - strong [ref=e315]: 37 / 海浪的低语
+                - generic [ref=e316]: Vík í Mýrdal · 2025
+            - figure "38 / 石语，云卷 Reykjavík · 2025" [ref=e317]:
+              - button "石语，云卷 · View original" [ref=e318]:
+                - img "石语，云卷" [ref=e320]
+              - generic [ref=e321]:
+                - strong [ref=e322]: 38 / 石语，云卷
+                - generic [ref=e323]: Reykjavík · 2025
+          - generic [ref=e324]:
+            - figure "39 / 海风与色彩 Reykjavík · 2025" [ref=e325]:
+              - button "海风与色彩 · View original" [ref=e326]:
+                - img "海风与色彩" [ref=e328]
+              - generic [ref=e329]:
+                - strong [ref=e330]: 39 / 海风与色彩
+                - generic [ref=e331]: Reykjavík · 2025
+            - figure "40 / 金秋行歌 Akureyri · 2025" [ref=e332]:
+              - button "金秋行歌 · View original" [ref=e333]:
+                - img "金秋行歌" [ref=e335]
+              - generic [ref=e336]:
+                - strong [ref=e337]: 40 / 金秋行歌
+                - generic [ref=e338]: Akureyri · 2025
+          - generic [ref=e339]:
+            - figure "41 / 极光之下，定格瞬间 Mývatn · 2025" [ref=e340]:
+              - button "极光之下，定格瞬间 · View original" [ref=e341]:
+                - img "极光之下，定格瞬间" [ref=e343]
+              - generic [ref=e344]:
+                - strong [ref=e345]: 41 / 极光之下，定格瞬间
+                - generic [ref=e346]: Mývatn · 2025
+            - figure "42 / 雨中漫步，城市低语 Oslo · Archive" [ref=e347]:
+              - button "雨中漫步，城市低语 · View original" [ref=e348]:
+                - img "雨中漫步，城市低语" [ref=e350]
+              - generic [ref=e351]:
+                - strong [ref=e352]: 42 / 雨中漫步，城市低语
+                - generic [ref=e353]: Oslo · Archive
+          - generic [ref=e354]:
+            - figure "43 / 冰川之径 Öræfasveit · Archive" [ref=e355]:
+              - button "冰川之径 · View original" [ref=e356]:
+                - img "冰川之径" [ref=e358]
+              - generic [ref=e359]:
+                - strong [ref=e360]: 43 / 冰川之径
+                - generic [ref=e361]: Öræfasveit · Archive
+            - figure "44 / 冰川之歌 Öræfasveit · Archive" [ref=e362]:
+              - button "冰川之歌 · View original" [ref=e363]:
+                - img "冰川之歌" [ref=e365]
+              - generic [ref=e366]:
+                - strong [ref=e367]: 44 / 冰川之歌
+                - generic [ref=e368]: Öræfasveit · Archive
+          - generic [ref=e369]:
+            - figure "45 / 雾霭中的巨响 Selfoss · 2025" [ref=e370]:
+              - button "雾霭中的巨响 · View original" [ref=e371]:
+                - img "雾霭中的巨响" [ref=e373]
+              - generic [ref=e374]:
+                - strong [ref=e375]: 45 / 雾霭中的巨响
+                - generic [ref=e376]: Selfoss · 2025
+            - figure "46 / 海浪的呼吸 Vík í Mýrdal · 2025" [ref=e377]:
+              - button "海浪的呼吸 · View original" [ref=e378]:
+                - img "海浪的呼吸" [ref=e380]
+              - generic [ref=e381]:
+                - strong [ref=e382]: 46 / 海浪的呼吸
+                - generic [ref=e383]: Vík í Mýrdal · 2025
+          - generic [ref=e384]:
+            - figure "47 / 流动的生命线 Kirkjubæjarklaustur · 2025" [ref=e385]:
+              - button "流动的生命线 · View original" [ref=e386]:
+                - img "流动的生命线" [ref=e388]
+              - generic [ref=e389]:
+                - strong [ref=e390]: 47 / 流动的生命线
+                - generic [ref=e391]: Kirkjubæjarklaustur · 2025
+            - figure "48 / 挪威的红尘岁月 Reine · 2025" [ref=e392]:
+              - button "挪威的红尘岁月 · View original" [ref=e393]:
+                - img "挪威的红尘岁月" [ref=e395]
+              - generic [ref=e396]:
+                - strong [ref=e397]: 48 / 挪威的红尘岁月
+                - generic [ref=e398]: Reine · 2025
+    - contentinfo [ref=e399]:
+      - generic [ref=e400]:
+        - heading "YUEYONG" [level=2] [ref=e401]
+        - paragraph [ref=e402]: Photographs / Places / Journeys
+      - navigation "Primary navigation" [ref=e403]:
+        - link "Home" [ref=e404] [cursor=pointer]:
+          - /url: /
+        - link "Work" [ref=e405] [cursor=pointer]:
+          - /url: /work
+        - link "Places" [ref=e406] [cursor=pointer]:
+          - /url: /places
+        - link "Journeys" [ref=e407] [cursor=pointer]:
+          - /url: /journeys
+        - link "About" [ref=e408] [cursor=pointer]:
+          - /url: /about
+        - link "Studio" [ref=e409] [cursor=pointer]:
+          - /url: /studio/overview
+      - generic [ref=e410]:
+        - paragraph [ref=e411]: Software Engineer / Photographer
+        - link "Email" [ref=e412] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e413] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e414] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e415]:
+        - generic [ref=e416]: © 2026 YueYong
+        - generic [ref=e417]: Photographs
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e423] [cursor=pointer]
+  - alert [ref=e427]

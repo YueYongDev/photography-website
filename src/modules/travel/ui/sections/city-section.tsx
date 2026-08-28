@@ -81,7 +81,7 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
       <div className={styles.cityHero}>
         <div>
           <p className={styles.eyebrow}>
-            <Link href="/travel">{copy.navigation.travel}</Link> / <Link href={`/travel/${cityData.countryCode.toLowerCase()}`}>{displayCountry}</Link>
+            <Link href="/places">{copy.navigation.travel}</Link> / <Link href={`/places/${cityData.countryCode.toLowerCase()}`}>{displayCountry}</Link>
           </p>
           <h1 className={styles.displayTitle}>{displayCity}</h1>
         </div>

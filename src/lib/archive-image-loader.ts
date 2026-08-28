@@ -1,6 +1,7 @@
 import type { ImageLoader, ImageLoaderProps } from "next/image";
 
 const qiniuHosts = new Set(["cdn.ytools.xyz"]);
+const pexelsHosts = new Set(["images.pexels.com"]);
 
 export const qiniuImageLoader = ({ src, width, quality }: ImageLoaderProps) => {
   try {
@@ -15,9 +16,25 @@ export const qiniuImageLoader = ({ src, width, quality }: ImageLoaderProps) => {
   }
 };
 
+export const pexelsImageLoader = ({ src, width, quality }: ImageLoaderProps) => {
+  try {
+    const imageUrl = new URL(src);
+    imageUrl.searchParams.set("auto", "compress");
+    imageUrl.searchParams.set("cs", "tinysrgb");
+    imageUrl.searchParams.set("w", String(width));
+    imageUrl.searchParams.set("q", String(quality || 75));
+    return imageUrl.toString();
+  } catch {
+    return src;
+  }
+};
+
 export const getArchiveImageLoader = (src: string): ImageLoader | undefined => {
   try {
-    return qiniuHosts.has(new URL(src).hostname) ? qiniuImageLoader : undefined;
+    const hostname = new URL(src).hostname;
+    if (qiniuHosts.has(hostname)) return qiniuImageLoader;
+    if (pexelsHosts.has(hostname)) return pexelsImageLoader;
+    return undefined;
   } catch {
     return undefined;
   }

@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 import { useSiteLocale } from "@/modules/site/i18n/site-locale";
 import styles from "./public-site.module.css";
@@ -9,9 +11,9 @@ export const AboutView = () => {
   const { copy } = useSiteLocale();
 
   return (
-    <section className={styles.page}>
+    <section className={`${styles.page} ${styles.aboutPage}`}>
       <div className={styles.aboutHero}>
-        <div className={styles.aboutPortrait}>
+        <figure className={styles.aboutPortrait}>
           <Image
             src="/about-yueyong.jpg"
             alt={copy.about.portraitAlt}
@@ -20,12 +22,27 @@ export const AboutView = () => {
             sizes="(min-width: 900px) 38vw, 90vw"
             className={`${styles.imageCover} ${styles.aboutPortraitImage}`}
           />
-        </div>
+          <figcaption>{copy.about.portraitCaption}</figcaption>
+        </figure>
 
         <div className={styles.aboutCopy}>
           <p className={styles.eyebrow}>{copy.about.eyebrow}</p>
           <h1>{copy.about.title}</h1>
-          <p>{copy.about.paragraphOne}</p>
+          <div className={styles.aboutIntro}>
+            <p>{copy.about.paragraphOne}</p>
+            <p>{copy.about.paragraphTwo}</p>
+          </div>
+
+          <dl className={styles.aboutIdentity}>
+            <div>
+              <dt>{copy.about.nameLabel}</dt>
+              <dd>YueYong</dd>
+            </div>
+            <div>
+              <dt>{copy.about.roleLabel}</dt>
+              <dd>{copy.about.roleValue}</dd>
+            </div>
+          </dl>
         </div>
       </div>
 
@@ -33,7 +50,33 @@ export const AboutView = () => {
         <div className={styles.aboutColumn}>
           <span>01</span>
           <h2>{copy.about.practice}</h2>
-          <p>{copy.about.practiceDescription}</p>
+          <nav className={styles.aboutSiteLinks} aria-label={copy.about.practice}>
+            {[
+              {
+                href: "/work",
+                label: copy.navigation.work,
+                note: copy.about.workNote,
+              },
+              {
+                href: "/places",
+                label: copy.navigation.travel,
+                note: copy.about.placesNote,
+              },
+              {
+                href: "/journeys",
+                label: copy.navigation.journeys,
+                note: copy.about.journeysNote,
+              },
+            ].map((item) => (
+              <Link href={item.href} key={item.href}>
+                <span>
+                  <strong>{item.label}</strong>
+                  <small>{item.note}</small>
+                </span>
+                <ArrowUpRight size={15} strokeWidth={1.4} />
+              </Link>
+            ))}
+          </nav>
         </div>
         <div className={styles.aboutColumn}>
           <span>02</span>

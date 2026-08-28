@@ -8,15 +8,19 @@ export const StudioPageHeader = ({
   title,
   description,
   actions,
+  compact = false,
 }: {
   index: string;
   eyebrow: string;
   title: ReactNode;
   description: ReactNode;
   actions?: ReactNode;
+  compact?: boolean;
 }) => {
   return (
-    <header className={styles.pageHeader}>
+    <header
+      className={`${styles.pageHeader} ${compact ? styles.pageHeaderCompact : ""}`}
+    >
       <div className={styles.pageHeaderCopy}>
         <p className={styles.eyebrow}>
           {index} / {eyebrow}

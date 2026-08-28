@@ -31,7 +31,7 @@ const CityCard = ({ title, coverPhoto }: Props) => {
   return (
     <div
       className="w-full relative group cursor-pointer"
-      onClick={() => router.push(`/travel/${title}`)}
+      onClick={() => router.push(`/places/${title}`)}
     >
       <AspectRatio
         ratio={aspectRatio}

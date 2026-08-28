@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 const ChangePassword = ({ triggerClassName }: { triggerClassName?: string }) => {
   const [currentPassword, setCurrentPassword] = useState<string>("");
@@ -26,6 +27,7 @@ const ChangePassword = ({ triggerClassName }: { triggerClassName?: string }) => 
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [signOutDevices, setSignOutDevices] = useState<boolean>(false);
+  const { copy } = useStudioLocale();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -42,36 +44,36 @@ const ChangePassword = ({ triggerClassName }: { triggerClassName?: string }) => 
               d="M2.5 18.5v-1h19v1zm.535-5.973l-.762-.442l.965-1.693h-1.93v-.884h1.93l-.965-1.642l.762-.443L4 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L4 10.835zm8 0l-.762-.442l.966-1.693H9.308v-.884h1.93l-.965-1.642l.762-.443L12 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L12 10.835zm8 0l-.762-.442l.966-1.693h-1.931v-.884h1.93l-.965-1.642l.762-.443L20 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L20 10.835z"
             ></path>
           </svg>
-          <span className="text-sm">Change Password</span>
+          <span className="text-sm">{copy.account.changePassword}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] w-11/12">
         <DialogHeader>
-          <DialogTitle>Change Password</DialogTitle>
-          <DialogDescription>Change your password</DialogDescription>
+          <DialogTitle>{copy.account.changePassword}</DialogTitle>
+          <DialogDescription>{copy.account.changePasswordDescription}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <Label htmlFor="current-password">Current Password</Label>
+          <Label htmlFor="current-password">{copy.account.currentPassword}</Label>
           <PasswordInput
             id="current-password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             autoComplete="new-password"
-            placeholder="Password"
+            placeholder={copy.account.currentPassword}
           />
-          <Label htmlFor="new-password">New Password</Label>
+          <Label htmlFor="new-password">{copy.account.newPassword}</Label>
           <PasswordInput
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="new-password"
-            placeholder="New Password"
+            placeholder={copy.account.newPassword}
           />
-          <Label htmlFor="password">Confirm Password</Label>
+          <Label htmlFor="password">{copy.account.confirmPassword}</Label>
           <PasswordInput
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
-            placeholder="Confirm Password"
+            placeholder={copy.account.confirmPassword}
           />
           <div className="flex gap-2 items-center">
             <Checkbox
@@ -79,18 +81,18 @@ const ChangePassword = ({ triggerClassName }: { triggerClassName?: string }) => 
                 checked ? setSignOutDevices(true) : setSignOutDevices(false)
               }
             />
-            <p className="text-sm">Sign out from other devices</p>
+            <p className="text-sm">{copy.account.signOutOtherDevices}</p>
           </div>
         </div>
         <DialogFooter>
           <Button
             onClick={async () => {
               if (newPassword !== confirmPassword) {
-                toast.error("Passwords do not match");
+                toast.error(copy.account.passwordsMismatch);
                 return;
               }
               if (newPassword.length < 8) {
-                toast.error("Password must be at least 8 characters");
+                toast.error(copy.account.passwordTooShort);
                 return;
               }
               setLoading(true);
@@ -107,7 +109,7 @@ const ChangePassword = ({ triggerClassName }: { triggerClassName?: string }) => 
                 );
               } else {
                 setOpen(false);
-                toast.success("Password changed successfully");
+                toast.success(copy.account.passwordChanged);
                 setCurrentPassword("");
                 setNewPassword("");
                 setConfirmPassword("");
@@ -117,7 +119,7 @@ const ChangePassword = ({ triggerClassName }: { triggerClassName?: string }) => 
             {loading ? (
               <Loader2 size={15} className="animate-spin" />
             ) : (
-              "Change Password"
+              copy.account.changePassword
             )}
           </Button>
         </DialogFooter>

@@ -1,0 +1,58 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "YueYong Photography home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - text: YUEYONG
+        - generic [ref=e5]: Photographs
+      - generic [ref=e6]:
+        - navigation "Primary navigation" [ref=e7]:
+          - link "Work" [ref=e8] [cursor=pointer]:
+            - /url: /work
+          - link "Places" [ref=e9] [cursor=pointer]:
+            - /url: /places
+          - link "Map" [ref=e10] [cursor=pointer]:
+            - /url: /map
+          - link "Journeys" [ref=e11] [cursor=pointer]:
+            - /url: /journeys
+          - link "About" [ref=e12] [cursor=pointer]:
+            - /url: /about
+        - group "Language" [ref=e13]:
+          - button "EN" [pressed] [ref=e14] [cursor=pointer]
+          - generic [ref=e15]: /
+          - button "中文" [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - status [ref=e18]:
+        - paragraph [ref=e24]: Loading map…
+    - contentinfo [ref=e25]:
+      - generic [ref=e26]:
+        - heading "YUEYONG" [level=2] [ref=e27]
+        - paragraph [ref=e28]: Photographs / Places / Journeys
+      - navigation "Primary navigation" [ref=e29]:
+        - link "Home" [ref=e30] [cursor=pointer]:
+          - /url: /
+        - link "Work" [ref=e31] [cursor=pointer]:
+          - /url: /work
+        - link "Places" [ref=e32] [cursor=pointer]:
+          - /url: /places
+        - link "Map" [ref=e33] [cursor=pointer]:
+          - /url: /map
+        - link "Journeys" [ref=e34] [cursor=pointer]:
+          - /url: /journeys
+        - link "About" [ref=e35] [cursor=pointer]:
+          - /url: /about
+        - link "Studio" [ref=e36] [cursor=pointer]:
+          - /url: /studio/overview
+      - generic [ref=e37]:
+        - paragraph [ref=e38]: Software Engineer / Photographer
+        - link "Email" [ref=e39] [cursor=pointer]:
+          - /url: mailto:yueyong1030@outlook.com
+        - link "Instagram" [ref=e40] [cursor=pointer]:
+          - /url: https://www.instagram.com/yueyong.lyy
+        - link "GitHub" [ref=e41] [cursor=pointer]:
+          - /url: https://github.com/YueYongDev
+      - generic [ref=e42]:
+        - generic [ref=e43]: © 2026 YueYong
+        - generic [ref=e44]: Photographs
+  - region "Notifications alt+T"
+  - alert [ref=e45]

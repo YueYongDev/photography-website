@@ -9,28 +9,29 @@ import { Button } from "@/components/ui/button";
 import { PhotoUploadModal } from "../components/photo-upload-modal";
 import { StudioPageHeader } from "../components/studio-page-header";
 import styles from "../studio.module.css";
+import { useStudioLocale } from "../../i18n/studio-locale";
 
 export const DashboardView = () => {
+  const { copy } = useStudioLocale();
+
   return (
     <div className={styles.page}>
       <StudioPageHeader
         index="00"
-        eyebrow="Studio index"
-        title={<>Archive, in progress.</>}
-        description={
-          <>
-            A quiet working view of the photographs, places, and stories that
-            shape the public archive.
-          </>
-        }
+        eyebrow={copy.overview.eyebrow}
+        title={copy.overview.title}
+        description={copy.overview.description}
         actions={
           <>
             <Button className={styles.secondaryAction} asChild>
-              <Link href="/photos">
-                Contact sheets <ArrowUpRight className="size-3.5" />
+              <Link href="/studio/photos">
+                {copy.overview.contactSheets} <ArrowUpRight className="size-3.5" />
               </Link>
             </Button>
-            <PhotoUploadModal triggerClassName={styles.primaryAction} />
+            <PhotoUploadModal
+              triggerClassName={styles.primaryAction}
+              triggerLabel={copy.overview.upload}
+            />
           </>
         }
       />
@@ -38,8 +39,8 @@ export const DashboardView = () => {
       <StatisticsSection />
 
       <div className={styles.sectionLabel}>
-        <p>Archive rhythm</p>
-        <span>Five-year view</span>
+        <p>{copy.overview.rhythm}</p>
+        <span>{copy.overview.fiveYear}</span>
       </div>
       <ChartsSection />
 

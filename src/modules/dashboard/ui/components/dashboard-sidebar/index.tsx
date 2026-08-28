@@ -11,39 +11,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { ArrowUpRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { UserAvatar } from "@/components/user-avatar";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 import styles from "../../studio.module.css";
-
-const navigation = [
-  {
-    number: "01",
-    label: "Overview",
-    note: "Archive status",
-    href: "/dashboard",
-  },
-  {
-    number: "02",
-    label: "Photographs",
-    note: "Contact sheets",
-    href: "/photos",
-  },
-  {
-    number: "03",
-    label: "Journeys",
-    note: "Essays & field notes",
-    href: "/posts",
-  },
-  {
-    number: "04",
-    label: "Account",
-    note: "Access & profile",
-    href: "/profile",
-  },
-] as const;
 
 export const DashboardSidebar = ({
   user,
@@ -51,26 +26,44 @@ export const DashboardSidebar = ({
   user: { name: string; image?: string | null };
 }) => {
   const pathname = usePathname();
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile, state } = useSidebar();
+  const { copy } = useStudioLocale();
+  const navigation = [
+    { number: "01", ...copy.navigation.overview, href: "/studio/overview" },
+    { number: "02", ...copy.navigation.photos, href: "/studio/photos" },
+    { number: "03", ...copy.navigation.journeys, href: "/studio/journeys" },
+    { number: "04", ...copy.navigation.account, href: "/studio/account" },
+  ] as const;
 
   const closeOnMobile = () => {
     if (isMobile) setOpenMobile(false);
   };
 
   return (
-    <Sidebar className={styles.sidebar} collapsible="offcanvas">
+    <Sidebar
+      className={styles.sidebar}
+      collapsible="offcanvas"
+      mobileTitle={copy.shell.navigationTitle}
+      mobileDescription={copy.shell.navigationDescription}
+    >
       <SidebarHeader className={styles.sidebarHeader}>
         <Link
-          href="/dashboard"
+          href="/studio/overview"
           className={styles.sidebarBrand}
           onClick={closeOnMobile}
         >
           <span className={styles.brandMark}>YY</span>
           <span className={styles.brandCopy}>
             <strong>YUEYONG</strong>
-            <span>Photographic studio</span>
+            <span>{copy.shell.brandDetail}</span>
           </span>
         </Link>
+        {(isMobile || state === "expanded") && (
+          <SidebarTrigger
+            className={`${styles.sidebarTrigger} ${styles.sidebarHeaderTrigger}`}
+            label={copy.shell.toggleSidebar}
+          />
+        )}
       </SidebarHeader>
 
       <div className={styles.sidebarRule} />
@@ -78,11 +71,11 @@ export const DashboardSidebar = ({
       <SidebarContent className={styles.sidebarContent}>
         <SidebarGroup className="p-0">
           <SidebarGroupContent>
-            <p className={styles.sidebarLabel}>Workspace</p>
+            <p className={styles.sidebarLabel}>{copy.shell.workspace}</p>
             <SidebarMenu className={styles.sidebarMenu}>
               {navigation.map((item) => {
                 const isActive =
-                  item.href === "/dashboard"
+                  item.href === "/studio/overview"
                     ? pathname === item.href
                     : pathname.startsWith(item.href);
 
@@ -113,7 +106,7 @@ export const DashboardSidebar = ({
 
       <SidebarFooter className={styles.sidebarFooter}>
         <Link
-          href="/profile"
+          href="/studio/account"
           className={styles.profileLink}
           onClick={closeOnMobile}
         >
@@ -124,11 +117,11 @@ export const DashboardSidebar = ({
           />
           <div>
             <strong>{user.name}</strong>
-            <span>Archive owner</span>
+            <span>{copy.shell.archiveOwner}</span>
           </div>
         </Link>
         <Link href="/" className={styles.exitLink} onClick={closeOnMobile}>
-          Public archive
+          {copy.shell.publicArchive}
           <ArrowUpRight size={13} />
         </Link>
       </SidebarFooter>

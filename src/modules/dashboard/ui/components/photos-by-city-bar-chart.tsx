@@ -9,6 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import styles from "../studio.module.css";
+import { useStudioLocale } from "../../i18n/studio-locale";
 
 interface PhotosByCityBarChartProps {
   data: {
@@ -19,6 +20,7 @@ interface PhotosByCityBarChartProps {
 }
 
 export function PhotosByCityBarChart({ data }: PhotosByCityBarChartProps) {
+  const { copy } = useStudioLocale();
   const chartData =
     data?.map((item) => ({
       city: item.city,
@@ -29,7 +31,7 @@ export function PhotosByCityBarChart({ data }: PhotosByCityBarChartProps) {
 
   const chartConfig = {
     photos: {
-      label: "Photos",
+      label: copy.overview.photos,
     },
     ...Object.fromEntries(
       chartData.map((item) => [
@@ -46,8 +48,8 @@ export function PhotosByCityBarChart({ data }: PhotosByCityBarChartProps) {
     <section className={styles.chartPanel}>
       <header className={styles.chartHeader}>
         <div>
-          <h2>Most observed places</h2>
-          <p>Top cities by frame count</p>
+          <h2>{copy.overview.mostObserved}</h2>
+          <p>{copy.overview.topCities}</p>
         </div>
         <span className={styles.chartIndex}>A / 02</span>
       </header>
@@ -108,7 +110,7 @@ export function PhotosByCityBarChart({ data }: PhotosByCityBarChartProps) {
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="photos" layout="vertical" radius={0} />
+            <Bar dataKey="photos" layout="vertical" radius={8} />
           </BarChart>
         </ChartContainer>
       </div>

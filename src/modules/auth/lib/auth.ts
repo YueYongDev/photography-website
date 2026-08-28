@@ -40,3 +40,30 @@ export const getCurrentSession = cache(async () =>
     headers: await headers(),
   })
 );
+
+/**
+ * Account management should remain available when Better Auth considers an
+ * older session insufficiently fresh for enumerating every device. In that
+ * case, keep the current session visible and let sensitive mutations enforce
+ * their own freshness requirements.
+ */
+export async function getStudioAccountSessions() {
+  const session = await getCurrentSession();
+
+  if (!session) {
+    return { session, activeSessions: [] };
+  }
+
+  try {
+    const activeSessions = await auth.api.listSessions({
+      headers: await headers(),
+    });
+    return { session, activeSessions };
+  } catch (error) {
+    console.warn(
+      "Unable to list every active session; showing the current session only",
+      error instanceof Error ? error.message : "Unknown session error",
+    );
+    return { session, activeSessions: [session.session] };
+  }
+}
