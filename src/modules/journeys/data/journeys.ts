@@ -315,10 +315,10 @@ export const journeys: JourneyMeta[] = [
   },
   {
     slug: "london-2024",
-    title: "London, 2024",
+    title: "United Kingdom, 2024",
     subtitle: "Hyde Park Corner / Soho / The City",
     description:
-      "A first London edit, beginning with buses, black cabs and the pace of the street.",
+      "A first United Kingdom edit, beginning in London with buses, black cabs and the pace of the street.",
     country: "United Kingdom",
     countryCode: "GB",
     dates: "2024",
@@ -329,7 +329,7 @@ export const journeys: JourneyMeta[] = [
     coverAlt:
       "Red double-decker buses moving through Hyde Park Corner in London",
     intro:
-      "The first sequence stays at street level. It follows the traffic from Hyde Park Corner into Soho, then ends among the stone facades and glass offices of the City.",
+      "The United Kingdom journey begins in London at street level. It follows the traffic from Hyde Park Corner into Soho, then ends among the stone facades and glass offices of the City.",
     chapters: [
       {
         number: "01",
@@ -361,7 +361,7 @@ export const journeys: JourneyMeta[] = [
     ],
     frames: [],
     closing:
-      "The London edit currently ends in the City. More photographs can be added without changing the three-part structure.",
+      "This first chapter of the United Kingdom journey currently ends in the City. More places can be added as the wider edit develops.",
   },
 ];
 

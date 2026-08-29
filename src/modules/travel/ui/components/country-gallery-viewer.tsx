@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -13,20 +14,54 @@ import {
 import { ArrowLeft, ArrowRight, ArrowUpRight, X } from "lucide-react";
 
 import BlurImage from "@/components/blur-image";
-import type { SiteLocale } from "@/modules/site/i18n/site-locale";
-import type { TravelCityEntry } from "@/modules/travel/lib/country-groups";
+import {
+  localizePlaceName,
+  type SiteLocale,
+} from "@/modules/site/i18n/site-locale";
+import {
+  toPlaceSlug,
+  type TravelCityEntry,
+} from "@/modules/travel/lib/country-groups";
 import styles from "@/modules/site/ui/public-site.module.css";
 import { trpc } from "@/trpc/client";
 
 type Props = {
-  city: TravelCityEntry;
-  cityName: string;
+  cities: TravelCityEntry[];
+  initialCityId: string;
   countryCode: string;
   countryName: string;
-  detailsHref: string;
+  fallbackHref: string;
   locale: SiteLocale;
   onClose: () => void;
-  onNextCollection?: () => void;
+};
+
+type ViewerPhoto = {
+  id: string;
+  url: string;
+  title: string;
+  description: string;
+  blurData: string;
+  width: number;
+  height: number;
+  aspectRatio: number;
+};
+
+type CollectionStatus = "idle" | "loading" | "ready" | "error";
+
+type CollectionState = {
+  photos: ViewerPhoto[];
+  description: string;
+  status: CollectionStatus;
+};
+
+type ViewerPosition = {
+  cityIndex: number;
+  photoIndex: number;
+};
+
+type SequenceItem = ViewerPosition & {
+  city: TravelCityEntry;
+  photo: ViewerPhoto;
 };
 
 const viewerCopy = {
@@ -48,103 +83,255 @@ const viewerCopy = {
   },
 } as const;
 
+const createFallbackCollection = (
+  city: TravelCityEntry,
+  locale: SiteLocale,
+): CollectionState => ({
+  photos: [
+    {
+      id: `cover-${city.id}`,
+      url: city.image.url,
+      title: localizePlaceName(city.city, locale),
+      description: "",
+      blurData: "",
+      width: city.image.width,
+      height: city.image.height,
+      aspectRatio: city.image.aspectRatio,
+    },
+  ],
+  description: "",
+  status: "idle",
+});
+
 export const CountryGalleryViewer = ({
-  city,
-  cityName,
+  cities,
+  initialCityId,
   countryCode,
   countryName,
-  detailsHref,
+  fallbackHref,
   locale,
   onClose,
-  onNextCollection,
 }: Props) => {
   const copy = viewerCopy[locale];
+  const utils = trpc.useUtils();
   const trackRef = useRef<HTMLDivElement | null>(null);
   const wheelLockRef = useRef(0);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const cityQuery = trpc.photos.getCitySetByCity.useQuery(
-    { city: city.city, countryCode },
-    {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-    },
+  const loadingCityIdsRef = useRef(new Set<string>());
+  const loadedCityIdsRef = useRef(new Set<string>());
+  const activeGlobalIndexRef = useRef(0);
+  const programmaticScrollRef = useRef(false);
+  const realigningScrollRef = useRef(false);
+  const scrollReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const mountedRef = useRef(true);
+  const initialCityIndex = Math.max(
+    0,
+    cities.findIndex((city) => city.id === initialCityId),
+  );
+  const [position, setPosition] = useState<ViewerPosition>({
+    cityIndex: initialCityIndex,
+    photoIndex: 0,
+  });
+  const [collections, setCollections] = useState<
+    Record<string, CollectionState>
+  >(() =>
+    Object.fromEntries(
+      cities.map((city) => [city.id, createFallbackCollection(city, locale)]),
+    ),
   );
 
-  const photos = useMemo(() => {
-    const remotePhotos = cityQuery.data
-      ? [cityQuery.data.coverPhoto, ...(cityQuery.data.photos ?? [])]
-      : [];
-    const seen = new Set<string>();
-    const uniquePhotos = remotePhotos.filter((photo) => {
-      if (!photo || seen.has(photo.id)) return false;
-      seen.add(photo.id);
-      return true;
-    });
+  const loadCollection = useCallback(
+    async (cityIndex: number) => {
+      const city = cities[cityIndex];
+      if (
+        !city ||
+        loadedCityIdsRef.current.has(city.id) ||
+        loadingCityIdsRef.current.has(city.id)
+      ) {
+        return;
+      }
 
-    if (uniquePhotos.length > 0) return uniquePhotos;
+      loadingCityIdsRef.current.add(city.id);
+      setCollections((current) => ({
+        ...current,
+        [city.id]: {
+          ...(current[city.id] ?? createFallbackCollection(city, locale)),
+          status: "loading",
+        },
+      }));
 
-    return [
-      {
-        id: `cover-${city.id}`,
-        url: city.image.url,
-        title: cityName,
-        description: "",
-        blurData: "",
-        width: city.image.width,
-        height: city.image.height,
-        aspectRatio: city.image.aspectRatio,
-      },
-    ];
-  }, [city, cityName, cityQuery.data]);
+      try {
+        const data = await utils.photos.getCitySetByCity.fetch({
+          city: city.city,
+          countryCode,
+        });
+        const remotePhotos = data
+          ? [data.coverPhoto, ...(data.photos ?? [])]
+          : [];
+        const seen = new Set<string>();
+        const photos = remotePhotos.reduce<ViewerPhoto[]>((result, photo) => {
+          if (!photo || seen.has(photo.id)) return result;
+          seen.add(photo.id);
+          result.push({
+            id: photo.id,
+            url: photo.url,
+            title: photo.title,
+            description: photo.description,
+            blurData: photo.blurData,
+            width: photo.width,
+            height: photo.height,
+            aspectRatio: photo.aspectRatio,
+          });
+          return result;
+        }, []);
+
+        loadedCityIdsRef.current.add(city.id);
+        if (!mountedRef.current) return;
+
+        setCollections((current) => ({
+          ...current,
+          [city.id]: {
+            photos:
+              photos.length > 0
+                ? photos
+                : (current[city.id]?.photos ??
+                  createFallbackCollection(city, locale).photos),
+            description: data?.description ?? "",
+            status: "ready",
+          },
+        }));
+      } catch {
+        if (!mountedRef.current) return;
+        setCollections((current) => ({
+          ...current,
+          [city.id]: {
+            ...(current[city.id] ?? createFallbackCollection(city, locale)),
+            status: "error",
+          },
+        }));
+      } finally {
+        loadingCityIdsRef.current.delete(city.id);
+      }
+    },
+    [cities, countryCode, locale, utils.photos.getCitySetByCity],
+  );
+
+  const sequence = useMemo(
+    () =>
+      cities.flatMap((city, cityIndex) => {
+        const collection =
+          collections[city.id] ?? createFallbackCollection(city, locale);
+
+        return collection.photos.map((photo, photoIndex): SequenceItem => ({
+          city,
+          cityIndex,
+          photo,
+          photoIndex,
+        }));
+      }),
+    [cities, collections, locale],
+  );
+
+  const activeGlobalIndex = Math.max(
+    0,
+    sequence.findIndex(
+      (item) =>
+        item.cityIndex === position.cityIndex &&
+        item.photoIndex === position.photoIndex,
+    ),
+  );
+  activeGlobalIndexRef.current = activeGlobalIndex;
 
   const goTo = useCallback(
     (nextIndex: number, behavior: ScrollBehavior = "smooth") => {
-      const boundedIndex = Math.max(0, Math.min(nextIndex, photos.length - 1));
+      if (sequence.length === 0) return;
+      const boundedIndex = Math.max(0, Math.min(nextIndex, sequence.length - 1));
+      const target = sequence[boundedIndex];
       const track = trackRef.current;
-      setActiveIndex(boundedIndex);
+
+      if (behavior === "smooth") {
+        programmaticScrollRef.current = true;
+        if (scrollReleaseTimerRef.current) {
+          clearTimeout(scrollReleaseTimerRef.current);
+        }
+        scrollReleaseTimerRef.current = setTimeout(() => {
+          programmaticScrollRef.current = false;
+          scrollReleaseTimerRef.current = null;
+          const currentTrack = trackRef.current;
+          if (!currentTrack) return;
+          realigningScrollRef.current = true;
+          currentTrack.scrollTo({
+            left: activeGlobalIndexRef.current * currentTrack.clientWidth,
+            behavior: "auto",
+          });
+          window.requestAnimationFrame(() => {
+            realigningScrollRef.current = false;
+          });
+        }, 700);
+      }
+
+      setPosition({
+        cityIndex: target.cityIndex,
+        photoIndex: target.photoIndex,
+      });
       track?.scrollTo({
         left: boundedIndex * track.clientWidth,
         behavior,
       });
     },
-    [photos.length],
+    [sequence],
   );
 
   const closeViewer = useCallback(() => onClose(), [onClose]);
-
-  const goNext = useCallback(() => {
-    if (activeIndex < photos.length - 1) {
-      goTo(activeIndex + 1);
-      return;
-    }
-
-    if (onNextCollection) {
-      // Keep the full-screen viewer mounted while the collection changes.
-      // Reset both the DOM track and React state before the parent swaps city
-      // data so the next collection starts at frame one without a stale paint.
-      trackRef.current?.scrollTo({ left: 0, behavior: "auto" });
-      setActiveIndex(0);
-      onNextCollection();
-    }
-  }, [activeIndex, goTo, onNextCollection, photos.length]);
+  const goNext = useCallback(
+    () => goTo(activeGlobalIndex + 1),
+    [activeGlobalIndex, goTo],
+  );
+  const goPrevious = useCallback(
+    () => goTo(activeGlobalIndex - 1),
+    [activeGlobalIndex, goTo],
+  );
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    mountedRef.current = true;
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      mountedRef.current = false;
+      if (scrollReleaseTimerRef.current) {
+        clearTimeout(scrollReleaseTimerRef.current);
+      }
     };
   }, []);
 
   useEffect(() => {
-    goTo(0, "auto");
-  }, [city.id, goTo]);
+    void loadCollection(position.cityIndex);
+    void loadCollection(position.cityIndex + 1);
+    void loadCollection(position.cityIndex - 1);
+  }, [loadCollection, position.cityIndex]);
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (!track || programmaticScrollRef.current) return;
+    realigningScrollRef.current = true;
+    track.scrollTo({
+      left: activeGlobalIndexRef.current * track.clientWidth,
+      behavior: "auto",
+    });
+    const frame = window.requestAnimationFrame(() => {
+      realigningScrollRef.current = false;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [sequence.length]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeViewer();
-      if (event.key === "ArrowLeft") goTo(activeIndex - 1);
+      if (event.key === "ArrowLeft") goPrevious();
       if (event.key === "ArrowRight") goNext();
     };
 
@@ -152,23 +339,41 @@ export const CountryGalleryViewer = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activeIndex, closeViewer, goNext, goTo]);
+  }, [closeViewer, goNext, goPrevious]);
 
   const handleScroll = () => {
     const track = trackRef.current;
-    if (!track || track.clientWidth === 0) return;
-    setActiveIndex(
-      Math.max(
-        0,
-        Math.min(Math.round(track.scrollLeft / track.clientWidth), photos.length - 1),
+    if (
+      !track ||
+      track.clientWidth === 0 ||
+      sequence.length === 0 ||
+      programmaticScrollRef.current ||
+      realigningScrollRef.current
+    ) {
+      return;
+    }
+    const nextIndex = Math.max(
+      0,
+      Math.min(
+        Math.round(track.scrollLeft / track.clientWidth),
+        sequence.length - 1,
       ),
+    );
+    const target = sequence[nextIndex];
+
+    setPosition((current) =>
+      current.cityIndex === target.cityIndex &&
+      current.photoIndex === target.photoIndex
+        ? current
+        : { cityIndex: target.cityIndex, photoIndex: target.photoIndex },
     );
   };
 
   const handleWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
-    const directionValue = Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      ? event.deltaX
-      : event.deltaY;
+    const directionValue =
+      Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.deltaY;
     if (Math.abs(directionValue) < 10) return;
 
     const now = Date.now();
@@ -177,26 +382,37 @@ export const CountryGalleryViewer = ({
     if (directionValue > 0) {
       goNext();
     } else {
-      goTo(activeIndex - 1);
+      goPrevious();
     }
   };
 
-  const activePhoto = photos[activeIndex] ?? photos[0];
-  const activeTitle = activePhoto?.title || cityName;
+  const activeItem = sequence[activeGlobalIndex] ?? sequence[0];
+  if (!activeItem) return null;
+
+  const activeCity = activeItem.city;
+  const activePhoto = activeItem.photo;
+  const activeCollection = collections[activeCity.id];
+  const activeCityName = localizePlaceName(activeCity.city, locale);
+  const activeTitle = activePhoto.title || activeCityName;
   const activeDescription =
-    activePhoto?.description || cityQuery.data?.description || "";
+    activePhoto.description || activeCollection?.description || "";
+  const detailsHref = activeCity.id.startsWith("fallback-")
+    ? fallbackHref
+    : `/places/${countryCode.toLowerCase()}/${toPlaceSlug(activeCity.city)}`;
 
   return (
     <div
       className={styles.countryViewer}
       role="dialog"
       aria-modal="true"
-      aria-label={`${countryName} / ${cityName}`}
+      aria-label={`${countryName} / ${activeCityName}`}
     >
       <header className={styles.countryViewerHeader}>
         <div>
-          <p>{countryName} / {countryCode}</p>
-          <h2>{cityName}</h2>
+          <p>
+            {countryName} / {countryCode}
+          </p>
+          <h2>{activeCityName}</h2>
         </div>
         <button
           type="button"
@@ -215,14 +431,20 @@ export const CountryGalleryViewer = ({
         onScroll={handleScroll}
         onWheel={handleWheel}
       >
-        {photos.map((photo, index) => {
+        {sequence.map((item, index) => {
+          const { city, cityIndex, photo, photoIndex } = item;
+          const cityName = localizePlaceName(city.city, locale);
           const aspectRatio =
             photo.width > 0 && photo.height > 0
               ? photo.width / photo.height
               : photo.aspectRatio || 3 / 2;
+          const eager = Math.abs(cityIndex - position.cityIndex) <= 1;
 
           return (
-            <div className={styles.countryViewerPanel} key={photo.id}>
+            <div
+              className={styles.countryViewerPanel}
+              key={`${city.id}:${photo.url}:${photoIndex}`}
+            >
               <div
                 className={styles.countryViewerImage}
                 style={
@@ -233,9 +455,12 @@ export const CountryGalleryViewer = ({
               >
                 <BlurImage
                   src={photo.url}
-                  alt={photo.title || `${cityName} photograph ${index + 1}`}
+                  alt={photo.title || `${cityName} photograph ${photoIndex + 1}`}
                   fill
-                  priority={index < 2}
+                  loading={eager ? "eager" : "lazy"}
+                  fetchPriority={
+                    Math.abs(index - activeGlobalIndex) <= 1 ? "high" : "auto"
+                  }
                   quality={75}
                   blurhash={photo.blurData || ""}
                   sizes="(max-width: 600px) 94vw, 88vw"
@@ -247,13 +472,13 @@ export const CountryGalleryViewer = ({
         })}
       </div>
 
-      {(photos.length > 1 || onNextCollection) && (
+      {sequence.length > 1 && (
         <>
           <button
             type="button"
             className={`${styles.countryViewerNav} ${styles.countryViewerPrevious}`}
-            onClick={() => goTo(activeIndex - 1)}
-            disabled={activeIndex === 0}
+            onClick={goPrevious}
+            disabled={activeGlobalIndex === 0}
             aria-label={copy.previous}
           >
             <ArrowLeft size={20} strokeWidth={1.25} />
@@ -262,7 +487,7 @@ export const CountryGalleryViewer = ({
             type="button"
             className={`${styles.countryViewerNav} ${styles.countryViewerNext}`}
             onClick={goNext}
-            disabled={activeIndex === photos.length - 1 && !onNextCollection}
+            disabled={activeGlobalIndex === sequence.length - 1}
             aria-label={copy.next}
           >
             <ArrowRight size={20} strokeWidth={1.25} />
@@ -274,15 +499,17 @@ export const CountryGalleryViewer = ({
         <div>
           <p>{activeTitle}</p>
           {activeDescription && <span>{activeDescription}</span>}
-          {cityQuery.isLoading && <span>{copy.opening}</span>}
-          {cityQuery.isError && <span>{copy.fallback}</span>}
+          {activeCollection?.status === "loading" && (
+            <span>{copy.opening}</span>
+          )}
+          {activeCollection?.status === "error" && <span>{copy.fallback}</span>}
           <Link href={detailsHref}>
             {copy.details} <ArrowUpRight size={13} strokeWidth={1.25} />
           </Link>
         </div>
         <p className={styles.countryViewerCount} aria-live="polite">
-          {String(activeIndex + 1).padStart(2, "0")} ·{" "}
-          {String(photos.length).padStart(2, "0")}
+          {String(activeItem.photoIndex + 1).padStart(2, "0")} ·{" "}
+          {String(activeCollection?.photos.length ?? 1).padStart(2, "0")}
         </p>
       </footer>
     </div>

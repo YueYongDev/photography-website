@@ -29,6 +29,7 @@ import {
 import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
 import { trpc } from "@/trpc/client";
 import styles from "./map-experience.module.css";
+import { MapPhotoLightbox } from "./map-photo-lightbox";
 
 type MapMode = "globe" | "atlas";
 
@@ -211,6 +212,7 @@ export const MapSection = () => {
   const [mode, setMode] = useState<MapMode>("globe");
   const [panelOpen, setPanelOpen] = useState(false);
   const [resetVersion, setResetVersion] = useState(0);
+  const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null);
 
   const photos = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
@@ -483,11 +485,12 @@ export const MapSection = () => {
 
             <div className={styles.photoGrid}>
               {selectedGroup.photos.slice(0, 6).map((photo, index) => (
-                <Link
-                  href={`/photograph/${photo.id}`}
+                <button
+                  type="button"
                   className={styles.photoTile}
                   key={photo.id}
                   aria-label={photo.title || copy.city.photoAlt(selectedGroup.city)}
+                  onClick={() => setActivePhotoIndex(index)}
                 >
                   <BlurImage
                     src={photo.url}
@@ -499,7 +502,7 @@ export const MapSection = () => {
                     className={styles.photoImage}
                   />
                   <span>{String(index + 1).padStart(2, "0")}</span>
-                </Link>
+                </button>
               ))}
             </div>
 
@@ -632,6 +635,15 @@ export const MapSection = () => {
           </>
         )}
       </aside>
+
+      {selectedGroup && activePhotoIndex !== null && (
+        <MapPhotoLightbox
+          activeIndex={activePhotoIndex}
+          photos={selectedGroup.photos.slice(0, 6)}
+          onClose={() => setActivePhotoIndex(null)}
+          onSelect={setActivePhotoIndex}
+        />
+      )}
     </section>
   );
 };

@@ -483,13 +483,34 @@
 
 .homeWorkGallery {
   width: 100%;
+  max-width: 104rem;
   margin: clamp(3rem, 4.5vw, 4.5rem) auto 0;
+}
+
+.homeWorkCarousel {
+  width: 100%;
+}
+
+.homeWorkViewport {
+  overflow: hidden;
+}
+
+.homeWorkTrack {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+}
+
+.homeWorkSlide {
+  flex: 0 0 100%;
+  min-width: 0;
 }
 
 .homeWorkGrid {
   display: grid;
   gap: clamp(0.75rem, 1.1vw, 1rem);
   align-items: start;
+  width: 100%;
+  margin-inline: auto;
 }
 
 .homeWorkCard {
@@ -545,9 +566,45 @@
 .homeWorkFooter {
   display: flex;
   justify-content: flex-end;
-  margin-top: clamp(2.5rem, 3.5vw, 3.5rem);
+  margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--site-line);
+}
+
+.homeWorkPagination {
+  display: flex;
+  min-height: 2.25rem;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: clamp(1.75rem, 2.75vw, 2.75rem);
+  color: var(--site-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+}
+
+.homeWorkPagination > button {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--site-line);
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.homeWorkPagination > button:hover,
+.homeWorkPagination > button:focus-visible {
+  border-color: var(--site-ink);
+  color: var(--site-ink);
+  transform: scale(1.04);
 }
 
 .homeWorkMeta p {

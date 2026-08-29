@@ -179,6 +179,10 @@ const english = {
     allCities: "All mapped cities",
     openCollection: "Open city collection",
     browsePlaces: "Browse places",
+    close: "Close",
+    closePhoto: "Close photograph",
+    previousPhoto: "Previous photograph",
+    nextPhoto: "Next photograph",
   },
   photo: {
     loadingTitle: "Loading photograph",
@@ -375,6 +379,10 @@ const chinese = {
     allCities: "全部城市",
     openCollection: "打开城市照片集",
     browsePlaces: "浏览足迹",
+    close: "关闭",
+    closePhoto: "关闭照片",
+    previousPhoto: "上一张照片",
+    nextPhoto: "下一张照片",
   },
   photo: {
     loadingTitle: "照片加载中",
@@ -799,15 +807,16 @@ const journeyTranslations: Record<string, JourneyTranslation> = {
     closing: "照片已经在这里，最终顺序和文字还没定。",
   },
   "london-2024": {
-    title: "伦敦，2024",
+    title: "英国，2024",
     subtitle: "海德公园角 / 苏活 / 伦敦城",
-    description: "伦敦的第一版选片，先从公交、黑色出租车和街道路口开始。",
+    description:
+      "英国旅程的第一版选片，先从伦敦的公交、黑色出租车和街道路口开始。",
     country: "英国",
     dates: "2024 年",
     route: ["海德公园角", "苏活", "伦敦城"],
     coverAlt: "红色双层公交穿过伦敦海德公园角",
     intro:
-      "第一组先留在街面，从海德公园角跟着车流走进苏活，最后停在伦敦城的新旧建筑之间。",
+      "英国旅程先从伦敦街头开始：从海德公园角跟着车流走进苏活，最后停在伦敦城的新旧建筑之间。",
     chapters: [
       {
         number: "01",
@@ -838,7 +847,8 @@ const journeyTranslations: Record<string, JourneyTranslation> = {
       },
     ],
     frames: [],
-    closing: "目前先在伦敦城收尾。之后补照片时，仍可以沿用这三个部分。",
+    closing:
+      "英国旅程的第一章目前先在伦敦城收尾；随着选片继续，之后还可以加入更多地方。",
   },
 };
 

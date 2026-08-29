@@ -83,10 +83,15 @@ export const AboutView = () => {
           <h2>{copy.about.tools}</h2>
           <ul>
             <li>Sony Alpha ILCE-6700</li>
-            <li>Tamron 18–300mm</li>
-            <li>Sigma 18–50mm F2.8</li>
-            <li>Viltrox 27mm F1.2</li>
+            <li>Sony E 16–55mm F2.8 G</li>
+            <li>Sony E 70–350mm F4.5–6.3 G OSS</li>
+            <li>Sony E PZ 18–105mm F4 G OSS</li>
+            <li>Sony E 11mm F1.8</li>
+            <li>Sigma 56mm F1.4 DC DN | Contemporary</li>
             <li>DJI Mini 4 Pro</li>
+            <li>iPhone 17 Pro</li>
+            <li>Panasonic LUMIX DC-S9</li>
+            <li>LUMIX S 40mm F2 (S-S40)</li>
           </ul>
         </div>
         <div className={styles.aboutColumn}>

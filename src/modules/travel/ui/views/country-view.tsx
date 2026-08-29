@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, ArrowUpRight, Map } from "lucide-react";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
@@ -12,17 +12,14 @@ import {
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
 import {
-  toPlaceSlug,
   type TravelCityEntry,
   type TravelCountryGroup,
 } from "@/modules/travel/lib/country-groups";
 import { CountryGalleryViewer } from "@/modules/travel/ui/components/country-gallery-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
-import { trpc } from "@/trpc/client";
 
 export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
   const { copy, locale } = useSiteLocale();
-  const utils = trpc.useUtils();
   const [selectedCity, setSelectedCity] = useState<TravelCityEntry | null>(null);
   const countryName = localizeCountryName(country.name, country.code, locale);
   const fallbackHref =
@@ -31,24 +28,6 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
       : country.code === "UZ"
         ? "/journeys/uzbekistan-2026"
         : "/map";
-  const selectedCityIndex = selectedCity
-    ? country.cities.findIndex((city) => city.id === selectedCity.id)
-    : -1;
-  const nextCity =
-    selectedCityIndex >= 0 ? country.cities[selectedCityIndex + 1] : undefined;
-
-  useEffect(() => {
-    if (!nextCity) return;
-
-    void utils.photos.getCitySetByCity.prefetch({
-      city: nextCity.city,
-      countryCode: country.code,
-    });
-
-    const nextCover = new window.Image();
-    nextCover.src = nextCity.image.url;
-  }, [country.code, nextCity, utils.photos.getCitySetByCity]);
-
   return (
     <section className={styles.page}>
       <Link href="/places" className={styles.journeyBack}>
@@ -138,20 +117,13 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
 
       {selectedCity && (
         <CountryGalleryViewer
-          city={selectedCity}
-          cityName={localizePlaceName(selectedCity.city, locale)}
+          cities={country.cities}
+          initialCityId={selectedCity.id}
           countryCode={country.code}
           countryName={countryName}
-          detailsHref={
-            selectedCity.id.startsWith("fallback-")
-              ? fallbackHref
-              : `/places/${country.code.toLowerCase()}/${toPlaceSlug(selectedCity.city)}`
-          }
+          fallbackHref={fallbackHref}
           locale={locale}
           onClose={() => setSelectedCity(null)}
-          onNextCollection={
-            nextCity ? () => setSelectedCity(nextCity) : undefined
-          }
         />
       )}
     </section>

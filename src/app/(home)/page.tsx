@@ -8,7 +8,7 @@ const page = async () => {
   let selectedPhotos: HomeSelectedPhoto[] = [];
 
   try {
-    selectedPhotos = await trpc.photos.getLikedPhotos({ limit: 3 });
+    selectedPhotos = await trpc.photos.getLikedPhotos({ limit: 9 });
   } catch {
     // The page shell and the rest of the archive remain available.
   }
