@@ -141,7 +141,6 @@ export const MapPhotoLightbox = ({
       : null,
     photo.iso ? [copy.photo.sensitivity, `ISO ${photo.iso}`] : null,
     date ? [copy.photo.date, date] : null,
-    location ? [copy.common.place, location] : null,
   ].filter((spec): spec is [string, string] => Boolean(spec));
 
   const stopPropagation = (event: ReactMouseEvent) => event.stopPropagation();
@@ -195,6 +194,7 @@ export const MapPhotoLightbox = ({
 
       <figure
         className={styles.photoLightboxFigure}
+        data-orientation={aspectRatio < 1 ? "portrait" : "landscape"}
         style={
           {
             "--map-photo-ratio": aspectRatio,
@@ -226,15 +226,28 @@ export const MapPhotoLightbox = ({
             <h2 id="map-photo-lightbox-title">{title}</h2>
           </div>
 
-          {specs.length > 0 && (
-            <dl className={styles.photoLightboxSpecs}>
-              {specs.map(([label, value]) => (
-                <div key={label}>
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
+          {(specs.length > 0 || location) && (
+            <div className={styles.photoLightboxDetails}>
+              {specs.length > 0 && (
+                <dl className={styles.photoLightboxSpecs}>
+                  {specs.map(([label, value]) => (
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              {location && (
+                <dl className={styles.photoLightboxLocation}>
+                  <div>
+                    <dt>{copy.common.place}</dt>
+                    <dd>{location}</dd>
+                  </div>
+                </dl>
+              )}
+            </div>
           )}
         </figcaption>
       </figure>
