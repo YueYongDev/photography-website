@@ -22,7 +22,6 @@ export const AboutView = () => {
             sizes="(min-width: 900px) 38vw, 90vw"
             className={`${styles.imageCover} ${styles.aboutPortraitImage}`}
           />
-          <figcaption>{copy.about.portraitCaption}</figcaption>
         </figure>
 
         <div className={styles.aboutCopy}>
@@ -30,7 +29,7 @@ export const AboutView = () => {
           <h1>{copy.about.title}</h1>
           <div className={styles.aboutIntro}>
             <p>{copy.about.paragraphOne}</p>
-            <p>{copy.about.paragraphTwo}</p>
+            {copy.about.paragraphTwo ? <p>{copy.about.paragraphTwo}</p> : null}
           </div>
 
           <dl className={styles.aboutIdentity}>
@@ -61,6 +60,11 @@ export const AboutView = () => {
                 href: "/places",
                 label: copy.navigation.travel,
                 note: copy.about.placesNote,
+              },
+              {
+                href: "/map",
+                label: copy.navigation.map,
+                note: copy.about.mapNote,
               },
               {
                 href: "/journeys",

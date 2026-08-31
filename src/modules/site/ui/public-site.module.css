@@ -301,7 +301,7 @@
 }
 
 .pageMist {
-  background: var(--site-mist);
+  background: var(--site-paper);
 }
 
 .eyebrow {
@@ -345,7 +345,7 @@
 }
 
 .sectionMist {
-  background: var(--site-mist);
+  background: var(--site-paper);
 }
 
 .sectionHead {
@@ -2059,7 +2059,7 @@
   grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
   gap: clamp(3rem, 8vw, 9rem);
   padding: clamp(7rem, 11vw, 11rem) clamp(1.5rem, 5vw, 5.5rem);
-  background: var(--site-mist);
+  background: var(--site-paper);
 }
 
 .journeyPrologue > p:last-child {
@@ -2219,7 +2219,7 @@
 
 .journeyContactSheet {
   padding: clamp(7rem, 11vw, 11rem) clamp(1.5rem, 5vw, 5.5rem);
-  background: var(--site-mist);
+  background: var(--site-paper);
 }
 
 .journeyContactHead {
@@ -2996,32 +2996,25 @@
   object-position: center center;
 }
 
-.aboutPortrait figcaption {
-  position: absolute;
-  right: 0.8rem;
-  bottom: 0.8rem;
-  padding: 0.55rem 0.7rem;
-  background: rgba(255, 255, 255, 0.88);
-  color: var(--site-ink);
-  font-size: 0.67rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  backdrop-filter: blur(10px);
-}
-
 .aboutCopy {
   padding-top: clamp(0.25rem, 1.5vw, 1.5rem);
 }
 
 .aboutCopy h1 {
-  max-width: 11ch;
+  max-width: 15ch;
   margin: 0;
   font-family: var(--site-serif);
-  font-size: clamp(3.4rem, 5.8vw, 6.2rem);
+  font-size: clamp(3.25rem, 4.4vw, 5.6rem);
   font-weight: 400;
   letter-spacing: -0.05em;
   line-height: 0.98;
+  text-wrap: balance;
   word-break: keep-all;
+}
+
+.shell[data-locale="zh-CN"] .aboutCopy h1 {
+  max-width: 5em;
+  font-size: clamp(4.5rem, 6vw, 6.75rem);
 }
 
 .aboutIntro {
@@ -3040,6 +3033,11 @@
   font-family: var(--site-serif);
   font-size: clamp(0.98rem, 1.15vw, 1.1rem);
   line-height: 1.68;
+}
+
+.aboutIntro p:only-child {
+  grid-column: 1 / -1;
+  max-width: none;
 }
 
 .aboutIdentity {
@@ -4355,6 +4353,11 @@
   .aboutCopy h1 {
     max-width: 9ch;
     font-size: clamp(3.1rem, 13vw, 4.15rem);
+  }
+
+  .shell[data-locale="zh-CN"] .aboutCopy h1 {
+    max-width: 5em;
+    font-size: clamp(3.75rem, 17vw, 5rem);
   }
 
   .aboutIntro {

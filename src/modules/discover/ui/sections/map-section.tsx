@@ -99,9 +99,9 @@ const MapSceneController = ({
 
     map.setProjection({ type: mode === "globe" ? "globe" : "mercator" });
     map.setSky({
-      "sky-color": "#dbe2e1",
-      "horizon-color": "#f7f8f7",
-      "fog-color": "#edf0ef",
+      "sky-color": "#ffffff",
+      "horizon-color": "#ffffff",
+      "fog-color": "#ffffff",
       "sky-horizon-blend": 0.82,
       "horizon-fog-blend": 0.72,
       "atmosphere-blend": mode === "globe" ? 0.72 : 0,

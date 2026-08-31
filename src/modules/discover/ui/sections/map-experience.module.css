@@ -5,7 +5,7 @@
   min-height: 40rem;
   overflow: hidden;
   isolation: isolate;
-  background: #e7ecea;
+  background: var(--site-paper, #fff);
   color: var(--site-ink);
 }
 
@@ -39,8 +39,8 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(244, 247, 245, 0.3) 0%, transparent 18%),
-    linear-gradient(0deg, rgba(240, 244, 242, 0.22) 0%, transparent 16%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 18%),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.22) 0%, transparent 16%);
 }
 
 .mapIdentity {
@@ -652,7 +652,7 @@
   place-content: center;
   justify-items: center;
   overflow: hidden;
-  background: #edf1ef;
+  background: var(--site-paper, #fff);
 }
 
 .stateGrid {
@@ -819,8 +819,8 @@
 
   .mapWash {
     background:
-      linear-gradient(180deg, rgba(244, 247, 245, 0.48) 0%, transparent 22%),
-      linear-gradient(0deg, rgba(240, 244, 242, 0.25) 0%, transparent 14%);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.48) 0%, transparent 22%),
+      linear-gradient(0deg, rgba(255, 255, 255, 0.25) 0%, transparent 14%);
   }
 
   .mapIdentity {
