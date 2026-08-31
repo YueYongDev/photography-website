@@ -16,14 +16,8 @@ if (!runtimeDatabaseUrl) {
   throw new Error("DATABASE_URL must be configured");
 }
 
-// Ignore PostgreSQL-only query parameters that can remain in a developer's
-// legacy local URL while the migration is being rolled out.
-const databaseUrl = new URL(runtimeDatabaseUrl);
-databaseUrl.searchParams.delete("sslmode");
-databaseUrl.searchParams.delete("pgbouncer");
-
 const pool = mysql.createPool({
-  uri: databaseUrl.toString(),
+  uri: runtimeDatabaseUrl,
   connectionLimit: Number(process.env.DATABASE_POOL_SIZE ?? 4),
   connectTimeout: 4_000,
   enableKeepAlive: true,

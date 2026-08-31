@@ -148,17 +148,16 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
   const onSubmit = (values: z.infer<typeof photosInsertSchema>) => {
     const formData = {
       ...values,
-      country: address?.features[0].properties.context.country?.name,
-      countryCode: address?.features[0].properties.context.country?.country_code,
-      region: address?.features[0].properties.context.region?.name,
+      country: address?.country,
+      countryCode: address?.countryCode,
+      region: address?.region,
       city:
-        address?.features[0].properties.context.country?.country_code === "JP" ||
-          address?.features[0].properties.context.country?.country_code === "TW"
-          ? address?.features[0].properties.context.region?.name
-          : address?.features[0].properties.context.place?.name,
-      district: address?.features[0].properties.context.locality?.name,
-      fullAddress: address?.features[0].properties.full_address,
-      placeFormatted: address?.features[0].properties.place_formatted,
+        address?.countryCode === "JP" || address?.countryCode === "TW"
+          ? address?.region
+          : address?.city,
+      district: address?.district,
+      fullAddress: address?.fullAddress,
+      placeFormatted: address?.fullAddress,
     };
     console.log(formData);
     create.mutate(formData);
@@ -599,7 +598,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                 </div>
               </FormControl>
               <FormDescription>
-                {address?.features?.[0]?.properties?.full_address}
+                {address?.fullAddress}
               </FormDescription>
             </FormItem>
 

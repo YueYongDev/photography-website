@@ -71,7 +71,7 @@ const AuthenticatedDashboardLayout = async ({
   } catch (error) {
     unstable_rethrow(error);
     // A transient database/auth failure is not evidence that the user signed
-    // out. Redirecting here used to create a /dashboard <-> /sign-in loop.
+    // out. Redirecting here would create a sign-in loop.
     console.error("Unable to resolve the dashboard session", error);
     return <DashboardSessionError />;
   }

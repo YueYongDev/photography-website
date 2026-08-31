@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 import BlurImage from "@/components/blur-image";
@@ -10,6 +10,7 @@ import {
   localizePlaceName,
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
+import { PhotoViewer } from "@/modules/site/ui/photo-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
 import { trpc } from "@/trpc/client";
 
@@ -55,6 +56,7 @@ export const CitySection = ({ city, countryCode }: Props) => {
 const CitySectionSuspense = ({ city, countryCode }: Props) => {
   const { copy, locale } = useSiteLocale();
   const [cityData] = trpc.photos.getCitySetByCity.useSuspenseQuery({ city, countryCode });
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   if (!cityData) return <ErrorState />;
 
@@ -75,6 +77,31 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
     cityData.coverPhoto?.width && cityData.coverPhoto.height
       ? cityData.coverPhoto.width / cityData.coverPhoto.height
       : cityData.coverPhoto?.aspectRatio || 1.5;
+  const viewerPhotos = [cityData.coverPhoto, ...cityPhotos].flatMap((photo) => {
+    if (!photo) return [];
+    const photoDate = photo.dateTimeOriginal
+      ? new Date(photo.dateTimeOriginal).toLocaleDateString(locale, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : null;
+
+    return [
+      {
+        id: photo.id,
+        url: photo.url,
+        title: photo.title,
+        description: photo.description,
+        location: `${displayCity} · ${displayCountry}`,
+        date: photoDate,
+        blurData: photo.blurData,
+        width: photo.width,
+        height: photo.height,
+        aspectRatio: photo.aspectRatio,
+      },
+    ];
+  });
 
   return (
     <section className={styles.page}>
@@ -85,10 +112,14 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
           </p>
           <h1 className={styles.displayTitle}>{displayCity}</h1>
         </div>
-        <Link
-          href={cityData.coverPhoto?.id ? `/photograph/${cityData.coverPhoto.id}` : "#"}
+        <button
+          type="button"
           className={styles.cityCover}
           style={{ aspectRatio: coverAspectRatio }}
+          aria-label={
+            cityData.coverPhoto?.title || copy.city.photoAlt(displayCity)
+          }
+          onClick={() => setActiveIndex(0)}
         >
           <BlurImage
             src={cityData.coverPhoto?.url || "/placeholder.svg"}
@@ -100,7 +131,7 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
             sizes="90vw"
             className={styles.imageContain}
           />
-        </Link>
+        </button>
       </div>
 
       <div className={styles.cityMeta}>
@@ -118,11 +149,13 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
               : photo.aspectRatio || 1.5;
 
           return (
-            <Link
-              href={`/photograph/${photo.id}`}
+            <button
+              type="button"
               className={styles.cityPhoto}
               style={{ aspectRatio }}
               key={photo.id}
+              aria-label={photo.title || copy.city.photoAlt(displayCity)}
+              onClick={() => setActiveIndex(index + 1)}
             >
               <BlurImage
                 src={photo.url}
@@ -137,10 +170,21 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <span>{photo.title || copy.common.untitled}</span>
               </div>
-            </Link>
+            </button>
           );
         })}
       </div>
+
+      {activeIndex !== null && (
+        <PhotoViewer
+          activeIndex={activeIndex}
+          context="place"
+          contextLabel={`${displayCountry} / ${cityData.countryCode} · ${displayCity}`}
+          photos={viewerPhotos}
+          onClose={() => setActiveIndex(null)}
+          onSelect={setActiveIndex}
+        />
+      )}
     </section>
   );
 };

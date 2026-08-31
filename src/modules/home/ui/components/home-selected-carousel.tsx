@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
@@ -9,8 +9,8 @@ import type { CSSProperties } from "react";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import { useSiteLocale } from "@/modules/site/i18n/site-locale";
+import { PhotoViewer } from "@/modules/site/ui/photo-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
-import { WorkLightbox } from "@/modules/work/ui/components/work-lightbox";
 
 export type HomeSelectedPhoto = {
   id: string;
@@ -111,20 +111,6 @@ export const HomeSelectedCarousel = ({
     locale === "zh-CN"
       ? `首页精选照片，共 ${groups.length} 组`
       : `Selected photographs, ${groups.length} groups`;
-  const closeLightbox = useCallback(() => setActiveIndex(null), []);
-  const showPrevious = useCallback(() => {
-    setActiveIndex((currentIndex) => {
-      if (currentIndex === null || photos.length === 0) return currentIndex;
-      return (currentIndex - 1 + photos.length) % photos.length;
-    });
-  }, [photos.length]);
-  const showNext = useCallback(() => {
-    setActiveIndex((currentIndex) => {
-      if (currentIndex === null || photos.length === 0) return currentIndex;
-      return (currentIndex + 1) % photos.length;
-    });
-  }, [photos.length]);
-
   return (
     <>
       <div
@@ -238,13 +224,13 @@ export const HomeSelectedCarousel = ({
       </div>
 
       {activeIndex !== null && (
-        <WorkLightbox
+        <PhotoViewer
           activeIndex={activeIndex}
-          locale={locale}
+          context="work"
+          contextLabel={copy.home.workTitle}
           photos={photos}
-          onClose={closeLightbox}
-          onPrevious={showPrevious}
-          onNext={showNext}
+          onClose={() => setActiveIndex(null)}
+          onSelect={setActiveIndex}
         />
       )}
     </>

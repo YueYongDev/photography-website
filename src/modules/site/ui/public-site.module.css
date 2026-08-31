@@ -1259,153 +1259,398 @@
   text-align: right;
 }
 
-.workLightbox {
+.photoViewer {
+  --site-sans: "Avenir Next", "Helvetica Neue", sans-serif;
+  --site-serif: "Iowan Old Style", Baskerville, "Times New Roman", serif;
   position: fixed;
-  z-index: 240;
+  z-index: 500;
   inset: 0;
-  display: grid;
-  overflow: hidden;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.93);
-  color: var(--site-ink);
-  backdrop-filter: blur(4px) saturate(0.82);
-  cursor: zoom-out;
-  animation: workLightboxEnter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  overflow: hidden auto;
+  background: rgba(15, 16, 14, 0.985);
+  color: rgba(248, 247, 241, 0.94);
+  font-family: var(--site-sans);
+  overscroll-behavior: contain;
+  animation: photoViewerFade 240ms ease both;
 }
 
-.workLightboxStage {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  place-items: center;
-  padding: 3.75rem 7rem 2.25rem;
-  cursor: default;
-  touch-action: pan-y pinch-zoom;
+.photoViewer[data-locale="zh-CN"] {
+  --site-sans:
+    var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
+  --site-serif: var(--font-noto-serif-sc), "Songti SC", "STSong", serif;
 }
 
-.workLightboxFigure {
+.photoViewerHeader {
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
-  max-width: 100%;
-  max-height: 100%;
-  flex-direction: column;
-  align-items: stretch;
-  margin: 0;
-}
-
-.workLightboxImage {
-  position: relative;
-  width: min(
-    calc((100dvh - 7.75rem) * var(--work-lightbox-ratio)),
-    calc(100dvw - 14rem)
-  );
-  max-width: 100%;
-  aspect-ratio: var(--work-lightbox-ratio);
-  background: rgba(233, 237, 236, 0.48);
-  animation: workLightboxImageEnter 420ms cubic-bezier(0.22, 1, 0.36, 1)
-    both;
-}
-
-.workLightboxCaption {
-  display: flex;
+  min-height: 4.25rem;
+  align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  padding-top: 0.75rem;
-  color: rgba(32, 36, 34, 0.56);
-  font-size: 0.68rem;
+  padding: 0.8rem clamp(1rem, 2.4vw, 2.3rem);
+  pointer-events: none;
+}
+
+.photoViewerHeader > p {
+  overflow: hidden;
+  margin: 0;
+  color: rgba(248, 247, 241, 0.48);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.photoViewerClose,
+.photoViewerNav {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(248, 247, 241, 0.18);
+  background: rgba(15, 16, 14, 0.56);
+  color: rgba(248, 247, 241, 0.76);
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(14px);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.photoViewerClose {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.8rem 0 0.95rem;
+  font-size: 0.62rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.workLightboxCaption span:first-child {
+.photoViewerNav {
+  position: fixed;
+  z-index: 3;
+  top: 50%;
+  width: 3.1rem;
+  height: 4rem;
+  transform: translateY(-50%);
+}
+
+.photoViewerPrevious {
+  left: clamp(0.6rem, 1.3vw, 1.2rem);
+}
+
+.photoViewerNext {
+  right: clamp(0.6rem, 1.3vw, 1.2rem);
+}
+
+.photoViewerClose:hover,
+.photoViewerClose:focus-visible,
+.photoViewerNav:hover,
+.photoViewerNav:focus-visible {
+  border-color: rgba(248, 247, 241, 0.5);
+  background: rgba(248, 247, 241, 0.1);
+  color: #fff;
+}
+
+.photoViewerNav:hover,
+.photoViewerNav:focus-visible {
+  transform: translateY(-50%) scale(1.04);
+}
+
+.photoViewerClose:focus-visible,
+.photoViewerNav:focus-visible,
+.photoViewerDetails summary:focus-visible {
+  outline: 2px solid rgba(248, 247, 241, 0.92);
+  outline-offset: 2px;
+}
+
+.photoViewerStage {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 4.5rem 6.2rem 2rem;
+  touch-action: pan-y pinch-zoom;
+}
+
+.photoViewerFigure {
+  width: min(
+    calc((100dvh - 10.75rem) * var(--photo-viewer-ratio)),
+    calc(100dvw - 12.4rem),
+    96rem
+  );
+  max-width: 100%;
+  margin: 0;
+  animation: photoViewerFigureEnter 460ms cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+.photoViewer[data-context="map"] .photoViewerFigure {
+  width: min(
+    calc((100dvh - 12.5rem) * var(--photo-viewer-ratio)),
+    calc(100dvw - 12.4rem),
+    96rem
+  );
+}
+
+.photoViewerImageFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--photo-viewer-ratio);
   overflow: hidden;
+  background: #090a08;
+}
+
+.photoViewerCaption {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: start;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(248, 247, 241, 0.14);
+}
+
+.photoViewerTitle {
+  min-width: 0;
+}
+
+.photoViewerTitle h2,
+.photoViewerTitle p,
+.photoViewerTitle span,
+.photoViewerAside p {
+  margin: 0;
+}
+
+.photoViewerTitle h2 {
+  overflow: hidden;
+  font-family: var(--site-serif);
+  font-size: clamp(0.95rem, 1.25vw, 1.2rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.workLightboxCaption span:last-child {
-  flex: none;
+.photoViewerTitle p {
+  margin-top: 0.35rem;
+  color: rgba(248, 247, 241, 0.48);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
 }
 
-.workLightboxClose,
-.workLightboxNav {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: rgba(32, 36, 34, 0.72);
+.photoViewerTitle p:empty {
+  display: none;
+}
+
+.photoViewerTitle > span {
+  display: block;
+  max-width: 50rem;
+  margin-top: 0.42rem;
+  color: rgba(248, 247, 241, 0.55);
+  font-size: 0.67rem;
+  line-height: 1.55;
+}
+
+.photoViewerAction {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+  color: rgba(248, 247, 241, 0.64);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 180ms ease;
+}
+
+.photoViewerAction:hover,
+.photoViewerAction:focus-visible {
+  color: #fff;
+}
+
+.photoViewerAside {
+  display: flex;
+  min-width: 6.5rem;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.7rem;
+}
+
+.photoViewerCount {
+  color: rgba(248, 247, 241, 0.58);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.photoViewerDetails {
+  width: min(35rem, 48vw);
+  color: rgba(248, 247, 241, 0.72);
+}
+
+.photoViewerDetails summary {
+  display: flex;
+  width: max-content;
+  margin-left: auto;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  list-style: none;
+  text-transform: uppercase;
   cursor: pointer;
-  transition:
-    color 180ms ease,
-    opacity 180ms ease,
-    transform 180ms ease;
 }
 
-.workLightboxClose {
-  top: clamp(1rem, 2vw, 1.75rem);
-  right: clamp(1rem, 2vw, 1.75rem);
-  width: 3rem;
-  height: 3rem;
+.photoViewerDetails summary::-webkit-details-marker {
+  display: none;
 }
 
-.workLightboxNav {
-  top: 50%;
-  width: 4.5rem;
-  height: 6rem;
-  transform: translateY(-50%);
+.photoViewerDetails dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem 1.25rem;
+  margin: 0.9rem 0 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(248, 247, 241, 0.12);
 }
 
-.workLightboxPrevious {
-  left: clamp(0.35rem, 1.5vw, 1.5rem);
+.photoViewerDetails dt,
+.photoViewerDetails dd {
+  margin: 0;
 }
 
-.workLightboxNext {
-  right: clamp(0.35rem, 1.5vw, 1.5rem);
+.photoViewerDetails dt {
+  color: rgba(248, 247, 241, 0.38);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.workLightboxClose:hover,
-.workLightboxClose:focus-visible,
-.workLightboxNav:hover,
-.workLightboxNav:focus-visible {
-  color: var(--site-ink);
+.photoViewerDetails dd {
+  overflow-wrap: anywhere;
+  margin-top: 0.25rem;
+  color: rgba(248, 247, 241, 0.78);
+  font-size: 0.62rem;
+  line-height: 1.4;
 }
 
-.workLightboxClose:hover {
-  transform: rotate(5deg);
-}
-
-.workLightboxNav:hover,
-.workLightboxNav:focus-visible {
-  transform: translateY(-50%) scale(1.08);
-}
-
-.workLightboxClose:focus-visible,
-.workLightboxNav:focus-visible {
-  outline: 1px solid rgba(32, 36, 34, 0.42);
-  outline-offset: 0.15rem;
-}
-
-@keyframes workLightboxEnter {
+@keyframes photoViewerFade {
   from {
     opacity: 0;
   }
+}
 
-  to {
-    opacity: 1;
+@keyframes photoViewerFigureEnter {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem) scale(0.987);
   }
 }
 
-@keyframes workLightboxImageEnter {
-  from {
-    opacity: 0;
-    transform: scale(0.985);
+@media (max-width: 760px) {
+  .photoViewerHeader {
+    min-height: 3.8rem;
+    padding: 0.55rem 0.7rem 0.55rem 1rem;
   }
 
-  to {
-    opacity: 1;
-    transform: scale(1);
+  .photoViewerHeader > p {
+    max-width: calc(100vw - 8.75rem);
+  }
+
+  .photoViewerClose {
+    min-height: 2.55rem;
+  }
+
+  .photoViewerStage {
+    min-height: 100svh;
+    padding: 4rem 0.75rem 4.5rem;
+  }
+
+  .photoViewerFigure,
+  .photoViewer[data-context="map"] .photoViewerFigure {
+    width: min(
+      calc((100svh - 10.5rem) * var(--photo-viewer-ratio)),
+      calc(100vw - 1.5rem)
+    );
+  }
+
+  .photoViewerCaption {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    padding-top: 0.75rem;
+  }
+
+  .photoViewerTitle h2 {
+    font-size: 0.95rem;
+  }
+
+  .photoViewerTitle > span {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .photoViewerNav {
+    top: auto;
+    bottom: 0.7rem;
+    width: 3rem;
+    height: 3rem;
+    transform: none;
+  }
+
+  .photoViewerPrevious {
+    left: 0.75rem;
+  }
+
+  .photoViewerNext {
+    right: 0.75rem;
+  }
+
+  .photoViewerNav:hover,
+  .photoViewerNav:focus-visible {
+    transform: scale(1.04);
+  }
+
+  .photoViewerDetails {
+    position: static;
+    width: auto;
+    max-width: 58vw;
+  }
+
+  .photoViewerDetails dl {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 4.35rem;
+    left: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.9rem;
+    border: 1px solid rgba(248, 247, 241, 0.16);
+    background: rgba(15, 16, 14, 0.96);
+    backdrop-filter: blur(18px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photoViewer,
+  .photoViewerFigure {
+    animation: none;
+  }
+
+  .photoViewerClose,
+  .photoViewerNav {
+    transition: none;
   }
 }
 
@@ -2575,206 +2820,6 @@
   outline-offset: 4px;
 }
 
-.countryViewer {
-  position: fixed;
-  z-index: 200;
-  inset: 0;
-  display: flex;
-  overflow: hidden;
-  flex-direction: column;
-  background: #151612;
-  color: rgba(248, 247, 241, 0.94);
-  animation: countryViewerEnter 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.countryViewerHeader,
-.countryViewerFooter {
-  position: absolute;
-  z-index: 3;
-  right: clamp(1.3rem, 3.5vw, 3.5rem);
-  left: clamp(1.3rem, 3.5vw, 3.5rem);
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
-}
-
-.countryViewerHeader {
-  top: clamp(1.2rem, 3vw, 2.6rem);
-  align-items: flex-start;
-}
-
-.countryViewerHeader p,
-.countryViewerFooter p,
-.countryViewerFooter span {
-  margin: 0;
-}
-
-.countryViewerHeader p {
-  color: rgba(248, 247, 241, 0.5);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.countryViewerHeader h2 {
-  margin: 0.45rem 0 0;
-  font-family: var(--site-serif);
-  font-size: clamp(1.7rem, 2.5vw, 2.8rem);
-  font-weight: 400;
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-
-.countryViewerHeader button {
-  display: inline-flex;
-  gap: 0.45rem;
-  align-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: rgba(248, 247, 241, 0.7);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.66rem;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  transition: color 200ms ease;
-}
-
-.countryViewerHeader button:hover,
-.countryViewerHeader button:focus-visible {
-  color: rgba(248, 247, 241, 1);
-}
-
-.countryViewerTrack {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior: contain;
-  scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-
-.countryViewerTrack::-webkit-scrollbar {
-  display: none;
-}
-
-.countryViewerPanel {
-  display: grid;
-  flex: 0 0 100%;
-  width: 100%;
-  place-items: center;
-  padding: 6.5rem 5rem 7rem;
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
-}
-
-.countryViewerImage {
-  position: relative;
-  width: min(
-    calc((100vh - 13.5rem) * var(--viewer-photo-ratio)),
-    calc(100vw - 10rem)
-  );
-  max-width: 100%;
-  aspect-ratio: var(--viewer-photo-ratio);
-  overflow: hidden;
-  background: #1d1e19;
-}
-
-.countryViewerFooter {
-  bottom: clamp(1.2rem, 3vw, 2.6rem);
-  align-items: flex-end;
-}
-
-.countryViewerFooter > div {
-  display: flex;
-  max-width: min(34rem, 72vw);
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.countryViewerFooter > div > p {
-  font-family: var(--site-serif);
-  font-size: 1rem;
-}
-
-.countryViewerFooter span {
-  color: rgba(248, 247, 241, 0.48);
-  font-size: 0.67rem;
-  line-height: 1.5;
-}
-
-.countryViewerFooter a {
-  display: inline-flex;
-  width: max-content;
-  gap: 0.35rem;
-  align-items: center;
-  margin-top: 0.2rem;
-  color: rgba(248, 247, 241, 0.62);
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-.countryViewerCount {
-  flex: none;
-  color: rgba(248, 247, 241, 0.58);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-}
-
-.countryViewerNav {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  display: grid;
-  width: 3.2rem;
-  height: 3.2rem;
-  place-items: center;
-  border: 1px solid rgba(248, 247, 241, 0.14);
-  border-radius: 50%;
-  background: rgba(21, 22, 18, 0.28);
-  color: rgba(248, 247, 241, 0.74);
-  cursor: pointer;
-  transform: translateY(-50%);
-  transition: border-color 200ms ease, color 200ms ease, opacity 200ms ease;
-}
-
-.countryViewerNav:hover,
-.countryViewerNav:focus-visible {
-  border-color: rgba(248, 247, 241, 0.55);
-  color: rgba(248, 247, 241, 1);
-}
-
-.countryViewerNav:disabled {
-  cursor: default;
-  opacity: 0;
-}
-
-.countryViewerPrevious {
-  left: clamp(1rem, 2vw, 2rem);
-}
-
-.countryViewerNext {
-  right: clamp(1rem, 2vw, 2rem);
-}
-
-@keyframes countryViewerEnter {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .countryCityList {
   margin-top: clamp(7rem, 11vw, 11rem);
   border-top: 1px solid var(--site-line);
@@ -3102,11 +3147,16 @@
 
 .cityCover {
   position: relative;
+  display: block;
+  width: 100%;
   grid-column: 1 / -1;
   margin-top: clamp(4rem, 7vw, 7rem);
+  padding: 0;
+  border: 0;
   aspect-ratio: 1.7;
   overflow: hidden;
   background: var(--site-mist);
+  cursor: zoom-in;
 }
 
 .cityMeta {
@@ -3143,10 +3193,21 @@
 
 .cityPhoto {
   position: relative;
+  display: block;
+  width: 100%;
   grid-column: span 6;
+  padding: 0;
+  border: 0;
   aspect-ratio: 1.2;
   overflow: hidden;
   background: var(--site-mist);
+  cursor: zoom-in;
+}
+
+.cityCover:focus-visible,
+.cityPhoto:focus-visible {
+  outline: 2px solid var(--site-ink);
+  outline-offset: 4px;
 }
 
 .cityPhoto:nth-child(3n + 2) {
@@ -4025,49 +4086,6 @@
     margin-top: 1rem;
   }
 
-  .workLightboxStage {
-    padding: 4.75rem 1rem 2rem;
-  }
-
-  .workLightboxImage {
-    width: min(
-      calc((100dvh - 8.5rem) * var(--work-lightbox-ratio)),
-      calc(100dvw - 2rem)
-    );
-  }
-
-  .workLightboxCaption {
-    gap: 1rem;
-    padding-top: 0.65rem;
-    font-size: 0.62rem;
-  }
-
-  .workLightboxClose {
-    top: 0.6rem;
-    right: 0.6rem;
-  }
-
-  .workLightboxNav {
-    top: auto;
-    bottom: 0.35rem;
-    width: 3.5rem;
-    height: 3.5rem;
-    transform: none;
-  }
-
-  .workLightboxPrevious {
-    left: 0.35rem;
-  }
-
-  .workLightboxNext {
-    right: 0.35rem;
-  }
-
-  .workLightboxNav:hover,
-  .workLightboxNav:focus-visible {
-    transform: scale(1.06);
-  }
-
   .homeWorkCard:nth-child(2) .homeWorkImage,
   .cityPhoto:nth-child(3n + 2),
   .homeWorkImage,
@@ -4181,50 +4199,6 @@
 
   .countryGalleryCopy h2 {
     font-size: clamp(2.5rem, 12vw, 4rem);
-  }
-
-  .countryViewerHeader,
-  .countryViewerFooter {
-    right: 1.25rem;
-    left: 1.25rem;
-  }
-
-  .countryViewerHeader {
-    top: 1.1rem;
-  }
-
-  .countryViewerHeader button span {
-    display: none;
-  }
-
-  .countryViewerPanel {
-    padding: 5.8rem 1.25rem 7.8rem;
-  }
-
-  .countryViewerImage {
-    width: min(
-      calc((100vh - 13.6rem) * var(--viewer-photo-ratio)),
-      calc(100vw - 2.5rem)
-    );
-  }
-
-  .countryViewerFooter {
-    bottom: 1.2rem;
-  }
-
-  .countryViewerFooter > div {
-    max-width: 76vw;
-  }
-
-  .countryViewerFooter span {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-
-  .countryViewerNav {
-    display: none;
   }
 
   .homeJourneySlide {

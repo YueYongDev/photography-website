@@ -21,15 +21,20 @@ import {
   useMap,
 } from "@/components/ui/map";
 import type { Photo } from "@/db/schema/photos";
+import { formatExposureTime } from "@/lib/utils";
 import {
   localizeCountryName,
   localizePlaceName,
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
+import {
+  PhotoViewer,
+  type PhotoViewerItem,
+  type PhotoViewerSpec,
+} from "@/modules/site/ui/photo-viewer";
 import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
 import { trpc } from "@/trpc/client";
 import styles from "./map-experience.module.css";
-import { MapPhotoLightbox } from "./map-photo-lightbox";
 
 type MapMode = "globe" | "atlas";
 
@@ -67,7 +72,7 @@ const getCityLevelLocation = (photo: Pick<Photo, "countryCode" | "city" | "regio
 const getCityHref = (group: CityGroup) =>
   group.countryCode
     ? `/places/${group.countryCode.toLowerCase()}/${toPlaceSlug(group.city)}`
-    : `/photograph/${group.representative.id}`;
+    : null;
 
 const MapSceneController = ({
   mode,
@@ -302,10 +307,77 @@ export const MapSection = () => {
 
   const selectedGroup =
     cityGroups.find((group) => group.key === selectedKey) ?? null;
+  const selectedCityHref = selectedGroup ? getCityHref(selectedGroup) : null;
   const mappedPhotoCount = cityGroups.reduce(
     (total, group) => total + group.photos.length,
     0,
   );
+  const mapViewerPhotos: PhotoViewerItem[] = selectedGroup
+    ? selectedGroup.photos.slice(0, 6).map((photo) => {
+        const title = photo.title || copy.common.untitled;
+        const date = photo.dateTimeOriginal
+          ? new Date(photo.dateTimeOriginal).toLocaleDateString(locale, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : null;
+        const location =
+          photo.placeFormatted ||
+          [
+            photo.city ? localizePlaceName(photo.city, locale) : null,
+            photo.country
+              ? localizeCountryName(
+                  photo.country,
+                  photo.countryCode,
+                  locale,
+                )
+              : null,
+          ]
+            .filter(Boolean)
+            .join(locale === "zh-CN" ? "，" : ", ");
+        const camera = [photo.make, photo.model].filter(Boolean).join(" ");
+        const focalLength = photo.focalLength35mm ?? photo.focalLength;
+        const specs = [
+          camera ? { label: copy.photo.camera, value: camera } : null,
+          photo.lensModel
+            ? { label: copy.photo.lens, value: photo.lensModel }
+            : null,
+          focalLength
+            ? { label: copy.photo.focalLength, value: `${focalLength}mm` }
+            : null,
+          photo.fNumber
+            ? { label: copy.photo.aperture, value: `ƒ/${photo.fNumber}` }
+            : null,
+          photo.exposureTime
+            ? {
+                label: copy.photo.exposure,
+                value: formatExposureTime(photo.exposureTime),
+              }
+            : null,
+          photo.iso
+            ? { label: copy.photo.sensitivity, value: `ISO ${photo.iso}` }
+            : null,
+          location
+            ? { label: copy.common.place, value: location }
+            : null,
+        ].filter((spec): spec is PhotoViewerSpec => Boolean(spec));
+
+        return {
+          id: photo.id,
+          url: photo.url,
+          title,
+          description: photo.description,
+          location,
+          date,
+          blurData: photo.blurData,
+          width: photo.width,
+          height: photo.height,
+          aspectRatio: photo.aspectRatio,
+          specs,
+        };
+      })
+    : [];
 
   const selectCountry = (countryCode: string | null) => {
     setActiveCountryCode(countryCode);
@@ -506,13 +578,18 @@ export const MapSection = () => {
               ))}
             </div>
 
-            <Link href={getCityHref(selectedGroup)} className={styles.openCityLink}>
-              <span>
-                <small>{copy.map.openCollection}</small>
-                {localizePlaceName(selectedGroup.city, locale)}
-              </span>
-              <ArrowUpRight size={18} strokeWidth={1.4} />
-            </Link>
+            {selectedCityHref && (
+              <Link
+                href={selectedCityHref}
+                className={styles.openCityLink}
+              >
+                <span>
+                  <small>{copy.map.openCollection}</small>
+                  {localizePlaceName(selectedGroup.city, locale)}
+                </span>
+                <ArrowUpRight size={18} strokeWidth={1.4} />
+              </Link>
+            )}
 
             {query.hasNextPage && (
               <button
@@ -637,9 +714,15 @@ export const MapSection = () => {
       </aside>
 
       {selectedGroup && activePhotoIndex !== null && (
-        <MapPhotoLightbox
+        <PhotoViewer
           activeIndex={activePhotoIndex}
-          photos={selectedGroup.photos.slice(0, 6)}
+          context="map"
+          contextLabel={`${localizePlaceName(selectedGroup.city, locale)} · ${localizeCountryName(
+            selectedGroup.country,
+            selectedGroup.countryCode,
+            locale,
+          )}`}
+          photos={mapViewerPhotos}
           onClose={() => setActivePhotoIndex(null)}
           onSelect={setActivePhotoIndex}
         />

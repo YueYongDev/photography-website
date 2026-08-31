@@ -2,15 +2,15 @@
 
 import Image from "next/image";
 import { ArrowDown } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import {
   localizePlaceName,
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
+import { PhotoViewer } from "@/modules/site/ui/photo-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
-import { WorkLightbox } from "@/modules/work/ui/components/work-lightbox";
 
 export type WorkPhoto = {
   id: string;
@@ -114,20 +114,6 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
         String(leadItem.photo.sequence).padStart(2, "0"),
       )
     : copy.work.startLabel;
-
-  const closeLightbox = useCallback(() => setActiveIndex(null), []);
-  const showPrevious = useCallback(() => {
-    setActiveIndex((currentIndex) => {
-      if (currentIndex === null || photos.length === 0) return currentIndex;
-      return (currentIndex - 1 + photos.length) % photos.length;
-    });
-  }, [photos.length]);
-  const showNext = useCallback(() => {
-    setActiveIndex((currentIndex) => {
-      if (currentIndex === null || photos.length === 0) return currentIndex;
-      return (currentIndex + 1) % photos.length;
-    });
-  }, [photos.length]);
 
   const renderPhoto = (
     { photo, photoIndex }: WorkRowItem,
@@ -250,13 +236,13 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
       )}
 
       {activeIndex !== null && (
-        <WorkLightbox
+        <PhotoViewer
           activeIndex={activeIndex}
-          locale={locale}
+          context="work"
+          contextLabel={copy.work.title}
           photos={photos}
-          onClose={closeLightbox}
-          onPrevious={showPrevious}
-          onNext={showNext}
+          onClose={() => setActiveIndex(null)}
+          onSelect={setActiveIndex}
         />
       )}
     </section>

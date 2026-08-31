@@ -7,6 +7,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { formatGPSCoordinates, parseLatLngText } from "@/lib/utils";
+import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/trpc/client";
 import {
@@ -201,7 +202,15 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   };
 
   const [isCopied, setIsCopied] = useState(false);
-  const photoPath = `/photograph/${photoId}`;
+  const cityLevelLocation =
+    photo.countryCode?.toUpperCase() === "JP" ||
+    photo.countryCode?.toUpperCase() === "TW"
+      ? photo.region ?? photo.city
+      : photo.city ?? photo.region;
+  const photoPath =
+    photo.countryCode && cityLevelLocation
+      ? `/places/${photo.countryCode.toLowerCase()}/${toPlaceSlug(cityLevelLocation)}`
+      : "/map";
 
   const onCopy = async () => {
     const fullUrl = `${window.location.origin}${photoPath}`;
