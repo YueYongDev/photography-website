@@ -514,10 +514,22 @@
 }
 
 .homeWorkCard {
+  position: relative;
   min-width: 0;
   width: 100%;
   color: inherit;
   text-decoration: none;
+}
+
+.homeWorkCardButton {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
 }
 
 .homeWorkImage {
@@ -532,11 +544,11 @@
 }
 
 .homeWorkCard:hover .homeWorkImage img,
-.homeWorkCard:focus-visible .homeWorkImage img {
+.homeWorkCard:focus-within .homeWorkImage img {
   transform: scale(1.012);
 }
 
-.homeWorkCard:focus-visible {
+.homeWorkCardButton:focus-visible {
   outline: 1px solid var(--site-ink);
   outline-offset: 0.4rem;
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
@@ -11,6 +10,7 @@ import type { CSSProperties } from "react";
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import { useSiteLocale } from "@/modules/site/i18n/site-locale";
 import styles from "@/modules/site/ui/public-site.module.css";
+import { WorkLightbox } from "@/modules/work/ui/components/work-lightbox";
 
 export type HomeSelectedPhoto = {
   id: string;
@@ -64,6 +64,7 @@ export const HomeSelectedCarousel = ({
   photos: HomeSelectedPhoto[];
 }) => {
   const { copy, locale } = useSiteLocale();
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const groups = useMemo(() => groupPhotos(photos), [photos]);
   const autoplay = useRef(
     Autoplay({
@@ -110,107 +111,142 @@ export const HomeSelectedCarousel = ({
     locale === "zh-CN"
       ? `首页精选照片，共 ${groups.length} 组`
       : `Selected photographs, ${groups.length} groups`;
+  const closeLightbox = useCallback(() => setActiveIndex(null), []);
+  const showPrevious = useCallback(() => {
+    setActiveIndex((currentIndex) => {
+      if (currentIndex === null || photos.length === 0) return currentIndex;
+      return (currentIndex - 1 + photos.length) % photos.length;
+    });
+  }, [photos.length]);
+  const showNext = useCallback(() => {
+    setActiveIndex((currentIndex) => {
+      if (currentIndex === null || photos.length === 0) return currentIndex;
+      return (currentIndex + 1) % photos.length;
+    });
+  }, [photos.length]);
 
   return (
-    <div
-      className={styles.homeWorkCarousel}
-      role="region"
-      aria-roledescription="carousel"
-      aria-label={carouselLabel}
-    >
-      <div className={styles.homeWorkViewport} ref={viewportRef}>
-        <div className={styles.homeWorkTrack}>
-          {groups.map((group, groupIndex) => {
-            const aspectRatios = group.map(getAspectRatio);
+    <>
+      <div
+        className={styles.homeWorkCarousel}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={carouselLabel}
+      >
+        <div className={styles.homeWorkViewport} ref={viewportRef}>
+          <div className={styles.homeWorkTrack}>
+            {groups.map((group, groupIndex) => {
+              const aspectRatios = group.map(getAspectRatio);
 
-            return (
-              <div
-                className={styles.homeWorkSlide}
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`${groupIndex + 1} / ${groups.length}`}
-                key={group.map((photo) => photo.id).join("-")}
-              >
+              return (
                 <div
-                  className={styles.homeWorkGrid}
-                  style={{
-                    gridTemplateColumns: aspectRatios
-                      .map((aspectRatio) => `${aspectRatio}fr`)
-                      .join(" "),
-                    maxWidth: getGroupMaxWidth(aspectRatios),
-                  }}
+                  className={styles.homeWorkSlide}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${groupIndex + 1} / ${groups.length}`}
+                  key={group.map((photo) => photo.id).join("-")}
                 >
-                  {group.map((entry, indexInGroup) => {
-                    const photoIndex =
-                      groupIndex * PHOTOS_PER_GROUP + indexInGroup;
-                    const localizedEntry = copy.home.workEntries[photoIndex];
-                    const title =
-                      entry.title ||
-                      localizedEntry?.title ||
-                      copy.common.untitled;
-                    const aspectRatio = aspectRatios[indexInGroup];
-                    const cardStyle = {
-                      "--home-work-narrow-width": `${Math.min(
-                        48,
-                        aspectRatio * 30,
-                      )}rem`,
-                    } as CSSProperties;
+                  <div
+                    className={styles.homeWorkGrid}
+                    style={{
+                      gridTemplateColumns: aspectRatios
+                        .map((aspectRatio) => `${aspectRatio}fr`)
+                        .join(" "),
+                      maxWidth: getGroupMaxWidth(aspectRatios),
+                    }}
+                  >
+                    {group.map((entry, indexInGroup) => {
+                      const photoIndex =
+                        groupIndex * PHOTOS_PER_GROUP + indexInGroup;
+                      const localizedEntry = copy.home.workEntries[photoIndex];
+                      const title =
+                        entry.title ||
+                        localizedEntry?.title ||
+                        copy.common.untitled;
+                      const aspectRatio = aspectRatios[indexInGroup];
+                      const cardStyle = {
+                        "--home-work-narrow-width": `${Math.min(
+                          48,
+                          aspectRatio * 30,
+                        )}rem`,
+                      } as CSSProperties;
 
-                    return (
-                      <Link
-                        href={`/photograph/${entry.id}`}
-                        className={`${styles.homeWorkCard} ${getOrientationClass(aspectRatio)}`}
-                        key={entry.id}
-                        style={cardStyle}
-                      >
+                      return (
                         <div
-                          className={styles.homeWorkImage}
-                          style={{ aspectRatio }}
+                          className={`${styles.homeWorkCard} ${getOrientationClass(aspectRatio)}`}
+                          key={entry.id}
+                          style={cardStyle}
                         >
-                          <Image
-                            src={entry.url}
-                            alt={title}
-                            fill
-                            loader={getArchiveImageLoader(entry.url)}
-                            placeholder={entry.blurData ? "blur" : "empty"}
-                            blurDataURL={entry.blurData || undefined}
-                            sizes="(min-width: 1101px) 34vw, 88vw"
-                            className={styles.imageContain}
+                          <button
+                            type="button"
+                            className={styles.homeWorkCardButton}
+                            onClick={() => setActiveIndex(photoIndex)}
+                            aria-label={`${title} · ${
+                              locale === "zh-CN" ? "查看大图" : "View original"
+                            }`}
                           />
+                          <div
+                            className={styles.homeWorkImage}
+                            style={{ aspectRatio }}
+                          >
+                            <Image
+                              src={entry.url}
+                              alt={title}
+                              fill
+                              loader={getArchiveImageLoader(entry.url)}
+                              placeholder={entry.blurData ? "blur" : "empty"}
+                              blurDataURL={entry.blurData || undefined}
+                              sizes="(min-width: 1101px) 34vw, 88vw"
+                              className={styles.imageContain}
+                            />
+                          </div>
+                          <div className={styles.homeWorkMeta}>
+                            <span>
+                              {String(photoIndex + 1).padStart(2, "0")}
+                            </span>
+                            <h3>{title}</h3>
+                          </div>
                         </div>
-                        <div className={styles.homeWorkMeta}>
-                          <span>{String(photoIndex + 1).padStart(2, "0")}</span>
-                          <h3>{title}</h3>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+
+        {groups.length > 1 ? (
+          <div className={styles.homeWorkPagination}>
+            <button
+              type="button"
+              onClick={() => emblaApi?.scrollPrev()}
+              aria-label={previousLabel}
+            >
+              <ArrowLeft size={16} strokeWidth={1.35} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => emblaApi?.scrollNext()}
+              aria-label={nextLabel}
+            >
+              <ArrowRight size={16} strokeWidth={1.35} />
+            </button>
+          </div>
+        ) : null}
       </div>
 
-      {groups.length > 1 ? (
-        <div className={styles.homeWorkPagination}>
-          <button
-            type="button"
-            onClick={() => emblaApi?.scrollPrev()}
-            aria-label={previousLabel}
-          >
-            <ArrowLeft size={16} strokeWidth={1.35} />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => emblaApi?.scrollNext()}
-            aria-label={nextLabel}
-          >
-            <ArrowRight size={16} strokeWidth={1.35} />
-          </button>
-        </div>
-      ) : null}
-    </div>
+      {activeIndex !== null && (
+        <WorkLightbox
+          activeIndex={activeIndex}
+          locale={locale}
+          photos={photos}
+          onClose={closeLightbox}
+          onPrevious={showPrevious}
+          onNext={showNext}
+        />
+      )}
+    </>
   );
 };

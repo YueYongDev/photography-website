@@ -11,12 +11,20 @@ import {
 
 import type { SiteLocale } from "@/modules/site/i18n/site-locale";
 import styles from "@/modules/site/ui/public-site.module.css";
-import type { WorkPhoto } from "@/modules/work/ui/views/work-view";
+
+export type WorkLightboxPhoto = {
+  id: string;
+  url: string;
+  title: string | null;
+  width: number | null;
+  height: number | null;
+  aspectRatio: number | null;
+};
 
 type Props = {
   activeIndex: number;
   locale: SiteLocale;
-  photos: WorkPhoto[];
+  photos: WorkLightboxPhoto[];
   onClose: () => void;
   onNext: () => void;
   onPrevious: () => void;
