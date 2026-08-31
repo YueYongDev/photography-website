@@ -13,18 +13,22 @@ export const AboutView = () => {
   return (
     <section className={`${styles.page} ${styles.aboutPage}`}>
       <div className={styles.aboutHero}>
-        <figure className={styles.aboutPortrait}>
+        <figure
+          className={styles.aboutPortrait}
+          data-motion-image
+          data-motion-parallax
+        >
           <Image
             src="/about-yueyong.jpg"
             alt={copy.about.portraitAlt}
             fill
             priority
-            sizes="(min-width: 900px) 38vw, 90vw"
+            sizes="(min-width: 1500px) 30rem, (min-width: 900px) 34vw, 90vw"
             className={`${styles.imageCover} ${styles.aboutPortraitImage}`}
           />
         </figure>
 
-        <div className={styles.aboutCopy}>
+        <div className={styles.aboutCopy} data-motion-reveal="right">
           <p className={styles.eyebrow}>{copy.about.eyebrow}</p>
           <h1>{copy.about.title}</h1>
           <div className={styles.aboutIntro}>
@@ -46,7 +50,7 @@ export const AboutView = () => {
       </div>
 
       <div className={styles.aboutColumns}>
-        <div className={styles.aboutColumn}>
+        <div className={styles.aboutColumn} data-motion-reveal>
           <span>01</span>
           <h2>{copy.about.practice}</h2>
           <nav className={styles.aboutSiteLinks} aria-label={copy.about.practice}>
@@ -82,7 +86,11 @@ export const AboutView = () => {
             ))}
           </nav>
         </div>
-        <div className={styles.aboutColumn}>
+        <div
+          className={styles.aboutColumn}
+          data-motion-reveal
+          data-motion-delay="0.08"
+        >
           <span>02</span>
           <h2>{copy.about.tools}</h2>
           <ul>
@@ -98,7 +106,11 @@ export const AboutView = () => {
             <li>LUMIX S 40mm F2 (S-S40)</li>
           </ul>
         </div>
-        <div className={styles.aboutColumn}>
+        <div
+          className={styles.aboutColumn}
+          data-motion-reveal
+          data-motion-delay="0.16"
+        >
           <span>03</span>
           <h2>{copy.about.contact}</h2>
           <ul>

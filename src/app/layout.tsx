@@ -10,6 +10,7 @@ import { Noto_Sans_SC, Noto_Serif_SC, Readex_Pro } from "next/font/google";
 import "./globals.css";
 import ScrollToTop from "@/components/scroll-to-top";
 import Script from "next/script";
+import "lenis/dist/lenis.css";
 
 const readex = Readex_Pro({ subsets: ["latin"] });
 const notoSansSC = Noto_Sans_SC({

@@ -61,20 +61,24 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
           <ArrowLeft size={15} strokeWidth={1.4} /> {copy.journey.all}
         </Link>
         <div className={styles.journeyDetailTitle}>
-          <div>
+          <div data-motion-reveal="left">
             <p className={styles.eyebrow}>
               {content.countryCode} / {content.year}
             </p>
             <h1>{content.title}</h1>
           </div>
-          <div className={styles.journeyDetailAside}>
+          <div className={styles.journeyDetailAside} data-motion-reveal="right">
             <p>{content.subtitle}</p>
             <span>{content.dates}</span>
           </div>
         </div>
       </header>
 
-      <figure className={styles.journeyDetailHero}>
+      <figure
+        className={styles.journeyDetailHero}
+        data-motion-image
+        data-motion-parallax
+      >
         {content.coverImage ? (
           <Image
             src={content.coverImage}
@@ -101,7 +105,7 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
         </figcaption>
       </figure>
 
-      <section className={styles.journeyPrologue}>
+      <section className={styles.journeyPrologue} data-motion-reveal>
         <p className={styles.eyebrow}>{copy.journey.prologue}</p>
         <p>{content.intro}</p>
       </section>
@@ -136,7 +140,7 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
               data-chapter-index={index}
               key={chapter.number}
             >
-              <div className={styles.journeyChapterText}>
+              <div className={styles.journeyChapterText} data-motion-reveal>
                 <p className={styles.eyebrow}>
                   {chapter.number} / {chapter.place}
                 </p>
@@ -152,6 +156,8 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
                       ? styles.journeyChapterFramePortrait
                       : ""
                   }`}
+                  data-motion-image
+                  data-motion-parallax
                 >
                   <div>
                     <Image
@@ -179,7 +185,7 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
 
       {content.frames.length > 0 && (
         <section className={styles.journeyContactSheet}>
-          <div className={styles.journeyContactHead}>
+          <div className={styles.journeyContactHead} data-motion-reveal>
             <p className={styles.eyebrow}>{copy.journey.contactSheet}</p>
             <span>
               {String(content.frames.length).padStart(2, "0")}{" "}
@@ -188,7 +194,11 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
           </div>
           <div className={styles.journeyContactGrid}>
             {content.frames.map((frame, index) => (
-              <figure key={frame.src}>
+              <figure
+                key={frame.src}
+                data-motion-image
+                data-motion-parallax
+              >
                 <div
                   className={
                     frame.format === "portrait"
@@ -217,7 +227,7 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
         </section>
       )}
 
-      <footer className={styles.journeyCoda}>
+      <footer className={styles.journeyCoda} data-motion-reveal>
         <p className={styles.eyebrow}>{copy.journey.coda}</p>
         <blockquote>{content.closing}</blockquote>
         <Link

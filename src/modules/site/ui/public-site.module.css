@@ -94,6 +94,41 @@
   min-height: 100vh;
 }
 
+.motionRoot {
+  min-height: 100vh;
+}
+
+.motionTransition {
+  position: fixed;
+  z-index: 75;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 4.9%,
+      rgba(32, 36, 34, 0.08) 5%,
+      transparent 5.1%
+    ),
+    var(--site-paper, #fff);
+  clip-path: inset(0 0 100% 0);
+  will-change: clip-path;
+}
+
+.motionTransition::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: var(--site-line, rgba(32, 36, 34, 0.13));
+  content: "";
+}
+
+:is([data-motion-reveal], [data-motion-image], [data-motion-hover]) {
+  will-change: transform, opacity;
+}
+
 .serif {
   font-family: var(--site-serif);
 }
@@ -1138,23 +1173,14 @@
   scroll-margin-top: 6rem;
 }
 
-.workColumns {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(4rem, 7vw, 7.5rem);
-  align-items: start;
-  padding: clamp(7rem, 10vw, 11rem) clamp(1.5rem, 4vw, 5rem) 0;
+.workGalleryArea {
+  width: min(calc(100% - clamp(14rem, 28vw, 40rem)), 176rem);
+  margin-inline: auto;
+  padding-top: clamp(3.5rem, 5vw, 6rem);
 }
 
-.workColumn {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: clamp(5rem, 7vw, 7rem);
-}
-
-.workMobileStream {
-  display: none;
+.workDynamicGallery {
+  width: 100%;
 }
 
 .archiveEmpty {
@@ -1213,19 +1239,14 @@
   width: min(100%, 32rem);
 }
 
-.workColumn .workFrame {
-  width: 100%;
-  max-width: none;
-}
-
 .workLead {
-  width: 100%;
-  max-width: none;
+  width: min(calc(100% - clamp(14rem, 28vw, 40rem)), 112rem);
+  margin-inline: auto;
 }
 
 .workLead .workFrameMeta {
-  padding-right: clamp(1.5rem, 4vw, 5rem);
-  padding-left: clamp(1.5rem, 4vw, 5rem);
+  padding-right: 0;
+  padding-left: 0;
 }
 
 .workFrameButton {
@@ -2974,9 +2995,11 @@
 
 .aboutHero {
   display: grid;
-  min-height: calc(100svh - 4.25rem);
-  grid-template-columns: minmax(20rem, 0.9fr) minmax(24rem, 1.1fr);
-  gap: clamp(4rem, 9vw, 10rem);
+  width: min(100%, 92rem);
+  padding: clamp(3rem, 5vw, 4.5rem) 0 1.5rem;
+  margin-inline: auto;
+  grid-template-columns: minmax(20rem, 30rem) minmax(24rem, 1fr);
+  gap: clamp(4rem, 8vw, 9rem);
   align-items: center;
 }
 
@@ -2986,8 +3009,10 @@
 
 .aboutPortrait {
   position: relative;
+  width: min(100%, 30rem);
   margin: 0;
   aspect-ratio: 0.78;
+  justify-self: center;
   overflow: hidden;
   background: var(--site-mist);
 }
@@ -3014,7 +3039,7 @@
 
 .shell[data-locale="zh-CN"] .aboutCopy h1 {
   max-width: 5em;
-  font-size: clamp(4.5rem, 6vw, 6.75rem);
+  font-size: clamp(4.25rem, 4.6vw, 5.5rem);
 }
 
 .aboutIntro {
@@ -3075,8 +3100,9 @@
 
 .aboutColumns {
   display: grid;
+  width: min(100%, 92rem);
   grid-template-columns: repeat(3, 1fr);
-  margin-top: clamp(7rem, 11vw, 11rem);
+  margin: clamp(1.5rem, 2vw, 2.5rem) auto 0;
   border-top: 1px solid var(--site-line);
 }
 
@@ -3778,13 +3804,13 @@
     margin-top: 0;
   }
 
-  .workColumns {
-    gap: clamp(2.25rem, 5vw, 4rem);
-    padding-top: clamp(5rem, 9vw, 7rem);
+  .workGalleryArea {
+    width: calc(100% - 3rem);
+    padding-top: clamp(3.5rem, 7vw, 5rem);
   }
 
-  .workColumn {
-    gap: clamp(4rem, 8vw, 5.5rem);
+  .workLead {
+    width: calc(100% - 3rem);
   }
 
   .journeyRow {
@@ -3969,30 +3995,9 @@
     font-size: 0.62rem;
   }
 
-  .workColumns {
-    display: none;
-  }
-
-  .workMobileStream {
-    display: flex;
-    flex-direction: column;
-    gap: 3.75rem;
-    padding: 4.75rem 1.25rem 0;
-  }
-
-  .workMobileStream .workFrame {
+  .workGalleryArea {
     width: 100%;
-    max-width: none;
-  }
-
-  .workMobileStream .workFramePortrait {
-    width: min(86vw, 30rem);
-    align-self: center;
-  }
-
-  .workMobileStream .workFrameSquare {
-    width: min(90vw, 32rem);
-    align-self: center;
+    padding: 4.75rem 1.25rem 0;
   }
 
   .workLead .workFrameMeta {
@@ -4296,6 +4301,7 @@
 
   .aboutHero {
     min-height: 0;
+    padding: 0;
   }
 
   .atlasLines {
@@ -4430,6 +4436,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .motionTransition {
+    display: none;
+  }
+
   .shell *,
   .shell *::before,
   .shell *::after {

@@ -8,6 +8,7 @@ import {
 } from "@/modules/site/i18n/site-locale";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
+import { SiteMotion } from "./site-motion";
 import styles from "./public-site.module.css";
 
 const SiteShellContent = ({ children }: { children: ReactNode }) => {
@@ -24,6 +25,8 @@ const SiteShellContent = ({ children }: { children: ReactNode }) => {
 
 export const SiteShell = ({ children }: { children: ReactNode }) => (
   <SiteLocaleProvider>
-    <SiteShellContent>{children}</SiteShellContent>
+    <SiteMotion>
+      <SiteShellContent>{children}</SiteShellContent>
+    </SiteMotion>
   </SiteLocaleProvider>
 );

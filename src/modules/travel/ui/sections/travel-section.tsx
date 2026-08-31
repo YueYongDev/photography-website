@@ -29,11 +29,11 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
   return (
     <section className={styles.page}>
       <div className={styles.travelIntro}>
-        <div>
+        <div data-motion-reveal="left">
           <p className={styles.eyebrow}>{copy.travel.eyebrow}</p>
           <h1 className={styles.displayTitle}>{copy.travel.title}</h1>
         </div>
-        <div className={styles.travelLede}>
+        <div className={styles.travelLede} data-motion-reveal="right">
           <p className={styles.lede}>{copy.travel.description}</p>
           {copy.travel.attribution && (
             <cite className={styles.travelAttribution}>
@@ -43,7 +43,7 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
         </div>
       </div>
 
-      <div className={styles.atlasSummary}>
+      <div className={styles.atlasSummary} data-motion-reveal>
         <div className={styles.atlasStats}>
           <div className={styles.atlasStat}>
             <span>{copy.travel.countries}</span>
@@ -74,6 +74,8 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
           <Link
             href={`/places/${country.code.toLowerCase()}`}
             className={styles.countryArchiveItem}
+            data-motion-reveal
+            data-motion-hover
             key={country.code}
           >
             <div className={styles.countryArchiveText}>
@@ -106,7 +108,10 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
               </span>
             </div>
 
-            <div className={styles.countryArchiveImages}>
+            <div
+              className={styles.countryArchiveImages}
+              data-motion-parallax
+            >
               {country.images.map((image, imageIndex) => (
                 <div
                   key={image.url}

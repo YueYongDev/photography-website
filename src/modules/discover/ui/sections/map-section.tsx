@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import BlurImage from "@/components/blur-image";
+import BlurText from "@/components/react-bits/blur-text";
 import {
   Map,
   MapMarker,
@@ -37,6 +38,7 @@ import {
   type PhotoViewerItem,
   type PhotoViewerSpec,
 } from "@/modules/site/ui/photo-viewer";
+import { VantaNetBackground } from "@/modules/site/ui/vanta-net-background";
 import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
 import { trpc } from "@/trpc/client";
 import styles from "./map-experience.module.css";
@@ -180,14 +182,28 @@ const MapLoading = () => {
   const { copy } = useSiteLocale();
 
   return (
-    <section className={styles.state} role="status" aria-live="polite">
-      <div className={styles.stateGrid} aria-hidden="true" />
-      <div className={styles.loadingCompass} aria-hidden="true">
-        <span />
-        <span />
-        <i />
+    <section
+      className={`${styles.state} ${styles.loadingState}`}
+      role="status"
+      aria-live="polite"
+    >
+      <VantaNetBackground className={styles.loadingVanta} />
+      <div className={styles.loadingCard}>
+        <span className={styles.loadingKicker}>MAP / LIVE ARCHIVE</span>
+        <BlurText
+          text={copy.map.loadingMap}
+          animateBy="letters"
+          direction="bottom"
+          delay={42}
+          stepDuration={0.38}
+          className={styles.loadingLabel}
+        />
+        <div className={styles.loadingCoordinates} aria-hidden="true">
+          <span>30.2741° N</span>
+          <i />
+          <span>120.1551° E</span>
+        </div>
       </div>
-      <p>{copy.map.loadingMap}</p>
     </section>
   );
 };
@@ -523,6 +539,7 @@ export const MapSection = () => {
       <aside
         id="map-archive-panel"
         className={styles.archivePanel}
+        data-lenis-prevent
         aria-hidden={!panelOpen}
         inert={!panelOpen}
       >

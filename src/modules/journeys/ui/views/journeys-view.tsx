@@ -91,7 +91,7 @@ export const JourneysView = ({
       className={`${styles.page} ${styles.pageMist} ${styles.journeysPage}`}
     >
       <header className={styles.journeyIndexIntro}>
-        <div className={styles.journeyIndexCopy}>
+        <div className={styles.journeyIndexCopy} data-motion-reveal="left">
           <p className={styles.eyebrow}>{copy.journeys.eyebrow}</p>
           <div className={styles.journeyIndexCopyBody}>
             <h1 className={styles.journeyIndexTitle}>
@@ -121,7 +121,11 @@ export const JourneysView = ({
         </div>
 
         {featuredEntry && (
-          <figure className={styles.journeyIndexFeature}>
+          <figure
+            className={styles.journeyIndexFeature}
+            data-motion-image
+            data-motion-parallax
+          >
             <Link
               href={`/journeys/${featuredEntry.slug}`}
               className={styles.journeyIndexFeatureImage}
@@ -165,10 +169,16 @@ export const JourneysView = ({
           }
 
           return (
-            <article className={styles.journeyArchiveItem} key={entry.slug}>
+            <article
+              className={styles.journeyArchiveItem}
+              data-motion-reveal
+              key={entry.slug}
+            >
               <Link
                 href={`/journeys/${entry.slug}`}
                 className={styles.journeyArchiveImage}
+                data-motion-image
+                data-motion-parallax
               >
                 {entry.coverImage ? (
                   <Image

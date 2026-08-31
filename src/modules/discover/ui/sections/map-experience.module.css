@@ -665,73 +665,78 @@
   mask-image: radial-gradient(circle at center, #000 0%, transparent 73%);
 }
 
-.loadingCompass {
+.loadingState {
+  isolation: isolate;
+  background: #f7f8f7;
+}
+
+.loadingVanta {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  opacity: 0.52;
+}
+
+.loadingVanta::after {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.22),
+      rgba(255, 255, 255, 0.84) 72%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.52)
+    );
+  content: "";
+}
+
+.loadingCard {
   position: relative;
   z-index: 1;
-  width: 5.5rem;
-  height: 5.5rem;
-  border: 1px solid rgba(80, 96, 97, 0.32);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 0 0 0.8rem rgba(255, 255, 255, 0.28);
+  display: grid;
+  width: min(31rem, calc(100vw - 3rem));
+  min-height: 15rem;
+  align-content: space-between;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border: 1px solid rgba(32, 36, 34, 0.16);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 1.5rem 6rem rgba(55, 67, 66, 0.08);
+  backdrop-filter: blur(18px);
 }
 
-.loadingCompass span {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.loadingCompass span:first-child {
-  width: 0.42rem;
-  height: 0.42rem;
-  background: var(--site-accent);
-}
-
-.loadingCompass span:nth-child(2) {
-  width: 3.2rem;
-  height: 3.2rem;
-  border: 1px dashed rgba(80, 96, 97, 0.5);
-  animation: compassOrbit 2.8s linear infinite;
-}
-
-.loadingCompass i {
-  position: absolute;
-  top: 0.6rem;
-  left: 50%;
-  width: 1px;
-  height: 2.05rem;
-  background: var(--site-accent);
-  transform-origin: 50% 2.15rem;
-  animation: compassSweep 1.8s ease-in-out infinite;
-}
-
-.state > p {
-  position: relative;
-  z-index: 1;
-  margin: 1.5rem 0 0;
-  color: rgba(32, 36, 34, 0.54);
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
+.loadingKicker {
+  color: rgba(32, 36, 34, 0.52);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-@keyframes compassOrbit {
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
+.loadingLabel {
+  margin: clamp(2.4rem, 5vw, 4rem) 0;
+  color: var(--site-ink, #202422);
+  font-family: var(--site-serif, serif);
+  font-size: clamp(1.75rem, 3.2vw, 3rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
 }
 
-@keyframes compassSweep {
-  0%,
-  100% {
-    transform: rotate(-38deg);
-  }
-  50% {
-    transform: rotate(218deg);
-  }
+.loadingCoordinates {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.8rem;
+  color: rgba(32, 36, 34, 0.42);
+  font-size: 0.57rem;
+  letter-spacing: 0.12em;
+}
+
+.loadingCoordinates i {
+  height: 1px;
+  background: rgba(32, 36, 34, 0.16);
 }
 
 .fallbackCard {
@@ -981,9 +986,17 @@
     transition: none;
   }
 
-  .markerActive::before,
-  .loadingCompass span:nth-child(2),
-  .loadingCompass i {
+  .markerActive::before {
     animation: none;
+  }
+
+  .loadingVanta {
+    background:
+      radial-gradient(
+        circle at 38% 42%,
+        rgba(119, 139, 142, 0.12),
+        transparent 35%
+      ),
+      #f7f8f7;
   }
 }

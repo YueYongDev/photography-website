@@ -2,7 +2,7 @@
 
 import {
   createContext,
-  startTransition,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -438,7 +438,14 @@ export const SiteLocaleProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocaleState] = useState<SiteLocale>("en");
 
   useEffect(() => {
-    const savedLocale = window.localStorage.getItem(STORAGE_KEY);
+    let savedLocale: string | null = null;
+
+    try {
+      savedLocale = window.localStorage.getItem(STORAGE_KEY);
+    } catch {
+      // Language switching must still work when browser storage is unavailable.
+    }
+
     const preferredLocale = navigator.language.toLowerCase().startsWith("zh")
       ? "zh-CN"
       : "en";
@@ -450,14 +457,20 @@ export const SiteLocaleProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.lang = locale;
   }, [locale]);
 
-  const setLocale = (nextLocale: SiteLocale) => {
-    window.localStorage.setItem(STORAGE_KEY, nextLocale);
-    startTransition(() => setLocaleState(nextLocale));
-  };
+  const setLocale = useCallback((nextLocale: SiteLocale) => {
+    setLocaleState(nextLocale);
+    document.documentElement.lang = nextLocale;
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, nextLocale);
+    } catch {
+      // Persisting the preference is optional; changing the language is not.
+    }
+  }, []);
 
   const value = useMemo(
     () => ({ locale, copy: dictionaries[locale], setLocale }),
-    [locale],
+    [locale, setLocale],
   );
 
   return (

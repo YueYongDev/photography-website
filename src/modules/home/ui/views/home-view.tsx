@@ -27,7 +27,7 @@ export const HomeView = ({
   return (
     <>
       <section className={`${styles.page} ${styles.homeHero}`}>
-        <div className={styles.homeHeroCopy}>
+        <div className={styles.homeHeroCopy} data-motion-reveal="left">
           <p className={styles.eyebrow}>{copy.home.eyebrow}</p>
           <h1 className={styles.displayTitle}>
             {copy.home.titleStart}
@@ -36,7 +36,11 @@ export const HomeView = ({
           </h1>
         </div>
 
-        <figure className={styles.homeHeroFigure}>
+        <figure
+          className={styles.homeHeroFigure}
+          data-motion-image
+          data-motion-parallax
+        >
           <div className={styles.homeHeroImage}>
             <Image
               src="/404.webp"
@@ -61,7 +65,7 @@ export const HomeView = ({
       <section
         className={`${styles.section} ${styles.sectionWhite} ${styles.homeWorkSection}`}
       >
-        <div className={styles.sectionHead}>
+        <div className={styles.sectionHead} data-motion-reveal="left">
           <p className={styles.eyebrow}>{copy.home.workEyebrow}</p>
           <h2>{copy.home.workTitle}</h2>
         </div>
@@ -74,7 +78,7 @@ export const HomeView = ({
             </div>
           </div>
         ) : (
-          <div className={styles.homeWorkGallery}>
+          <div className={styles.homeWorkGallery} data-motion-reveal>
             <HomeSelectedCarousel photos={selectedPhotos} />
 
             <div className={styles.homeWorkFooter}>
@@ -90,23 +94,25 @@ export const HomeView = ({
       <section
         className={`${styles.section} ${styles.sectionMist} ${styles.homeJourneysSection}`}
       >
-        <div className={styles.sectionHead}>
+        <div className={styles.sectionHead} data-motion-reveal="left">
           <p className={styles.eyebrow}>{copy.home.journeysEyebrow}</p>
           <h2>{copy.home.journeysTitle}</h2>
         </div>
 
-        <HomeJourneysCarousel />
+        <div data-motion-reveal>
+          <HomeJourneysCarousel />
+        </div>
       </section>
 
       <section
         className={`${styles.section} ${styles.sectionWhite} ${styles.homePlacesSection}`}
       >
-        <div className={styles.homePlacesHead}>
+        <div className={styles.homePlacesHead} data-motion-reveal="left">
           <p className={styles.eyebrow}>{copy.home.travelEyebrow}</p>
           <h2>{copy.home.travelTitle}</h2>
         </div>
 
-        <div className={styles.homePlacesList}>
+        <div className={styles.homePlacesList} data-motion-reveal="right">
           <div className={styles.atlasLines}>
             {[
               { name: "New Zealand", code: "NZ", href: "/places/nz" },
@@ -116,6 +122,7 @@ export const HomeView = ({
               <Link
                 href={country.href}
                 className={styles.atlasLine}
+                data-motion-hover
                 key={country.name}
               >
                 <span>T{String(index + 1).padStart(2, "0")}</span>

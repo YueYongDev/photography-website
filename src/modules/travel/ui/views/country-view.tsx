@@ -35,13 +35,13 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
       </Link>
 
       <div className={styles.countryHero}>
-        <div>
+        <div data-motion-reveal="left">
           <p className={styles.eyebrow}>
             {copy.navigation.travel} / {country.code}
           </p>
           <h1>{countryName}</h1>
         </div>
-        <div className={styles.countryHeroMeta}>
+        <div className={styles.countryHeroMeta} data-motion-reveal="right">
           <dl>
             <div>
               <dt>{copy.common.places}</dt>
@@ -99,6 +99,9 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
             <button
               type="button"
               className={styles.countryGalleryCard}
+              data-motion-image
+              data-motion-parallax
+              data-motion-hover
               onClick={() => setSelectedCity(city)}
               aria-label={copy.country.openGallery(cityName, city.photoCount)}
               key={city.id}
@@ -109,7 +112,12 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
         })}
       </div>
 
-      <Link href="/map" className={styles.countryMapLink}>
+      <Link
+        href="/map"
+        className={styles.countryMapLink}
+        data-motion-reveal
+        data-motion-hover
+      >
         <Map size={17} strokeWidth={1.4} />
         <span>{copy.country.mapLink}</span>
         <ArrowUpRight size={16} strokeWidth={1.4} />

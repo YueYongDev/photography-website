@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { ArrowDown } from "lucide-react";
-import { useState } from "react";
+import { type CSSProperties, useMemo, useState } from "react";
+import { type Photo, RowsPhotoAlbum } from "react-photo-album";
+import PhotoAlbumSSR from "react-photo-album/ssr";
+import "react-photo-album/rows.css";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import {
@@ -46,22 +49,22 @@ type WorkRowItem = {
   photoIndex: number;
 };
 
+type WorkAlbumPhoto = Photo & WorkRowItem;
+
+type WorkAlbumLayout = {
+  width: number;
+  height: number;
+};
+
 const buildWorkStory = (photos: WorkPhoto[]) => {
   const items = photos.map((photo, photoIndex) => ({ photo, photoIndex }));
   const leadItem =
     items.find(({ photo }) => getPhotoAspectRatio(photo) >= 1.35) ?? items[0];
-  const columns: [WorkRowItem[], WorkRowItem[]] = [[], []];
-  const columnWeights = [0, 0];
+  const streamItems = items.filter(
+    (item) => item.photo.id !== leadItem?.photo.id,
+  );
 
-  items.forEach((item) => {
-    if (item.photo.id === leadItem?.photo.id) return;
-
-    const columnIndex = columnWeights[0] <= columnWeights[1] ? 0 : 1;
-    columns[columnIndex].push(item);
-    columnWeights[columnIndex] += 1 / getPhotoAspectRatio(item.photo) + 0.18;
-  });
-
-  return { columns, leadItem };
+  return { streamItems, leadItem };
 };
 
 const photoYear = (
@@ -72,6 +75,18 @@ const photoYear = (
   const year = new Date(value).getFullYear();
   return Number.isNaN(year) ? archiveLabel : String(year);
 };
+
+const getWorkTargetRowHeight = (containerWidth: number) =>
+  containerWidth <= 600
+    ? Math.min(520, containerWidth * 1.2)
+    : Math.min(700, Math.max(460, containerWidth / 2.7));
+
+const getWorkSpacing = (containerWidth: number) =>
+  containerWidth <= 600
+    ? 64
+    : Math.round(Math.min(112, Math.max(72, containerWidth * 0.075)));
+
+const workGalleryBreakpoints = [320, 640, 880, 1200, 1600, 2000, 2800];
 
 export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
   const { copy, locale } = useSiteLocale();
@@ -107,7 +122,29 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
       })
       .filter((place): place is string => Boolean(place)),
   ).size;
-  const { columns, leadItem } = buildWorkStory(photos);
+  const { streamItems, leadItem } = useMemo(
+    () => buildWorkStory(photos),
+    [photos],
+  );
+  const albumPhotos = useMemo<WorkAlbumPhoto[]>(
+    () =>
+      streamItems.map(({ photo, photoIndex }) => {
+        const aspectRatio = getPhotoAspectRatio(photo);
+        const hasDimensions = Boolean(
+          photo.width && photo.width > 0 && photo.height && photo.height > 0,
+        );
+
+        return {
+          src: photo.url,
+          width: hasDimensions ? photo.width! : Math.round(aspectRatio * 1000),
+          height: hasDimensions ? photo.height! : 1000,
+          key: photo.id,
+          photo,
+          photoIndex,
+        };
+      }),
+    [streamItems],
+  );
   const startLabel = leadItem
     ? copy.work.startLabel.replace(
         "01",
@@ -118,19 +155,30 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
   const renderPhoto = (
     { photo, photoIndex }: WorkRowItem,
     frameClassName = "",
+    albumLayout?: WorkAlbumLayout,
   ) => {
     const aspectRatio = getPhotoAspectRatio(photo);
     const title = photo.title || copy.common.untitled;
     const orientationClass = getOrientationClass(aspectRatio);
+    const albumStyle = albumLayout
+      ? ({
+          "--react-photo-album--photo-width": albumLayout.width,
+          "--react-photo-album--photo-height": albumLayout.height,
+        } as CSSProperties)
+      : undefined;
+    const albumClassName = albumLayout ? "react-photo-album--photo" : "";
 
     return (
       <figure
-        className={`${styles.workFrame} ${orientationClass} ${frameClassName}`}
+        className={`${albumClassName} ${styles.workFrame} ${orientationClass} ${frameClassName}`}
+        data-motion-image
         key={photo.id}
+        style={albumStyle}
       >
         <button
           type="button"
           className={styles.workFrameButton}
+          data-motion-hover
           onClick={() => setActiveIndex(photoIndex)}
           aria-label={`${title} · ${
             locale === "zh-CN" ? "查看原图" : "View original"
@@ -145,9 +193,11 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
               placeholder={photo.blurData ? "blur" : "empty"}
               blurDataURL={photo.blurData || undefined}
               sizes={
-                frameClassName
-                  ? "100vw"
-                  : "(min-width: 901px) 43vw, 92vw"
+                albumLayout
+                  ? `${Math.ceil(albumLayout.width * 1.25)}px`
+                  : frameClassName
+                    ? "(min-width: 1800px) 112rem, (min-width: 901px) 92vw, 100vw"
+                    : "(min-width: 3000px) 56rem, (min-width: 1101px) 31vw, (min-width: 601px) 46vw, 92vw"
               }
               className={styles.imageContain}
             />
@@ -171,12 +221,12 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
   return (
     <section className={`${styles.page} ${styles.workPage}`}>
       <header className={styles.workMasthead}>
-        <div className={styles.workMastheadTitle}>
+        <div className={styles.workMastheadTitle} data-motion-reveal="left">
           <p className={styles.eyebrow}>{copy.work.eyebrow}</p>
           <h1>{copy.work.title}</h1>
         </div>
 
-        <div className={styles.workMastheadAside}>
+        <div className={styles.workMastheadAside} data-motion-reveal="right">
           <p>{copy.work.description}</p>
           {copy.work.attribution && (
             <cite className={styles.workMastheadAttribution}>
@@ -218,19 +268,30 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
       ) : (
         <div className={styles.workGrid} id="work-selection">
           {leadItem && renderPhoto(leadItem, styles.workLead)}
-          <div className={styles.workColumns}>
-            {columns.map((column, columnIndex) => (
-              <div className={styles.workColumn} key={columnIndex}>
-                {column.map((item) => renderPhoto(item))}
-              </div>
-            ))}
-          </div>
-          <div className={styles.workMobileStream}>
-            {photos.map((photo, photoIndex) =>
-              photo.id === leadItem?.photo.id
-                ? null
-                : renderPhoto({ photo, photoIndex }),
-            )}
+          <div className={styles.workGalleryArea}>
+            <PhotoAlbumSSR breakpoints={workGalleryBreakpoints}>
+              <RowsPhotoAlbum
+                photos={albumPhotos}
+                padding={0}
+                spacing={getWorkSpacing}
+                targetRowHeight={getWorkTargetRowHeight}
+                rowConstraints={(containerWidth) =>
+                  containerWidth <= 600
+                    ? { minPhotos: 1, maxPhotos: 1 }
+                    : {}
+                }
+                componentsProps={{
+                  container: {
+                    className: styles.workDynamicGallery,
+                    "aria-label": copy.work.title,
+                  },
+                }}
+                render={{
+                  photo: (_props, { photo, width, height }) =>
+                    renderPhoto(photo, "", { width, height }),
+                }}
+              />
+            </PhotoAlbumSSR>
           </div>
         </div>
       )}
