@@ -117,19 +117,57 @@ export const photosRelations = relations(photos, ({ one }) => ({
 const optionalNumber = z
   .union([z.string(), z.number(), z.null()])
   .optional()
-  .transform((value) => {
+  .transform((value, context) => {
     if (value === null) return null;
     if (value === "" || value === undefined) return undefined;
-    return Number(value);
+    const parsedValue = Number(value);
+
+    if (!Number.isFinite(parsedValue)) {
+      context.addIssue({
+        code: "custom",
+        message: "Use a finite number",
+      });
+      return z.NEVER;
+    }
+
+    return parsedValue;
   });
+
+const optionalCameraNumber = ({
+  integer = false,
+  maximum,
+  minimum,
+  message,
+}: {
+  integer?: boolean;
+  maximum: number;
+  minimum: number;
+  message: string;
+}) =>
+  optionalNumber.refine(
+    (value) =>
+      value === null ||
+      value === undefined ||
+      (value >= minimum &&
+        value <= maximum &&
+        (!integer || Number.isInteger(value))),
+    { message },
+  );
 
 const optionalDate = z
   .union([z.string(), z.date(), z.null()])
   .optional()
-  .transform((value) => {
+  .transform((value, context) => {
     if (value === null) return null;
     if (!value || value === "") return undefined;
-    return typeof value === "string" ? new Date(value) : value;
+    const date = typeof value === "string" ? new Date(value) : value;
+
+    if (!Number.isFinite(date.getTime())) {
+      context.addIssue({ code: "custom", message: "Use a valid date" });
+      return z.NEVER;
+    }
+
+    return date;
   });
 
 export const photosInsertSchema = z.object({
@@ -153,12 +191,37 @@ export const photosInsertSchema = z.object({
   make: z.string().nullish(),
   model: z.string().nullish(),
   lensModel: z.string().nullish(),
-  focalLength: optionalNumber,
-  focalLength35mm: optionalNumber,
-  fNumber: optionalNumber,
-  iso: optionalNumber,
-  exposureTime: optionalNumber,
-  exposureCompensation: optionalNumber,
+  focalLength: optionalCameraNumber({
+    minimum: 0.001,
+    maximum: 100000,
+    message: "Focal length must be between 0.001 and 100000 mm",
+  }),
+  focalLength35mm: optionalCameraNumber({
+    minimum: 0.001,
+    maximum: 100000,
+    message: "35 mm equivalent focal length must be positive",
+  }),
+  fNumber: optionalCameraNumber({
+    minimum: 0.1,
+    maximum: 256,
+    message: "Aperture must be between f/0.1 and f/256",
+  }),
+  iso: optionalCameraNumber({
+    minimum: 1,
+    maximum: 10000000,
+    integer: true,
+    message: "ISO must be a positive whole number",
+  }),
+  exposureTime: optionalCameraNumber({
+    minimum: 0.000000001,
+    maximum: 86400,
+    message: "Shutter time must be positive and no longer than 24 hours",
+  }),
+  exposureCompensation: optionalCameraNumber({
+    minimum: -100,
+    maximum: 100,
+    message: "Exposure compensation must be between -100 and +100 EV",
+  }),
   latitude: optionalNumber,
   longitude: optionalNumber,
   gpsAltitude: optionalNumber,

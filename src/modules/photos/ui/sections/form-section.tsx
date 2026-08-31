@@ -1,15 +1,35 @@
 "use client";
 
 import { z } from "zod";
-import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { formatGPSCoordinates, parseLatLngText } from "@/lib/utils";
-import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  ArrowLeftIcon,
+  CopyCheckIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+  Globe2Icon,
+  HouseIcon,
+  ImagesIcon,
+  LoaderCircleIcon,
+  MapPinIcon,
+  MinusIcon,
+  MoreVerticalIcon,
+  PlusIcon,
+  ScanIcon,
+  SearchIcon,
+  SparklesIcon,
+  TrashIcon,
+} from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+
+import BlurImage from "@/components/blur-image";
 import { Button } from "@/components/ui/button";
-import { trpc } from "@/trpc/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,54 +37,74 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  CopyCheckIcon,
-  CopyIcon,
-  MoreVerticalIcon,
-  SparklesIcon,
-  TrashIcon,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
-import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { ExposureTimeInput } from "@/components/ui/exposure-time-input";
-import BlurImage from "@/components/blur-image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Switch } from "@/components/ui/switch";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { Textarea } from "@/components/ui/textarea";
 import { photosUpdateSchema } from "@/db/schema/photos";
-import { toast } from "sonner";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
-import styles from "@/modules/dashboard/ui/studio.module.css";
+import { formatGPSCoordinates, parseLatLngText } from "@/lib/utils";
 import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
+import {
+  APERTURE_PRESETS,
+  EXPOSURE_COMPENSATION_PRESETS,
+  formatAperture,
+  formatExposureCompensation,
+  formatIso,
+  formatShutterSpeed,
+  ISO_PRESETS,
+  SHUTTER_FRACTION_PRESETS,
+  SHUTTER_SECONDS_PRESETS,
+} from "@/modules/photos/lib/camera-metadata";
+import {
+  CameraPresetSelect,
+  CaptureDateTimeInput,
+  FocalLengthInput,
+} from "@/modules/photos/ui/components/camera-metadata-fields";
+import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
+import { trpc } from "@/trpc/client";
+import styles from "../photo-editor.module.css";
 
 const MapComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
-  loading: () => (
-    <div className="h-[300px] w-full rounded-md border flex items-center justify-center bg-muted">
-      <Skeleton className="h-full w-full" />
-    </div>
-  ),
+  loading: () => <Skeleton className={styles.mapSkeleton} />,
 });
+
+type PhotoFormValues = z.infer<typeof photosUpdateSchema>;
+type InspectorSection = "content" | "display" | "location" | "technical";
+
+type AddressSearchResult = {
+  id: string;
+  name: string;
+  displayName: string;
+  latitude: number;
+  longitude: number;
+  country: string | null;
+  countryCode: string | null;
+  region: string | null;
+  city: string | null;
+  district: string | null;
+  fullAddress: string;
+  placeFormatted: string;
+};
 
 export const FormSection = ({ photoId }: { photoId: string }) => {
   const { copy } = useStudioLocale();
+
   return (
-    <Suspense fallback={<p>{copy.common.loading}</p>}>
-      <ErrorBoundary fallback={<p>{copy.overview.error}</p>}>
+    <Suspense
+      fallback={<div className={styles.loadingState}>{copy.common.loading}</div>}
+    >
+      <ErrorBoundary
+        fallback={<div className={styles.errorState}>{copy.overview.error}</div>}
+      >
         <FormSectionSuspense photoId={photoId} />
       </ErrorBoundary>
     </Suspense>
@@ -73,71 +113,36 @@ export const FormSection = ({ photoId }: { photoId: string }) => {
 
 const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   const router = useRouter();
-  const { copy } = useStudioLocale();
+  const { isMobile, state: sidebarState } = useSidebar();
+  const { copy, locale } = useStudioLocale();
   const utils = trpc.useUtils();
   const [photo] = trpc.photos.getOne.useSuspenseQuery({ id: photoId });
+  const [isCopied, setIsCopied] = useState(false);
+  const [previewZoom, setPreviewZoom] = useState(1);
+  const [activeInspectorSection, setActiveInspectorSection] =
+    useState<InspectorSection>("content");
+  const inspectorScrollRef = useRef<HTMLDivElement>(null);
+  const [addressQuery, setAddressQuery] = useState("");
+  const [addressResults, setAddressResults] = useState<AddressSearchResult[]>([]);
+  const [isAddressSearching, setIsAddressSearching] = useState(false);
+  const [addressSearchMessage, setAddressSearchMessage] = useState<
+    string | null
+  >(null);
+  const [mapRevision, setMapRevision] = useState(0);
+  const [coordinateText, setCoordinateText] = useState(() =>
+    photo.latitude !== null && photo.longitude !== null
+      ? `${photo.latitude}, ${photo.longitude}`
+      : "",
+  );
+
   const photoAspectRatio =
     photo.width > 0 && photo.height > 0
       ? photo.width / photo.height
       : photo.aspectRatio > 0
         ? photo.aspectRatio
         : 1.5;
-  const [currentLocation, setCurrentLocation] = useState({
-    lat: photo.latitude,
-    lng: photo.longitude,
-  });
-  const [cameraInfoOpen, setCameraInfoOpen] = useState(false);
-  const [exposureInfoOpen, setExposureInfoOpen] = useState(false);
 
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [photoId]);
-
-  const update = trpc.photos.update.useMutation({
-    onSuccess: async () => {
-      toast.success("Photo updated");
-      await Promise.all([
-        utils.photos.getMany.invalidate(),
-        utils.photos.getManyWithPrivate.invalidate(),
-        utils.photos.getOne.invalidate({ id: photoId }),
-        utils.photos.getStudioStats.invalidate(),
-      ]);
-      // 保存成功后跳转回Photo页面
-      router.push("/studio/photos");
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  const remove = trpc.photos.remove.useMutation({
-    onSuccess: async () => {
-      toast.success("Photo removed");
-      await Promise.all([
-        utils.photos.getMany.invalidate(),
-        utils.photos.getManyWithPrivate.invalidate(),
-        utils.photos.getStudioStats.invalidate(),
-      ]);
-      router.push("/studio/photos");
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  // 创建一个新的mutation用于AI生成描述
-  const generateAIDescription = trpc.photos.generateDescription.useMutation({
-    onSuccess: (data) => {
-      form.setValue("title", data.title);
-      form.setValue("description", data.description);
-      toast.success("AI description generated");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to generate AI description");
-    },
-  });
-
-  const form = useForm<z.infer<typeof photosUpdateSchema>>({
+  const form = useForm<PhotoFormValues>({
     resolver: zodResolver(photosUpdateSchema),
     defaultValues: {
       id: photo.id,
@@ -170,38 +175,95 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     },
   });
 
-  // 当 latitude 或 longitude 字段变化时，更新 currentLocation 状态
+  const currentTitle = useWatch({ control: form.control, name: "title" });
+  const latitude = useWatch({ control: form.control, name: "latitude" });
+  const longitude = useWatch({ control: form.control, name: "longitude" });
+  const country = useWatch({ control: form.control, name: "country" });
+  const countryCode = useWatch({ control: form.control, name: "countryCode" });
+  const region = useWatch({ control: form.control, name: "region" });
+  const city = useWatch({ control: form.control, name: "city" });
+  const fullAddress = useWatch({ control: form.control, name: "fullAddress" });
+  const placeFormatted = useWatch({
+    control: form.control,
+    name: "placeFormatted",
+  });
+  const cameraMake = useWatch({ control: form.control, name: "make" });
+  const cameraModel = useWatch({ control: form.control, name: "model" });
+  const hasCoordinates =
+    latitude !== undefined &&
+    latitude !== null &&
+    longitude !== undefined &&
+    longitude !== null;
+
   useEffect(() => {
-    const lat = form.watch("latitude");
-    const lng = form.watch("longitude");
+    const frame = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
 
-    // 只有当 lat 和 lng 都有效时才更新 currentLocation
-    if (lat !== undefined && lng !== undefined && lat !== null && lng !== null) {
-      setCurrentLocation({ lat, lng });
-    }
-  }, [form]);
+    return () => window.cancelAnimationFrame(frame);
+  }, [photoId]);
 
-  const mapValues = useMemo(() => {
-    const longitude = currentLocation?.lng ?? photo.longitude ?? 0;
-    const latitude = currentLocation?.lat ?? photo.latitude ?? 0;
-    return {
-      markers:
-        longitude === 0 && latitude === 0
-          ? []
-          : [{ id: "location", longitude, latitude }],
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!form.formState.isDirty) return;
+      event.preventDefault();
     };
-  }, [
-    currentLocation?.lat,
-    currentLocation?.lng,
-    photo.latitude,
-    photo.longitude,
-  ]);
 
-  const onSubmit = (data: z.infer<typeof photosUpdateSchema>) => {
-    update.mutateAsync(data);
-  };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [form.formState.isDirty]);
 
-  const [isCopied, setIsCopied] = useState(false);
+  const update = trpc.photos.update.useMutation({
+    onSuccess: async () => {
+      toast.success(copy.editor.updateSuccess);
+      await Promise.all([
+        utils.photos.getMany.invalidate(),
+        utils.photos.getManyWithPrivate.invalidate(),
+        utils.photos.getOne.invalidate({ id: photoId }),
+        utils.photos.getLikedPhotos.invalidate(),
+        utils.photos.getPortfolioPhotos.invalidate(),
+        utils.photos.getStudioStats.invalidate(),
+      ]);
+      router.push("/studio/photos");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
+  const remove = trpc.photos.remove.useMutation({
+    onSuccess: async () => {
+      toast.success(copy.editor.removeSuccess);
+      await Promise.all([
+        utils.photos.getMany.invalidate(),
+        utils.photos.getManyWithPrivate.invalidate(),
+        utils.photos.getLikedPhotos.invalidate(),
+        utils.photos.getPortfolioPhotos.invalidate(),
+        utils.photos.getStudioStats.invalidate(),
+      ]);
+      router.push("/studio/photos");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
+  const generateAIDescription = trpc.photos.generateDescription.useMutation({
+    onSuccess: (data) => {
+      form.setValue("title", data.title, { shouldDirty: true });
+      form.setValue("description", data.description, { shouldDirty: true });
+      toast.success(copy.editor.aiSuccess);
+    },
+    onError: (error) => {
+      toast.error(error.message || copy.editor.aiError);
+    },
+  });
+
+  const mapValues = useMemo(
+    () => ({
+      markers: hasCoordinates
+        ? [{ id: "location", longitude, latitude }]
+        : [],
+    }),
+    [hasCoordinates, latitude, longitude],
+  );
+
   const cityLevelLocation =
     photo.countryCode?.toUpperCase() === "JP" ||
     photo.countryCode?.toUpperCase() === "TW"
@@ -211,12 +273,88 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     photo.countryCode && cityLevelLocation
       ? `/places/${photo.countryCode.toLowerCase()}/${toPlaceSlug(cityLevelLocation)}`
       : "/map";
+  const cameraLabel = [cameraMake, cameraModel].filter(Boolean).join(" ");
+  const locationLabel = [city ?? region, countryCode]
+    .filter(Boolean)
+    .join(" · ");
+  const locationDetail =
+    placeFormatted ??
+    fullAddress ??
+    [city ?? region, country].filter(Boolean).join(", ");
+  const capturedLabel = photo.dateTimeOriginal
+    ? new Intl.DateTimeFormat(locale === "zh-CN" ? "zh-CN" : "en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      }).format(new Date(photo.dateTimeOriginal))
+    : copy.editor.notRecorded;
+
+  const setCoordinates = (lat: number, lng: number) => {
+    form.setValue("latitude", lat, { shouldDirty: true });
+    form.setValue("longitude", lng, { shouldDirty: true });
+    setCoordinateText(`${lat}, ${lng}`);
+  };
+
+  const searchAddress = async () => {
+    if (isAddressSearching) return;
+
+    const query = addressQuery.trim();
+
+    if (query.length < 2) {
+      setAddressResults([]);
+      setAddressSearchMessage(copy.editor.addressSearchMinimum);
+      return;
+    }
+
+    setIsAddressSearching(true);
+    setAddressSearchMessage(null);
+
+    try {
+      const response = await fetch(
+        `/api/geocoding/search?q=${encodeURIComponent(query)}&lang=${locale}`,
+      );
+      const payload = (await response.json()) as {
+        results?: AddressSearchResult[];
+      };
+
+      if (!response.ok) throw new Error("Address search failed");
+
+      const results = payload.results ?? [];
+      setAddressResults(results);
+      setAddressSearchMessage(
+        results.length === 0 ? copy.editor.addressSearchEmpty : null,
+      );
+    } catch {
+      setAddressResults([]);
+      setAddressSearchMessage(copy.editor.addressSearchError);
+    } finally {
+      setIsAddressSearching(false);
+    }
+  };
+
+  const selectAddress = (result: AddressSearchResult) => {
+    setCoordinates(result.latitude, result.longitude);
+    form.setValue("country", result.country, { shouldDirty: true });
+    form.setValue("countryCode", result.countryCode, { shouldDirty: true });
+    form.setValue("region", result.region, { shouldDirty: true });
+    form.setValue("city", result.city, { shouldDirty: true });
+    form.setValue("district", result.district, { shouldDirty: true });
+    form.setValue("fullAddress", result.fullAddress, { shouldDirty: true });
+    form.setValue("placeFormatted", result.placeFormatted, {
+      shouldDirty: true,
+    });
+    setAddressQuery(result.displayName);
+    setAddressResults([]);
+    setAddressSearchMessage(null);
+    setMapRevision((revision) => revision + 1);
+    toast.success(copy.editor.addressSelected);
+  };
 
   const onCopy = async () => {
     const fullUrl = `${window.location.origin}${photoPath}`;
     await navigator.clipboard.writeText(fullUrl);
     setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    window.setTimeout(() => setIsCopied(false), 2000);
   };
 
   const onPasteCoordinates = async () => {
@@ -225,146 +363,537 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
       const coordinates = parseLatLngText(clipboardText);
 
       if (!coordinates) {
-        toast.error("Invalid coordinates format. Use: latitude, longitude");
+        toast.error(copy.editor.coordinatesInvalid);
         return;
       }
 
-      form.setValue("latitude", coordinates.lat);
-      form.setValue("longitude", coordinates.lng);
-      setCurrentLocation({ lat: coordinates.lat, lng: coordinates.lng });
-      toast.success("Coordinates pasted");
+      setCoordinates(coordinates.lat, coordinates.lng);
+      setMapRevision((revision) => revision + 1);
+      toast.success(copy.editor.coordinatesPasted);
     } catch {
-      toast.error("Failed to read clipboard");
+      toast.error(copy.editor.coordinatesPasteError);
     }
   };
 
+  const onCoordinateChange = (value: string) => {
+    setCoordinateText(value);
+    const coordinates = parseLatLngText(value);
+    if (!coordinates) return;
+    form.setValue("latitude", coordinates.lat, { shouldDirty: true });
+    form.setValue("longitude", coordinates.lng, { shouldDirty: true });
+  };
+
+  const onSubmit = (data: PhotoFormValues) => {
+    update.mutate(data);
+  };
+
+  const navigateInspector = (section: InspectorSection) => {
+    setActiveInspectorSection(section);
+    window.requestAnimationFrame(() => {
+      inspectorScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    });
+  };
+
   return (
-    <div className="py-2.5 px-4">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className={styles.editorHeader}>
-            <div className={styles.editorHeaderCopy}>
-              <h1 className={styles.editorTitle}>{copy.editor.photoDetails}</h1>
-              <p className={styles.editorDescription}>
-                {copy.editor.photoDescription}
-              </p>
-            </div>
-            <div className={styles.editorActions}>
-              <Button
-                type="button"
-                variant="default"
-                onClick={() => generateAIDescription.mutate({ id: photoId })}
-                disabled={generateAIDescription.isPending}
-                className={`${styles.editorSecondaryButton} whitespace-nowrap`}
+    <Form {...form}>
+      <form className={styles.form} onSubmit={form.handleSubmit(onSubmit)}>
+        <header className={styles.header}>
+          <div className={styles.headerIdentity}>
+            {(isMobile || sidebarState === "collapsed") && (
+              <SidebarTrigger
+                className={styles.shellTrigger}
+                label={copy.shell.toggleSidebar}
+              />
+            )}
+            <Link
+              className={styles.backLink}
+              href="/studio/photos"
+              aria-label={copy.editor.backToPhotos}
+            >
+              <ArrowLeftIcon size={18} />
+            </Link>
+            <div className={styles.headerCopy}>
+              <div className={styles.headerTitleLine}>
+                <p className={styles.eyebrow}>{copy.editor.editEyebrow}</p>
+                <h1 className={styles.title}>
+                  {currentTitle || copy.photos.untitled}
+                </h1>
+              </div>
+              <span
+                className={styles.saveState}
+                data-dirty={form.formState.isDirty || undefined}
               >
-                {generateAIDescription.isPending ? (
-                  <>
-                    <SparklesIcon className="mr-2 h-4 w-4 animate-pulse" />
-                    <span className="hidden sm:inline">{copy.editor.generating}</span>
-                    <span className="sm:hidden">...</span>
-                  </>
-                ) : (
-                  <>
-                    <SparklesIcon className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">{copy.editor.aiDescription}</span>
-                    <span className="sm:hidden">AI</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                type="submit"
-                className={styles.editorPrimaryButton}
-                disabled={update.isPending}
-              >
-                {copy.editor.save}
-              </Button>
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVerticalIcon className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => remove.mutate({ id: photoId })}
-                  >
-                    <TrashIcon className="size-4 mr-2" />
-                    {copy.editor.delete}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                <span className={styles.saveStateDot} />
+                {form.formState.isDirty
+                  ? copy.editor.unsavedChanges
+                  : copy.editor.allChangesSaved}
+              </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Preview Image and Camera Info - Left side */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Preview Image */}
-              <div className={`${styles.editorMediaCard} flex h-fit flex-col gap-4`}>
-                <div className={styles.editorPhotoStage}>
-                  <div
-                    className={styles.editorPhotoPreview}
-                    style={{
-                      aspectRatio: photoAspectRatio,
-                      width: `min(100%, ${Math.round(68 * photoAspectRatio)}vh)`,
-                    }}
-                  >
-                    <BlurImage
-                      src={photo.url}
-                      alt={photo.title}
-                      fill
-                      quality={35}
-                      className="object-contain"
-                      blurhash={photo.blurData}
-                    />
-                  </div>
-                </div>
-                <div className="p-4 flex flex-col gap-y-6">
-                  <div className="flex justify-between items-center gap-x-2">
-                    <div className="flex flex-col gap-y-1">
-                      <p className="text-sm text-muted-foreground">
-                        {copy.editor.photoLink}
-                      </p>
-                      <div className="flex items-center gap-x-2">
-                        <Link href={photoPath}>
-                          <p className="line-clamp-1 text-sm text-blue-500">
-                            {photoPath}
-                          </p>
-                        </Link>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={onCopy}
-                          className="shrink-0"
-                          disabled={isCopied}
-                        >
-                          {isCopied ? <CopyCheckIcon /> : <CopyIcon />}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <div className={styles.actions}>
+            <Button
+              type="submit"
+              className={styles.primaryAction}
+              disabled={update.isPending || !form.formState.isDirty}
+            >
+              {update.isPending ? copy.editor.saving : copy.editor.save}
+            </Button>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className={styles.moreAction}
+                  aria-label={copy.editor.moreActions}
+                >
+                  <MoreVerticalIcon size={18} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => remove.mutate({ id: photoId })}
+                  disabled={remove.isPending}
+                >
+                  <TrashIcon className="mr-2 size-4" />
+                  {copy.editor.delete}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        <div className={styles.workspace}>
+          <section className={styles.mediaColumn}>
+            <div className={styles.photoStage}>
+              <Link
+                className={styles.stageAction}
+                href={photo.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {copy.editor.openPhoto}
+                <ExternalLinkIcon size={14} />
+              </Link>
+
+              <div
+                className={styles.photoPreview}
+                style={{
+                  aspectRatio: photoAspectRatio,
+                  width: `min(100%, ${Math.round(72 * photoAspectRatio)}vh)`,
+                  transform: `scale(${previewZoom})`,
+                }}
+              >
+                <BlurImage
+                  src={photo.url}
+                  alt={photo.title}
+                  fill
+                  priority
+                  quality={75}
+                  sizes="(max-width: 1100px) 100vw, 65vw"
+                  className="object-contain"
+                  blurhash={photo.blurData}
+                />
               </div>
 
-              {/* Camera Info and Exposure Info */}
-              <div className="flex flex-col gap-y-6">
-                {/* Camera Info Collapsible */}
-                <Collapsible
-                  className={styles.editorSectionDisclosure}
-                  open={cameraInfoOpen}
-                  onOpenChange={setCameraInfoOpen}
+              <div className={styles.zoomControls}>
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom((zoom) => Math.min(zoom + 0.1, 1.5))}
+                  aria-label={copy.editor.zoomIn}
+                  disabled={previewZoom >= 1.5}
                 >
-                  <div className={styles.editorSectionHead}>
-                    <h3 className="text-lg font-semibold">{copy.editor.cameraInfo}</h3>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        {cameraInfoOpen ? <ChevronDown /> : <ChevronRight />}
-                      </Button>
-                    </CollapsibleTrigger>
+                  <PlusIcon size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom((zoom) => Math.max(zoom - 0.1, 0.8))}
+                  aria-label={copy.editor.zoomOut}
+                  disabled={previewZoom <= 0.8}
+                >
+                  <MinusIcon size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom(1)}
+                  aria-label={copy.editor.resetZoom}
+                >
+                  <ScanIcon size={15} />
+                </button>
+              </div>
+            </div>
+
+            <footer className={styles.metadataBar}>
+              <span className={styles.publicMeta}>
+                <Globe2Icon size={14} />
+                {copy.editor.publicPhoto}
+              </span>
+              <span>{locationLabel || copy.photos.unknownLocation}</span>
+              <span>
+                {Math.round(photo.width)} × {Math.round(photo.height)}
+              </span>
+              <span>{cameraLabel || copy.editor.notRecorded}</span>
+              <span>{capturedLabel}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                className={styles.copyButton}
+                onClick={onCopy}
+                disabled={isCopied}
+                aria-label={copy.editor.copyLink}
+              >
+                {isCopied ? <CopyCheckIcon size={15} /> : <CopyIcon size={15} />}
+              </Button>
+            </footer>
+          </section>
+
+          <aside className={styles.inspector}>
+            <nav
+              className={styles.inspectorTabs}
+              aria-label={copy.editor.photoDetails}
+              role="tablist"
+            >
+              {(
+                [
+                  { id: "content", label: copy.editor.contentTab },
+                  { id: "display", label: copy.editor.displayTab },
+                  { id: "location", label: copy.editor.locationTab },
+                  { id: "technical", label: copy.editor.technicalTab },
+                ] satisfies Array<{ id: InspectorSection; label: string }>
+              ).map((item) => (
+                <button
+                  key={item.id}
+                  id={`photo-editor-tab-${item.id}`}
+                  type="button"
+                  role="tab"
+                  aria-controls={`photo-editor-${item.id}`}
+                  aria-selected={activeInspectorSection === item.id}
+                  data-active={activeInspectorSection === item.id || undefined}
+                  onClick={() => navigateInspector(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+
+            <div className={styles.inspectorScroll} ref={inspectorScrollRef}>
+              {activeInspectorSection === "content" && (
+                <section
+                  className={styles.inspectorSection}
+                  id="photo-editor-content"
+                  role="tabpanel"
+                  aria-labelledby="photo-editor-tab-content"
+                >
+                  <div
+                    className={`${styles.sectionHeading} ${styles.sectionHeadingWithAction}`}
+                  >
+                    <div>
+                      <span>01</span>
+                      <h2>{copy.editor.contentSection}</h2>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.sectionAiAction}
+                      onClick={() =>
+                        generateAIDescription.mutate({ id: photoId })
+                      }
+                      disabled={generateAIDescription.isPending}
+                    >
+                      <SparklesIcon
+                        className={
+                          generateAIDescription.isPending ? "animate-pulse" : ""
+                        }
+                        size={14}
+                      />
+                      <span>
+                        {generateAIDescription.isPending
+                          ? copy.editor.generating
+                          : copy.editor.aiDescription}
+                      </span>
+                    </button>
+                    <p>{copy.editor.contentSectionDescription}</p>
                   </div>
-                  <CollapsibleContent>
-                    <div className={`${styles.editorSectionBody} space-y-4 p-4`}>
+                  <div className={styles.fieldStack}>
+                    <FormField
+                      name="title"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{copy.editor.title}</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder={copy.editor.photoTitle}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="description"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{copy.editor.description}</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              rows={4}
+                              className="resize-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </section>
+              )}
+
+              {activeInspectorSection === "display" && (
+                <section
+                  className={styles.inspectorSection}
+                  id="photo-editor-display"
+                  role="tabpanel"
+                  aria-labelledby="photo-editor-tab-display"
+                >
+                  <div className={styles.sectionHeading}>
+                    <div>
+                      <span>02</span>
+                      <h2>{copy.editor.displaySection}</h2>
+                    </div>
+                    <p>{copy.editor.displaySectionDescription}</p>
+                  </div>
+                  <div className={styles.switchList}>
+                    <FormField
+                      name="isFavorite"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem
+                          className={styles.switchRow}
+                          data-active={field.value || undefined}
+                        >
+                          <span className={styles.switchIcon}>
+                            <HouseIcon size={17} />
+                          </span>
+                          <div className={styles.switchCopy}>
+                            <strong>{copy.editor.homepageDisplay}</strong>
+                            <span>{copy.editor.homepageDisplayDescription}</span>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              size="large"
+                              className={styles.switchControl}
+                              checked={field.value ?? false}
+                              onCheckedChange={field.onChange}
+                              aria-label={copy.editor.homepageDisplay}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="visibility"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem
+                          className={styles.switchRow}
+                          data-active={field.value === "public" || undefined}
+                        >
+                          <span className={styles.switchIcon}>
+                            <ImagesIcon size={17} />
+                          </span>
+                          <div className={styles.switchCopy}>
+                            <strong>{copy.editor.portfolioDisplay}</strong>
+                            <span>{copy.editor.portfolioDisplayDescription}</span>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              size="large"
+                              className={styles.switchControl}
+                              checked={field.value === "public"}
+                              onCheckedChange={(checked) =>
+                                field.onChange(checked ? "public" : "private")
+                              }
+                              aria-label={copy.editor.portfolioDisplay}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </section>
+              )}
+
+              {activeInspectorSection === "location" && (
+                <section
+                  className={styles.inspectorSection}
+                  id="photo-editor-location"
+                  role="tabpanel"
+                  aria-labelledby="photo-editor-tab-location"
+                >
+                <div className={styles.sectionHeading}>
+                  <div>
+                    <span>03</span>
+                    <h2>{copy.editor.locationSection}</h2>
+                  </div>
+                  <p>{copy.editor.locationSectionDescription}</p>
+                </div>
+                <div className={styles.addressSearch}>
+                  <FormLabel htmlFor="photo-address-search">
+                    {copy.editor.addressSearch}
+                  </FormLabel>
+                  <div className={styles.addressSearchControl}>
+                    <div className={styles.addressSearchInputWrap}>
+                      <SearchIcon size={15} aria-hidden="true" />
+                      <Input
+                        id="photo-address-search"
+                        value={addressQuery}
+                        placeholder={copy.editor.addressSearchPlaceholder}
+                        autoComplete="off"
+                        onChange={(event) => {
+                          setAddressQuery(event.target.value);
+                          if (addressSearchMessage) {
+                            setAddressSearchMessage(null);
+                          }
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Enter") return;
+                          event.preventDefault();
+                          void searchAddress();
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      className={styles.addressSearchButton}
+                      disabled={
+                        isAddressSearching || addressQuery.trim().length < 2
+                      }
+                      onClick={() => void searchAddress()}
+                    >
+                      {isAddressSearching ? (
+                        <LoaderCircleIcon className="animate-spin" size={14} />
+                      ) : (
+                        <SearchIcon size={14} />
+                      )}
+                      <span>
+                        {isAddressSearching
+                          ? copy.editor.addressSearching
+                          : copy.editor.addressSearchAction}
+                      </span>
+                    </Button>
+                  </div>
+                  {addressResults.length > 0 && (
+                    <div className={styles.addressResults} aria-live="polite">
+                      {addressResults.map((result) => (
+                        <button
+                          key={result.id}
+                          type="button"
+                          className={styles.addressResult}
+                          onClick={() => selectAddress(result)}
+                        >
+                          <MapPinIcon size={15} aria-hidden="true" />
+                          <span>
+                            <strong>{result.name}</strong>
+                            <span>{result.displayName}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {addressSearchMessage && (
+                    <p className={styles.addressSearchMessage} role="status">
+                      {addressSearchMessage}
+                    </p>
+                  )}
+                  <a
+                    className={styles.addressAttribution}
+                    href="https://www.openstreetmap.org/copyright"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {copy.editor.addressSearchHint}
+                  </a>
+                </div>
+                <div className={styles.locationSummary}>
+                  <MapPinIcon size={17} />
+                  <div>
+                    <strong>
+                      {locationDetail || copy.photos.unknownLocation}
+                    </strong>
+                    <span>
+                      {hasCoordinates
+                        ? formatGPSCoordinates(latitude, longitude)
+                        : copy.editor.noCoordinates}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.coordinateHead}>
+                  <FormLabel htmlFor="photo-coordinates">
+                    {copy.editor.gps}
+                  </FormLabel>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className={styles.pasteButton}
+                    onClick={onPasteCoordinates}
+                  >
+                    {copy.editor.pasteCoordinates}
+                  </Button>
+                </div>
+                <Input
+                  id="photo-coordinates"
+                  value={coordinateText}
+                  placeholder="34.6875, 135.5259"
+                  onChange={(event) => onCoordinateChange(event.target.value)}
+                  aria-describedby="photo-coordinate-description"
+                />
+                <div className={styles.mapFrame}>
+                  <Suspense
+                    fallback={<Skeleton className={styles.mapSkeleton} />}
+                  >
+                    <MapComponent
+                      key={mapRevision}
+                      draggableMarker
+                      markers={mapValues.markers}
+                      initialViewState={{
+                        longitude: hasCoordinates ? longitude : 0,
+                        latitude: hasCoordinates ? latitude : 20,
+                        zoom: hasCoordinates ? 10 : 1,
+                      }}
+                      onMarkerDragEnd={(data) =>
+                        setCoordinates(data.lat, data.lng)
+                      }
+                    />
+                  </Suspense>
+                </div>
+                <p className={styles.coordinateDescription} id="photo-coordinate-description">
+                  {copy.editor.publicPhotoNote}
+                </p>
+                </section>
+              )}
+
+              {activeInspectorSection === "technical" && (
+                <section
+                  className={styles.inspectorSection}
+                  id="photo-editor-technical"
+                  role="tabpanel"
+                  aria-labelledby="photo-editor-tab-technical"
+                >
+                  <div className={styles.sectionHeading}>
+                    <div>
+                      <span>04</span>
+                      <h2>{copy.editor.technicalSection}</h2>
+                    </div>
+                    <p>{copy.editor.technicalSectionDescription}</p>
+                  </div>
+                  <div className={styles.technicalStorageNote}>
+                    <span>EXIF</span>
+                    <p>{copy.editor.cameraMetadataStorageNote}</p>
+                  </div>
+                  <div className={styles.technicalFields}>
                       <FormField
                         name="make"
                         control={form.control}
@@ -372,17 +901,12 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           <FormItem>
                             <FormLabel>{copy.editor.cameraMake}</FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                value={field.value ?? ""}
-                                placeholder="e.g. Sony"
-                              />
+                              <Input {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         name="model"
                         control={form.control}
@@ -390,54 +914,25 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           <FormItem>
                             <FormLabel>{copy.editor.cameraModel}</FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                value={field.value ?? ""}
-                                placeholder="e.g. A6700"
-                              />
+                              <Input {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         name="lensModel"
                         control={form.control}
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className={styles.wideField}>
                             <FormLabel>{copy.editor.lens}</FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                value={field.value ?? ""}
-                                placeholder="e.g. Viltrox 27mm f1.2"
-                              />
+                              <Input {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-
-                {/* Exposure Info Collapsible */}
-                <Collapsible
-                  className={styles.editorSectionDisclosure}
-                  open={exposureInfoOpen}
-                  onOpenChange={setExposureInfoOpen}
-                >
-                  <div className={styles.editorSectionHead}>
-                    <h3 className="text-lg font-semibold">{copy.editor.exposureInfo}</h3>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        {exposureInfoOpen ? <ChevronDown /> : <ChevronRight />}
-                      </Button>
-                    </CollapsibleTrigger>
-                  </div>
-                  <CollapsibleContent>
-                    <div className={`${styles.editorSectionBody} space-y-4 p-4`}>
                       <FormField
                         name="focalLength"
                         control={form.control}
@@ -445,90 +940,123 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           <FormItem>
                             <FormLabel>{copy.editor.focalLength}</FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                type="number"
-                                value={field.value ?? ""}
+                              <FocalLengthInput
+                                ref={field.ref}
+                                name={field.name}
+                                value={field.value}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                placeholder={copy.editor.focalLengthPlaceholder}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         name="fNumber"
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{copy.editor.aperture}</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="number"
-                                step="0.1"
-                                value={field.value ?? ""}
-                              />
-                            </FormControl>
+                            <CameraPresetSelect
+                              ariaLabel={copy.editor.aperture}
+                              value={field.value}
+                              originalValue={photo.fNumber}
+                              onChange={field.onChange}
+                              groups={[
+                                {
+                                  label: copy.editor.aperturePresets,
+                                  options: APERTURE_PRESETS,
+                                },
+                              ]}
+                              formatValue={formatAperture}
+                              notRecordedLabel={copy.editor.notRecorded}
+                              originalValueLabel={copy.editor.originalMetadataValue}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         name="iso"
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{copy.editor.iso}</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="number"
-                                value={field.value ?? ""}
-                              />
-                            </FormControl>
+                            <CameraPresetSelect
+                              ariaLabel={copy.editor.iso}
+                              value={field.value}
+                              originalValue={photo.iso}
+                              onChange={field.onChange}
+                              groups={[
+                                {
+                                  label: copy.editor.isoPresets,
+                                  options: ISO_PRESETS,
+                                },
+                              ]}
+                              formatValue={formatIso}
+                              notRecordedLabel={copy.editor.notRecorded}
+                              originalValueLabel={copy.editor.originalMetadataValue}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
-                      <FormField
-                        name="exposureTime"
-                        control={form.control}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{copy.editor.shutter}</FormLabel>
-                            <FormControl>
-                              <ExposureTimeInput
-                                value={field.value}
-                                onChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
                       <FormField
                         name="exposureCompensation"
                         control={form.control}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{copy.editor.compensation}</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="number"
-                                step="0.1"
-                                value={field.value ?? ""}
-                              />
-                            </FormControl>
+                            <CameraPresetSelect
+                              ariaLabel={copy.editor.compensation}
+                              value={field.value}
+                              originalValue={photo.exposureCompensation}
+                              onChange={field.onChange}
+                              groups={[
+                                {
+                                  label: copy.editor.compensationPresets,
+                                  options: EXPOSURE_COMPENSATION_PRESETS,
+                                },
+                              ]}
+                              formatValue={formatExposureCompensation}
+                              notRecordedLabel={copy.editor.notRecorded}
+                              originalValueLabel={copy.editor.originalMetadataValue}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
+                      <FormField
+                        name="exposureTime"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{copy.editor.shutter}</FormLabel>
+                            <CameraPresetSelect
+                              ariaLabel={copy.editor.shutter}
+                              value={field.value}
+                              originalValue={photo.exposureTime}
+                              onChange={field.onChange}
+                              groups={[
+                                {
+                                  label: copy.editor.fractionalSeconds,
+                                  options: SHUTTER_FRACTION_PRESETS,
+                                },
+                                {
+                                  label: copy.editor.wholeSeconds,
+                                  options: SHUTTER_SECONDS_PRESETS,
+                                },
+                              ]}
+                              formatValue={formatShutterSpeed}
+                              notRecordedLabel={copy.editor.notRecorded}
+                              originalValueLabel={copy.editor.originalMetadataValue}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         name="dateTimeOriginal"
                         control={form.control}
@@ -536,208 +1064,26 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                           <FormItem>
                             <FormLabel>{copy.editor.dateTaken}</FormLabel>
                             <FormControl>
-                              <Input
-                                type="datetime-local"
-                                value={
-                                  field.value
-                                    ? new Date(field.value).toISOString().slice(0, 16)
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  field.onChange(new Date(e.target.value).toISOString())
-                                }
+                              <CaptureDateTimeInput
+                                ref={field.ref}
+                                name={field.name}
+                                value={field.value}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-            </div>
-
-            {/* Form fields - Right side */}
-            <div className="lg:col-span-2 space-y-6">
-              <FormField
-                name="title"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{copy.editor.title}</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder={copy.editor.photoTitle} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="description"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{copy.editor.description}</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} rows={5} className="resize-none" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Favorite and Visibility as Radio Buttons */}
-              <div className="space-y-4">
-                <FormField
-                  name="visibility"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormLabel className="font-medium">{copy.editor.visibility}</FormLabel>
-                      <FormControl>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="visibility-public"
-                              value="public"
-                              checked={field.value === "public"}
-                              onChange={() => field.onChange("public")}
-                              className="h-4 w-4"
-                            />
-                            <label htmlFor="visibility-public" className="text-sm">{copy.editor.public}</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="visibility-private"
-                              value="private"
-                              checked={field.value === "private"}
-                              onChange={() => field.onChange("private")}
-                              className="h-4 w-4"
-                            />
-                            <label htmlFor="visibility-private" className="text-sm">{copy.editor.private}</label>
-                          </div>
-                        </div>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  name="isFavorite"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormLabel className="font-medium">{copy.editor.favorite}</FormLabel>
-                      <FormControl>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="favorite-yes"
-                              value="true"
-                              checked={field.value === true}
-                              onChange={() => field.onChange(true)}
-                              className="h-4 w-4"
-                            />
-                            <label htmlFor="favorite-yes" className="text-sm">{copy.editor.yes}</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="favorite-no"
-                              value="false"
-                              checked={field.value === false}
-                              onChange={() => field.onChange(false)}
-                              className="h-4 w-4"
-                            />
-                            <label htmlFor="favorite-no" className="text-sm">{copy.editor.no}</label>
-                          </div>
-                        </div>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                name="gpsCoordinates"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="mb-2 flex items-center justify-between">
-                      <FormLabel className="mb-0">{copy.editor.gps}</FormLabel>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={onPasteCoordinates}
-                      >
-                        {copy.editor.pasteCoordinates}
-                      </Button>
-                    </div>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={
-                          form.getValues("latitude") && form.getValues("longitude")
-                            ? `${form.getValues("latitude")}, ${form.getValues("longitude")}`
-                            : ""
-                        }
-                        placeholder="e.g. 34.68747764987201, 135.52585996441778"
-                        onChange={(e) => {
-                          field.onChange(e);
-                          const value = e.target.value;
-                          const [lat, lng] = value.split(",").map((str) => parseFloat(str.trim()));
-                          if (!isNaN(lat) && !isNaN(lng)) {
-                            form.setValue("latitude", lat);
-                            form.setValue("longitude", lng);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormItem>
-                <FormLabel>{copy.editor.location}</FormLabel>
-                <FormControl>
-                  <div className="h-[200px] w-full rounded-md overflow-hidden border">
-                    <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                      <MapComponent
-                        draggableMarker
-                        markers={mapValues.markers}
-                        initialViewState={{
-                          longitude: photo.longitude!,
-                          latitude: photo.latitude!,
-                          zoom: 10,
-                        }}
-                        onMarkerDragEnd={(data) => {
-                          setCurrentLocation({ lat: data.lat, lng: data.lng });
-                          form.setValue("latitude", data.lat);
-                          form.setValue("longitude", data.lng);
-                        }}
-                      />
-                    </Suspense>
                   </div>
-                </FormControl>
-                <FormDescription>
-                  {currentLocation.lat !== null && currentLocation.lng !== null
-                    ? formatGPSCoordinates(
-                      currentLocation.lat,
-                      currentLocation.lng
-                    )
-                    : copy.editor.noCoordinates}
-                </FormDescription>
-              </FormItem>
+                </section>
+              )}
             </div>
-          </div>
-        </form>
-      </Form>
-    </div>
+
+          </aside>
+        </div>
+      </form>
+    </Form>
   );
 };

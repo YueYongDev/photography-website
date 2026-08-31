@@ -29,9 +29,10 @@ import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 import styles from "@/modules/dashboard/ui/studio.module.css";
+import { PhotosLibraryLoading } from "@/modules/photos/ui/components/photos-library-loading";
 import { trpc } from "@/trpc/client";
 
-type VisibilityFilter = "all" | "public" | "private";
+type PortfolioFilter = "all" | "included" | "excluded";
 type SortOrder = "newest" | "oldest";
 type PhotoViewMode = "list" | "comfortable" | "compact";
 
@@ -40,7 +41,7 @@ type StudioPhoto = {
   url: string;
   title: string;
   description: string;
-  visibility: string;
+  isPortfolio: boolean;
   dateTimeOriginal: Date | null;
   make: string | null;
   model: string | null;
@@ -68,43 +69,12 @@ export const PhotosSection = () => {
   );
 };
 
-const PhotosSectionSkeleton = () => {
-  const { copy } = useStudioLocale();
-
-  return (
-    <div aria-label={copy.photos.loading} aria-busy="true">
-      <div className={styles.librarySummary} aria-hidden="true">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div className={styles.libraryMetric} key={index}>
-            <div className={`${styles.skeletonBlock} h-3 w-16`} />
-            <div className={`${styles.skeletonBlock} mt-3 h-7 w-10`} />
-          </div>
-        ))}
-      </div>
-      <div className={styles.photoWorkspaceToolbar} aria-hidden="true">
-        <div className={`${styles.skeletonBlock} h-10 w-full max-w-md rounded-full`} />
-      </div>
-      <div className={styles.photoManagerGrid} aria-hidden="true">
-        {Array.from({ length: 12 }).map((_, index) => (
-          <div className={styles.photoManagerCard} key={index}>
-            <div className={`${styles.photoManagerImage} ${styles.skeletonBlock}`} />
-            <div className={styles.photoManagerMeta}>
-              <div className={`${styles.skeletonBlock} h-4 w-2/3`} />
-              <div className={`${styles.skeletonBlock} mt-2 h-2.5 w-1/2`} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const PhotosSectionContent = () => {
   const { copy } = useStudioLocale();
   const utils = trpc.useUtils();
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search.trim());
-  const [visibility, setVisibility] = useState<VisibilityFilter>("all");
+  const [portfolio, setPortfolio] = useState<PortfolioFilter>("all");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [sort, setSort] = useState<SortOrder>("newest");
   const [viewMode, setViewMode] = useState<PhotoViewMode>("list");
@@ -116,7 +86,7 @@ const PhotosSectionContent = () => {
       {
         limit: 40,
         search: deferredSearch || undefined,
-        visibility,
+        portfolio,
         favoriteOnly,
         sort,
       },
@@ -131,23 +101,16 @@ const PhotosSectionContent = () => {
 
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [deferredSearch, favoriteOnly, sort, visibility]);
+  }, [deferredSearch, favoriteOnly, portfolio, sort]);
 
-  useEffect(() => {
-    for (let index = 0; index < Math.min(6, items.length); index += 1) {
-      const image = new Image();
-      image.src = items[index].url;
-    }
-  }, [items]);
-
-  if (!photos) return <PhotosSectionSkeleton />;
+  if (!photos) return <PhotosLibraryLoading />;
 
   const allLoadedSelected =
     items.length > 0 && items.every((photo) => selectedIds.has(photo.id));
   const someLoadedSelected =
     !allLoadedSelected && items.some((photo) => selectedIds.has(photo.id));
   const hasActiveFilters =
-    Boolean(deferredSearch) || visibility !== "all" || favoriteOnly;
+    Boolean(deferredSearch) || portfolio !== "all" || favoriteOnly;
 
   const togglePhoto = (id: string) => {
     setSelectedIds((current) => {
@@ -172,12 +135,12 @@ const PhotosSectionContent = () => {
 
   const clearFilters = () => {
     setSearch("");
-    setVisibility("all");
+    setPortfolio("all");
     setFavoriteOnly(false);
   };
 
   const applyBulkUpdate = async (
-    changes: { visibility?: "public" | "private"; isFavorite?: boolean },
+    changes: { isPortfolio?: boolean; isFavorite?: boolean },
   ) => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
@@ -188,6 +151,7 @@ const PhotosSectionContent = () => {
         utils.photos.getManyWithPrivate.invalidate(),
         utils.photos.getMany.invalidate(),
         utils.photos.getLikedPhotos.invalidate(),
+        utils.photos.getPortfolioPhotos.invalidate(),
         utils.photos.getStudioStats.invalidate(),
       ]);
       setSelectedIds(new Set());
@@ -203,8 +167,14 @@ const PhotosSectionContent = () => {
     <section className={styles.photoLibrary} aria-label={copy.photos.libraryLabel}>
       <div className={styles.librarySummary}>
         <LibraryMetric label={copy.photos.totalStat} value={stats?.total} />
-        <LibraryMetric label={copy.photos.publicStat} value={stats?.public} />
-        <LibraryMetric label={copy.photos.privateStat} value={stats?.private} />
+        <LibraryMetric
+          label={copy.photos.portfolioStat}
+          value={stats?.portfolio}
+        />
+        <LibraryMetric
+          label={copy.photos.unassignedStat}
+          value={stats?.unassigned}
+        />
         <LibraryMetric label={copy.photos.favoriteStat} value={stats?.favorite} />
       </div>
 
@@ -232,16 +202,16 @@ const PhotosSectionContent = () => {
 
           <label className={styles.photoSelectControl}>
             <Globe2Icon size={14} aria-hidden="true" />
-            <span className="sr-only">{copy.photos.visibilityFilter}</span>
+            <span className="sr-only">{copy.photos.portfolioFilter}</span>
             <select
-              value={visibility}
+              value={portfolio}
               onChange={(event) =>
-                setVisibility(event.target.value as VisibilityFilter)
+                setPortfolio(event.target.value as PortfolioFilter)
               }
             >
-              <option value="all">{copy.photos.allVisibility}</option>
-              <option value="public">{copy.photos.public}</option>
-              <option value="private">{copy.photos.private}</option>
+              <option value="all">{copy.photos.allPortfolio}</option>
+              <option value="included">{copy.photos.includedPortfolio}</option>
+              <option value="excluded">{copy.photos.excludedPortfolio}</option>
             </select>
           </label>
 
@@ -330,18 +300,18 @@ const PhotosSectionContent = () => {
               <button
                 type="button"
                 disabled={bulkUpdate.isPending}
-                onClick={() => applyBulkUpdate({ visibility: "public" })}
+                onClick={() => applyBulkUpdate({ isPortfolio: true })}
               >
                 <Globe2Icon size={13} />
-                {copy.photos.makePublic}
+                {copy.photos.addPortfolio}
               </button>
               <button
                 type="button"
                 disabled={bulkUpdate.isPending}
-                onClick={() => applyBulkUpdate({ visibility: "private" })}
+                onClick={() => applyBulkUpdate({ isPortfolio: false })}
               >
                 <LockIcon size={13} />
-                {copy.photos.makePrivate}
+                {copy.photos.removePortfolio}
               </button>
               <button
                 type="button"
@@ -392,7 +362,7 @@ const PhotosSectionContent = () => {
               <span aria-hidden="true" />
               <span aria-hidden="true" />
               <span role="columnheader">{copy.photos.columnPhoto}</span>
-              <span role="columnheader">{copy.photos.columnVisibility}</span>
+              <span role="columnheader">{copy.photos.columnPortfolio}</span>
               <span role="columnheader">{copy.photos.columnLocation}</span>
               <span role="columnheader">{copy.photos.columnCaptured}</span>
               <span role="columnheader">{copy.photos.columnCamera}</span>
@@ -516,16 +486,12 @@ const PhotoListRow = memo(
         <div role="cell">
           <span
             className={styles.photoListStatus}
-            data-private={photo.visibility === "private" || undefined}
+            data-private={!photo.isPortfolio || undefined}
           >
-            {photo.visibility === "private" ? (
-              <LockIcon size={11} />
-            ) : (
-              <Globe2Icon size={11} />
-            )}
-            {photo.visibility === "private"
-              ? copy.photos.private
-              : copy.photos.public}
+            {photo.isPortfolio ? <CheckIcon size={11} /> : <XIcon size={11} />}
+            {photo.isPortfolio
+              ? copy.photos.portfolioIncluded
+              : copy.photos.portfolioExcluded}
           </span>
         </div>
 
@@ -630,16 +596,12 @@ const PhotoCard = memo(
 
           <span
             className={styles.photoStatusBadge}
-            data-private={photo.visibility === "private" || undefined}
+            data-private={!photo.isPortfolio || undefined}
           >
-            {photo.visibility === "private" ? (
-              <LockIcon size={10} />
-            ) : (
-              <Globe2Icon size={10} />
-            )}
-            {photo.visibility === "private"
-              ? copy.photos.private
-              : copy.photos.public}
+            {photo.isPortfolio ? <CheckIcon size={10} /> : <XIcon size={10} />}
+            {photo.isPortfolio
+              ? copy.photos.portfolioIncluded
+              : copy.photos.portfolioExcluded}
           </span>
 
           {photo.isFavorite ? (

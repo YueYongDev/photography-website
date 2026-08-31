@@ -1,0 +1,60 @@
+.numericInput,
+.dateTimeInput,
+.presetTrigger {
+  min-height: 2.55rem;
+  border-color: var(--studio-line-strong);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: none;
+  color: var(--studio-ink);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.numericInput:focus-visible,
+.dateTimeInput:focus-visible,
+.presetTrigger:focus-visible {
+  border-color: var(--studio-ink);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(32, 36, 34, 0.08);
+}
+
+.numericInput::placeholder {
+  color: var(--studio-faint);
+}
+
+.presetTrigger {
+  height: 2.55rem;
+  padding-inline: 0.75rem;
+}
+
+.presetTrigger > span {
+  font-variant-numeric: tabular-nums;
+}
+
+.presetContent {
+  max-height: min(22rem, var(--radix-select-content-available-height));
+  border-color: var(--studio-line-strong);
+  border-radius: 0.55rem;
+  background: #fff;
+}
+
+.presetLabel {
+  color: var(--studio-muted);
+  font-size: 0.48rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.presetItem {
+  min-height: 2rem;
+  border-radius: 0.36rem;
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.presetSeparator {
+  background: var(--studio-line);
+}
+

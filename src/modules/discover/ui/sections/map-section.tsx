@@ -21,7 +21,12 @@ import {
   useMap,
 } from "@/components/ui/map";
 import type { Photo } from "@/db/schema/photos";
-import { formatExposureTime } from "@/lib/utils";
+import {
+  formatAperture,
+  formatFocalLength,
+  formatIso,
+  formatShutterSpeed,
+} from "@/modules/photos/lib/camera-metadata";
 import {
   localizeCountryName,
   localizePlaceName,
@@ -344,19 +349,28 @@ export const MapSection = () => {
             ? { label: copy.photo.lens, value: photo.lensModel }
             : null,
           focalLength
-            ? { label: copy.photo.focalLength, value: `${focalLength}mm` }
+            ? {
+                label: copy.photo.focalLength,
+                value: formatFocalLength(focalLength),
+              }
             : null,
           photo.fNumber
-            ? { label: copy.photo.aperture, value: `ƒ/${photo.fNumber}` }
+            ? {
+                label: copy.photo.aperture,
+                value: formatAperture(photo.fNumber),
+              }
             : null,
           photo.exposureTime
             ? {
                 label: copy.photo.exposure,
-                value: formatExposureTime(photo.exposureTime),
+                value: formatShutterSpeed(photo.exposureTime),
               }
             : null,
           photo.iso
-            ? { label: copy.photo.sensitivity, value: `ISO ${photo.iso}` }
+            ? {
+                label: copy.photo.sensitivity,
+                value: formatIso(photo.iso),
+              }
             : null,
           location
             ? { label: copy.common.place, value: location }

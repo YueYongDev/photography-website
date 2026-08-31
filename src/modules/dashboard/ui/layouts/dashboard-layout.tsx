@@ -1,6 +1,7 @@
 "use client";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
 import { DashboardNavbar } from "@/modules/dashboard/ui/components/dashboard-navbar";
 import { DashboardSidebar } from "@/modules/dashboard/ui/components/dashboard-sidebar";
 import {
@@ -17,12 +18,19 @@ const DashboardLayoutContent = ({
   user: { name: string; image?: string | null };
 }) => {
   const { locale } = useStudioLocale();
+  const pathname = usePathname();
+  const isPhotoEditor = /^\/studio\/photos\/[^/]+$/.test(pathname);
 
   return (
     <SidebarProvider
       className={styles.shell}
       data-locale={locale}
-      style={{ "--sidebar-width": "17.5rem" } as React.CSSProperties}
+      data-photo-editor={isPhotoEditor || undefined}
+      style={
+        {
+          "--sidebar-width": isPhotoEditor ? "14.5rem" : "17.5rem",
+        } as React.CSSProperties
+      }
     >
       <DashboardSidebar user={user} />
       <SidebarInset className={styles.workspace}>

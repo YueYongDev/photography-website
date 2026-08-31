@@ -87,7 +87,13 @@ export const DashboardSidebar = ({
                       asChild
                       className={styles.sidebarNavLink}
                     >
-                      <Link href={item.href} onClick={closeOnMobile}>
+                      <Link
+                        href={item.href}
+                        prefetch={
+                          item.href === "/studio/photos" ? true : undefined
+                        }
+                        onClick={closeOnMobile}
+                      >
                         <span className={styles.navNumber}>{item.number}</span>
                         <span className={styles.navCopy}>
                           <strong>{item.label}</strong>

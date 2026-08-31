@@ -488,35 +488,72 @@
 }
 
 .homeWorkCarousel {
+  --home-work-frame-height: clamp(16rem, 22vw, 21rem);
+  --home-work-gap: clamp(0.85rem, 1.2vw, 1.2rem);
   width: 100%;
+}
+
+.homeWorkRail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--site-line);
+  border-bottom: 1px solid var(--site-line);
+  color: var(--site-muted);
+  font-size: 0.62rem;
+  font-weight: 560;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .homeWorkViewport {
   overflow: hidden;
+  padding-top: clamp(1.2rem, 1.8vw, 1.75rem);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 clamp(1.25rem, 3vw, 3rem),
+    #000 calc(100% - clamp(1.25rem, 3vw, 3rem)),
+    transparent
+  );
 }
 
 .homeWorkTrack {
   display: flex;
-  touch-action: pan-y pinch-zoom;
+  width: max-content;
+  animation: home-work-marquee 54s linear infinite;
+  will-change: transform;
 }
 
-.homeWorkSlide {
-  flex: 0 0 100%;
-  min-width: 0;
+.homeWorkCarousel:has(.homeWorkCardButton:focus-visible) .homeWorkTrack {
+  animation-play-state: paused;
 }
 
-.homeWorkGrid {
-  display: grid;
-  gap: clamp(0.75rem, 1.1vw, 1rem);
+@media (hover: hover) {
+  .homeWorkCarousel:hover .homeWorkTrack {
+    animation-play-state: paused;
+  }
+}
+
+.homeWorkSet {
+  display: flex;
+  flex: none;
+  gap: var(--home-work-gap);
   align-items: start;
-  width: 100%;
-  margin-inline: auto;
+  padding-right: var(--home-work-gap);
+}
+
+.homeWorkSetDuplicate {
+  contain: layout style;
 }
 
 .homeWorkCard {
   position: relative;
-  min-width: 0;
-  width: 100%;
+  flex: 0 0 var(--home-work-card-width);
+  width: var(--home-work-card-width);
+  margin: 0;
   color: inherit;
   text-decoration: none;
 }
@@ -535,6 +572,7 @@
 .homeWorkImage {
   position: relative;
   width: 100%;
+  height: var(--home-work-frame-height);
   overflow: hidden;
   background: var(--site-mist);
 }
@@ -567,12 +605,15 @@
 }
 
 .homeWorkMeta h3 {
+  overflow: hidden;
   margin: 0;
   font-family: var(--site-serif);
   font-size: clamp(1.25rem, 1.65vw, 1.75rem);
   font-weight: 400;
   letter-spacing: -0.035em;
   line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .homeWorkFooter {
@@ -583,40 +624,28 @@
   border-top: 1px solid var(--site-line);
 }
 
-.homeWorkPagination {
-  display: flex;
-  min-height: 2.25rem;
-  gap: 0.65rem;
-  align-items: center;
-  justify-content: center;
-  margin-top: clamp(1.75rem, 2.75vw, 2.75rem);
-  color: var(--site-muted);
-  font-size: 0.68rem;
-  letter-spacing: 0.11em;
+@keyframes home-work-marquee {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
-.homeWorkPagination > button {
-  display: inline-grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  place-items: center;
-  padding: 0;
-  border: 1px solid var(--site-line);
-  border-radius: 50%;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  transition:
-    border-color 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
-}
+@media (prefers-reduced-motion: reduce) {
+  .homeWorkViewport {
+    overflow-x: auto;
+    mask-image: none;
+    scrollbar-width: thin;
+  }
 
-.homeWorkPagination > button:hover,
-.homeWorkPagination > button:focus-visible {
-  border-color: var(--site-ink);
-  color: var(--site-ink);
-  transform: scale(1.04);
+  .homeWorkTrack {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+
+  .homeWorkSetDuplicate {
+    display: none;
+  }
 }
 
 .homeWorkMeta p {
@@ -4080,6 +4109,20 @@
   .homeWorkGrid .homeWorkCard {
     width: min(100%, var(--home-work-narrow-width));
     margin: 0 auto 2.75rem !important;
+  }
+
+  .homeWorkSet .homeWorkCard {
+    width: var(--home-work-card-width);
+    margin: 0 !important;
+  }
+
+  .homeWorkSet .homeWorkImage {
+    aspect-ratio: auto;
+  }
+
+  .homeWorkRail span:last-child {
+    max-width: 14rem;
+    text-align: right;
   }
 
   .homeWorkFooter {

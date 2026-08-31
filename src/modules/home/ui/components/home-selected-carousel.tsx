@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import Autoplay from "embla-carousel-autoplay";
-import useEmblaCarousel from "embla-carousel-react";
 import type { CSSProperties } from "react";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
@@ -23,40 +20,12 @@ export type HomeSelectedPhoto = {
   aspectRatio: number | null;
 };
 
-const PHOTOS_PER_GROUP = 3;
-
-const getOrientationClass = (aspectRatio: number) => {
-  if (aspectRatio < 0.96) return styles.homeWorkCardPortrait;
-  if (aspectRatio <= 1.08) return styles.homeWorkCardSquare;
-  return styles.homeWorkCardLandscape;
-};
-
 const getAspectRatio = (photo: HomeSelectedPhoto) =>
   photo.width && photo.height
     ? photo.width / photo.height
     : photo.aspectRatio && photo.aspectRatio > 0
       ? photo.aspectRatio
       : 1.18;
-
-const getGroupMaxWidth = (aspectRatios: number[]) => {
-  const totalAspectRatio = aspectRatios.reduce(
-    (total, aspectRatio) => total + aspectRatio,
-    0,
-  );
-  const totalGapRem = Math.max(0, aspectRatios.length - 1);
-
-  return `${Math.min(104, totalAspectRatio * 32 + totalGapRem)}rem`;
-};
-
-const groupPhotos = (photos: HomeSelectedPhoto[]) => {
-  const groups: HomeSelectedPhoto[][] = [];
-
-  for (let index = 0; index < photos.length; index += PHOTOS_PER_GROUP) {
-    groups.push(photos.slice(index, index + PHOTOS_PER_GROUP));
-  }
-
-  return groups;
-};
 
 export const HomeSelectedCarousel = ({
   photos,
@@ -65,52 +34,79 @@ export const HomeSelectedCarousel = ({
 }) => {
   const { copy, locale } = useSiteLocale();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const groups = useMemo(() => groupPhotos(photos), [photos]);
-  const autoplay = useRef(
-    Autoplay({
-      delay: 6500,
-      playOnInit: false,
-      stopOnFocusIn: true,
-      stopOnInteraction: false,
-      stopOnMouseEnter: true,
-    }),
-  );
-  const [viewportRef, emblaApi] = useEmblaCarousel(
-    {
-      align: "start",
-      duration: 34,
-      loop: groups.length > 1,
-      watchDrag: groups.length > 1,
-    },
-    [autoplay.current],
-  );
-  useEffect(() => {
-    if (!emblaApi || groups.length <= 1) return;
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateAutoplay = () => {
-      if (reducedMotion.matches) {
-        autoplay.current.stop();
-      } else {
-        autoplay.current.play();
-      }
-    };
-
-    updateAutoplay();
-    reducedMotion.addEventListener("change", updateAutoplay);
-
-    return () => {
-      reducedMotion.removeEventListener("change", updateAutoplay);
-      autoplay.current.stop();
-    };
-  }, [emblaApi, groups.length]);
-
-  const previousLabel = locale === "zh-CN" ? "上一组照片" : "Previous group";
-  const nextLabel = locale === "zh-CN" ? "下一组照片" : "Next group";
   const carouselLabel =
     locale === "zh-CN"
-      ? `首页精选照片，共 ${groups.length} 组`
-      : `Selected photographs, ${groups.length} groups`;
+      ? `首页照片选集，共 ${photos.length} 张`
+      : `Selected photographs, ${photos.length} images`;
+  const motionLabel =
+    locale === "zh-CN"
+      ? "自动向左播放 · 悬停暂停 · 点击放大"
+      : "Moving left automatically · Hover to pause · Click to enlarge";
+
+  const renderPhotoSet = (duplicate = false) => (
+    <div
+      className={`${styles.homeWorkSet} ${
+        duplicate ? styles.homeWorkSetDuplicate : ""
+      }`}
+      aria-hidden={duplicate || undefined}
+    >
+      {photos.map((entry, photoIndex) => {
+        const localizedEntry = copy.home.workEntries[photoIndex];
+        const title =
+          entry.title || localizedEntry?.title || copy.common.untitled;
+        const aspectRatio = Math.max(
+          0.58,
+          Math.min(getAspectRatio(entry), 2.15),
+        );
+        const cardStyle = {
+          "--home-work-card-width": `clamp(${aspectRatio * 16}rem, ${
+            aspectRatio * 22
+          }vw, ${aspectRatio * 21}rem)`,
+        } as CSSProperties;
+
+        return (
+          <figure
+            className={styles.homeWorkCard}
+            key={`${duplicate ? "duplicate" : "original"}-${entry.id}`}
+            style={cardStyle}
+          >
+            {duplicate ? (
+              <div
+                className={styles.homeWorkCardButton}
+                onClick={() => setActiveIndex(photoIndex)}
+              />
+            ) : (
+              <button
+                type="button"
+                className={styles.homeWorkCardButton}
+                onClick={() => setActiveIndex(photoIndex)}
+                aria-label={`${title} · ${
+                  locale === "zh-CN" ? "查看大图" : "View original"
+                }`}
+              />
+            )}
+            <div className={styles.homeWorkImage}>
+              <Image
+                src={entry.url}
+                alt={duplicate ? "" : title}
+                fill
+                loader={getArchiveImageLoader(entry.url)}
+                placeholder={entry.blurData ? "blur" : "empty"}
+                blurDataURL={entry.blurData || undefined}
+                sizes="(min-width: 1101px) 32vw, (min-width: 601px) 42vw, 72vw"
+                className={styles.imageContain}
+              />
+            </div>
+            <figcaption className={styles.homeWorkMeta}>
+              <span>{String(photoIndex + 1).padStart(2, "0")}</span>
+              <h3>{title}</h3>
+            </figcaption>
+          </figure>
+        );
+      })}
+    </div>
+  );
+
   return (
     <>
       <div
@@ -119,108 +115,17 @@ export const HomeSelectedCarousel = ({
         aria-roledescription="carousel"
         aria-label={carouselLabel}
       >
-        <div className={styles.homeWorkViewport} ref={viewportRef}>
-          <div className={styles.homeWorkTrack}>
-            {groups.map((group, groupIndex) => {
-              const aspectRatios = group.map(getAspectRatio);
-
-              return (
-                <div
-                  className={styles.homeWorkSlide}
-                  role="group"
-                  aria-roledescription="slide"
-                  aria-label={`${groupIndex + 1} / ${groups.length}`}
-                  key={group.map((photo) => photo.id).join("-")}
-                >
-                  <div
-                    className={styles.homeWorkGrid}
-                    style={{
-                      gridTemplateColumns: aspectRatios
-                        .map((aspectRatio) => `${aspectRatio}fr`)
-                        .join(" "),
-                      maxWidth: getGroupMaxWidth(aspectRatios),
-                    }}
-                  >
-                    {group.map((entry, indexInGroup) => {
-                      const photoIndex =
-                        groupIndex * PHOTOS_PER_GROUP + indexInGroup;
-                      const localizedEntry = copy.home.workEntries[photoIndex];
-                      const title =
-                        entry.title ||
-                        localizedEntry?.title ||
-                        copy.common.untitled;
-                      const aspectRatio = aspectRatios[indexInGroup];
-                      const cardStyle = {
-                        "--home-work-narrow-width": `${Math.min(
-                          48,
-                          aspectRatio * 30,
-                        )}rem`,
-                      } as CSSProperties;
-
-                      return (
-                        <div
-                          className={`${styles.homeWorkCard} ${getOrientationClass(aspectRatio)}`}
-                          key={entry.id}
-                          style={cardStyle}
-                        >
-                          <button
-                            type="button"
-                            className={styles.homeWorkCardButton}
-                            onClick={() => setActiveIndex(photoIndex)}
-                            aria-label={`${title} · ${
-                              locale === "zh-CN" ? "查看大图" : "View original"
-                            }`}
-                          />
-                          <div
-                            className={styles.homeWorkImage}
-                            style={{ aspectRatio }}
-                          >
-                            <Image
-                              src={entry.url}
-                              alt={title}
-                              fill
-                              loader={getArchiveImageLoader(entry.url)}
-                              placeholder={entry.blurData ? "blur" : "empty"}
-                              blurDataURL={entry.blurData || undefined}
-                              sizes="(min-width: 1101px) 34vw, 88vw"
-                              className={styles.imageContain}
-                            />
-                          </div>
-                          <div className={styles.homeWorkMeta}>
-                            <span>
-                              {String(photoIndex + 1).padStart(2, "0")}
-                            </span>
-                            <h3>{title}</h3>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className={styles.homeWorkRail} aria-hidden="true">
+          <span>{String(photos.length).padStart(2, "0")} / SELECTED</span>
+          <span>{motionLabel}</span>
         </div>
 
-        {groups.length > 1 ? (
-          <div className={styles.homeWorkPagination}>
-            <button
-              type="button"
-              onClick={() => emblaApi?.scrollPrev()}
-              aria-label={previousLabel}
-            >
-              <ArrowLeft size={16} strokeWidth={1.35} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => emblaApi?.scrollNext()}
-              aria-label={nextLabel}
-            >
-              <ArrowRight size={16} strokeWidth={1.35} />
-            </button>
+        <div className={styles.homeWorkViewport}>
+          <div className={styles.homeWorkTrack}>
+            {renderPhotoSet()}
+            {renderPhotoSet(true)}
           </div>
-        ) : null}
+        </div>
       </div>
 
       {activeIndex !== null && (

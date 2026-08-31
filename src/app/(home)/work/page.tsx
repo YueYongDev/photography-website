@@ -12,7 +12,7 @@ const WorkPage = async () => {
   let photos: WorkPhoto[] = [];
 
   try {
-    const result = await trpc.photos.getLikedPhotos({ limit: 48 });
+    const result = await trpc.photos.getPortfolioPhotos({ limit: 48 });
     photos = result.map((photo, index) => ({
       ...photo,
       sequence: index + 1,

@@ -1,17 +1,17 @@
 .shell {
-  --studio-paper: #eef1f0;
+  --studio-paper: #ffffff;
   --studio-surface: #ffffff;
   --studio-surface-strong: #ffffff;
   --studio-ink: var(--archive-ink, #202422);
   --studio-muted: rgba(32, 36, 33, 0.56);
   --studio-faint: rgba(32, 36, 33, 0.34);
-  --studio-line: rgba(32, 36, 33, 0.14);
-  --studio-line-strong: rgba(32, 36, 33, 0.24);
-  --studio-accent: var(--archive-accent, #6e8085);
-  --studio-accent-soft: #e4e9e7;
-  --studio-radius-sm: 0.8rem;
-  --studio-radius: 1.25rem;
-  --studio-radius-lg: 1.75rem;
+  --studio-line: rgba(32, 36, 34, 0.11);
+  --studio-line-strong: rgba(32, 36, 34, 0.18);
+  --studio-accent: #747a77;
+  --studio-accent-soft: #f5f5f3;
+  --studio-radius-sm: 0.45rem;
+  --studio-radius: 0.65rem;
+  --studio-radius-lg: 0.8rem;
   --studio-danger: #a64e42;
 
   --background: 0 0% 100%;
@@ -76,12 +76,13 @@
 
 .workspace {
   min-width: 0;
-  margin: 0.75rem 0.75rem 0.75rem 0;
+  margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(32, 36, 33, 0.08);
-  border-radius: var(--studio-radius-lg);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 1.5rem 4rem rgba(32, 36, 33, 0.06);
+  border: 0;
+  border-left: 1px solid var(--studio-line);
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
 }
 
 .workspaceMain {
@@ -101,8 +102,8 @@
   gap: 1rem;
   padding: 0 1.5rem;
   border-bottom: 1px solid rgba(32, 36, 33, 0.09);
-  border-radius: var(--studio-radius-lg) var(--studio-radius-lg) 0 0;
-  background: rgba(255, 255, 255, 0.9);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(18px);
 }
 
@@ -198,7 +199,7 @@
 
 .sidebar [data-sidebar="sidebar"] {
   border-right: 0;
-  background: var(--studio-paper);
+  background: #ffffff;
 }
 
 .sidebarHeader {
@@ -288,7 +289,7 @@
   align-items: center;
   padding: 0.7rem 0.65rem !important;
   border: 1px solid transparent;
-  border-radius: var(--studio-radius) !important;
+  border-radius: 0 !important;
   background: transparent !important;
   transition:
     border-color 180ms ease,
@@ -296,15 +297,25 @@
 }
 
 .sidebarNavLink:hover {
-  border-color: var(--studio-line);
-  background: rgba(255, 255, 255, 0.58) !important;
+  border-color: transparent;
+  background: #f7f7f5 !important;
 }
 
 .sidebarNavLink[data-active="true"] {
-  border-color: rgba(32, 36, 33, 0.08);
-  background: var(--studio-surface) !important;
+  border-color: transparent;
+  background: #f5f5f3 !important;
   font-weight: inherit !important;
-  box-shadow: 0 0.65rem 1.5rem rgba(32, 36, 33, 0.055);
+  box-shadow: none;
+}
+
+.sidebarNavLink[data-active="true"]::before {
+  position: absolute;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  left: -0.85rem;
+  width: 1px;
+  background: var(--studio-ink);
+  content: "";
 }
 
 .navNumber {
@@ -343,6 +354,41 @@
 
 .sidebarNavLink[data-active="true"] .navDot {
   background: var(--studio-accent);
+}
+
+.shell[data-photo-editor] .sidebarHeader {
+  padding: 1.35rem 1rem 1rem;
+}
+
+.shell[data-photo-editor] .sidebarRule,
+.shell[data-photo-editor] .sidebarFooter {
+  margin-inline: 1rem;
+}
+
+.shell[data-photo-editor] .sidebarContent {
+  padding-inline: 0.7rem;
+}
+
+.shell[data-photo-editor] .sidebarNavLink {
+  min-height: 3.35rem;
+  border-radius: 0.65rem !important;
+  padding-inline: 0.55rem !important;
+}
+
+.shell[data-photo-editor] .sidebarNavLink[data-active="true"] {
+  border-color: transparent;
+  background: #f5f5f3 !important;
+  box-shadow: none;
+}
+
+.shell[data-photo-editor] .sidebarNavLink[data-active="true"]::before {
+  position: absolute;
+  top: 0.7rem;
+  bottom: 0.7rem;
+  left: -0.7rem;
+  width: 1px;
+  background: var(--studio-ink);
+  content: "";
 }
 
 .sidebarFooter {
@@ -891,6 +937,232 @@
 
 .photoLibrary {
   min-width: 0;
+}
+
+.photoLibraryLoading {
+  position: relative;
+}
+
+.photoLoadingActionBadge {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid var(--studio-line-strong);
+  border-radius: 999px;
+  padding: 0 1rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--studio-muted);
+  font-size: 0.58rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.photoLoadingActionBadge > span,
+.photoLoadingPulse {
+  display: block;
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--studio-accent);
+  box-shadow: 0 0 0 0 rgba(110, 128, 133, 0.28);
+  animation: studio-loading-pulse 1.8s ease-out infinite;
+}
+
+.photoLoadingStatus {
+  display: grid;
+  min-height: 3.25rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+  margin: 0.65rem 0 0.45rem;
+  padding: 0.65rem 0.85rem;
+  overflow: hidden;
+  border: 1px solid rgba(110, 128, 133, 0.24);
+  border-radius: var(--studio-radius-sm);
+  background:
+    linear-gradient(90deg, rgba(110, 128, 133, 0.1), transparent 36%),
+    rgba(255, 255, 255, 0.7);
+}
+
+.photoLoadingStatus > div {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+
+.photoLoadingStatus strong {
+  color: var(--studio-ink);
+  font-family: "Iowan Old Style", Baskerville, serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.photoLoadingStatus div > span {
+  overflow: hidden;
+  color: var(--studio-muted);
+  font-size: 0.54rem;
+  letter-spacing: 0.035em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photoLoadingCount {
+  color: var(--studio-faint);
+  font-family: "Iowan Old Style", Baskerville, serif;
+  font-size: 0.64rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+}
+
+.photoLibraryLoading .librarySummary {
+  margin-top: 0;
+}
+
+.photoLoadingControl,
+.photoLoadingSelection,
+.photoLoadingCheckbox,
+.photoLoadingThumb,
+.photoLoadingPrimary span,
+.photoLoadingBadge,
+.photoLoadingText,
+.photoLoadingAction {
+  overflow: hidden;
+  background: rgba(32, 36, 33, 0.065);
+}
+
+.photoLoadingControl {
+  min-width: 7.5rem;
+  min-height: 2.45rem;
+  border: 1px solid var(--studio-line);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.72), transparent),
+    rgba(32, 36, 33, 0.055);
+  background-size: 220% 100%, auto;
+  animation: studio-shimmer 1.8s linear infinite;
+}
+
+.photoLoadingSearch {
+  width: 100%;
+}
+
+.photoLoadingDensity {
+  min-width: 6.5rem;
+}
+
+.photoLoadingSelection {
+  width: 9.5rem;
+  height: 0.58rem;
+  margin: 0.78rem 0 0.68rem 0.75rem;
+  border-radius: 999px;
+}
+
+.photoLoadingList {
+  position: relative;
+}
+
+.photoLoadingRow {
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.photoLoadingRow::after {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.74) 49%,
+    rgba(110, 128, 133, 0.12) 52%,
+    transparent 65%
+  );
+  content: "";
+  pointer-events: none;
+  transform: translateX(-115%);
+  animation: studio-row-scan 2.35s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  animation-delay: calc(var(--loading-row) * 90ms);
+}
+
+.photoLoadingCheckbox {
+  width: 0.92rem;
+  height: 0.92rem;
+  justify-self: center;
+  border: 1px solid var(--studio-line-strong);
+  border-radius: 0.24rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.photoLoadingThumb {
+  border: 0;
+  background:
+    linear-gradient(135deg, rgba(110, 128, 133, 0.17), transparent 58%),
+    var(--studio-accent-soft);
+}
+
+.photoLoadingPrimary {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.photoLoadingPrimary span,
+.photoLoadingText,
+.photoLoadingBadge,
+.photoLoadingAction {
+  display: block;
+  height: 0.5rem;
+  border-radius: 999px;
+}
+
+.photoLoadingPrimary span:first-child {
+  width: 48%;
+  height: 0.68rem;
+  background: rgba(32, 36, 33, 0.1);
+}
+
+.photoLoadingPrimary span:last-child {
+  width: 76%;
+}
+
+.photoLoadingBadge {
+  width: 3.4rem;
+  height: 1.45rem;
+  border: 1px solid rgba(110, 128, 133, 0.14);
+  background: rgba(110, 128, 133, 0.09);
+}
+
+.photoLoadingText {
+  width: min(70%, 5.5rem);
+}
+
+.photoLoadingAction {
+  width: 3rem;
+  height: 1.75rem;
+  justify-self: end;
+  border: 1px solid var(--studio-line);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+@keyframes studio-loading-pulse {
+  60% {
+    box-shadow: 0 0 0 0.42rem rgba(110, 128, 133, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(110, 128, 133, 0);
+  }
+}
+
+@keyframes studio-row-scan {
+  55%,
+  100% {
+    transform: translateX(115%);
+  }
 }
 
 .librarySummary {
@@ -2020,6 +2292,11 @@
 }
 
 @media (max-width: 1100px) {
+  .shell[data-photo-editor] .workspace,
+  .shell[data-photo-editor] .workspaceMain {
+    overflow: visible;
+  }
+
   .photoControlBar {
     grid-template-columns: minmax(12rem, 1fr) auto auto;
   }
@@ -2194,6 +2471,31 @@
     min-width: min(18rem, calc(100vw - 2rem));
   }
 
+  .photoLoadingStatus {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .photoLoadingStatus > div {
+    display: grid;
+    gap: 0.18rem;
+  }
+
+  .photoLoadingStatus div > span {
+    white-space: normal;
+  }
+
+  .photoLoadingCount {
+    display: none;
+  }
+
+  .photoLoadingSearch {
+    min-width: min(18rem, calc(100vw - 2rem));
+  }
+
+  .photoLoadingControl {
+    flex: 0 0 7.5rem;
+  }
+
   .photoSelectControl,
   .photoFilterButton,
   .densitySwitch {
@@ -2324,11 +2626,265 @@
 
 @media (prefers-reduced-motion: reduce) {
   .page,
-  .skeletonBlock {
+  .skeletonBlock,
+  .photoLoadingActionBadge > span,
+  .photoLoadingPulse,
+  .photoLoadingControl,
+  .photoLoadingRow::after {
     animation: none;
   }
 
   .photoImage img {
     transition: none;
   }
+}
+
+/* The Studio shares the public site's white editorial canvas. */
+.workspace {
+  margin: 0;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.workspaceMain,
+.topbar,
+.sidebar [data-sidebar="sidebar"] {
+  background-color: #ffffff;
+}
+
+.topbar {
+  border-radius: 0;
+}
+
+.page,
+.photoPage,
+.editorPage {
+  background: #ffffff;
+}
+
+.primaryAction,
+.secondaryAction,
+.photoSearch,
+.photoSelectControl,
+.photoFilterButton,
+.densitySwitch,
+.quietButton,
+.editorSecondaryButton,
+.editorPrimaryButton {
+  border-radius: 0.4rem !important;
+}
+
+.stat {
+  border: 0;
+  border-top: 1px solid var(--studio-line);
+  border-bottom: 1px solid var(--studio-line);
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.stat + .stat {
+  border-left: 1px solid var(--studio-line);
+}
+
+.stat:last-child {
+  border-right: 0;
+}
+
+.chartPanel {
+  border: 0;
+  border-top: 1px solid var(--studio-line);
+  border-bottom: 1px solid var(--studio-line);
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.travelGrid {
+  border: 0;
+  border-top: 1px solid var(--studio-line);
+  border-bottom: 1px solid var(--studio-line);
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.travelRow:hover {
+  background: #f7f7f5;
+}
+
+.mapFrame {
+  border-radius: 0;
+}
+
+.librarySummary {
+  border: 0;
+  border-top: 1px solid var(--studio-line);
+  border-bottom: 1px solid var(--studio-line);
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.photoWorkspaceToolbar {
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.photoControlBar {
+  padding-block: 0.15rem;
+}
+
+.photoSearch,
+.photoSelectControl,
+.photoFilterButton,
+.densitySwitch {
+  background: #ffffff;
+}
+
+.photoSearch:focus-within {
+  border-color: var(--studio-ink);
+  box-shadow: 0 0 0 2px rgba(32, 36, 34, 0.08);
+}
+
+.densitySwitch button {
+  border-radius: 0.26rem;
+}
+
+.densitySwitch button[data-active] {
+  background: #f1f1ef;
+}
+
+.selectionBar {
+  border-radius: 0.35rem;
+}
+
+.batchActions button {
+  border-radius: 0.3rem;
+}
+
+.photoListViewport {
+  border: 0;
+  border-top: 1px solid var(--studio-line);
+  border-bottom: 1px solid var(--studio-line);
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.photoListHeader {
+  background: #fafafa;
+}
+
+.photoListRow:hover {
+  background: #fafafa;
+}
+
+.photoListRow[data-selected] {
+  background: #f3f3f1;
+  box-shadow: inset 2px 0 0 var(--studio-ink);
+}
+
+.photoListActions a {
+  border-radius: 0.32rem;
+}
+
+.photoListStatus {
+  border-color: var(--studio-line);
+  border-radius: 0.3rem;
+  background: #f7f7f5;
+  color: var(--studio-ink);
+}
+
+.photoManagerCard {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.photoManagerCard:hover {
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.photoManagerCard[data-selected] {
+  border-color: transparent;
+  box-shadow: 0 0 0 1px var(--studio-ink);
+}
+
+.photoManagerImage {
+  border-radius: 0.2rem;
+  background: #f3f3f1;
+}
+
+.photoManagerMeta {
+  padding-inline: 0.05rem;
+}
+
+.photoStatusBadge {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--studio-ink);
+}
+
+.photoSelectBox,
+.photoFavoriteMark {
+  box-shadow: none;
+}
+
+.postList {
+  gap: 0;
+  border-top: 1px solid var(--studio-line);
+}
+
+.postRow {
+  border: 0;
+  border-bottom: 1px solid var(--studio-line);
+  border-radius: 0;
+  padding-inline: 0;
+  background: #ffffff;
+}
+
+.postRow:hover {
+  border-color: var(--studio-line-strong);
+  box-shadow: none;
+  transform: none;
+}
+
+.postImage {
+  border-radius: 0.2rem;
+  background: #f3f3f1;
+}
+
+.securitySection {
+  border: 0;
+  border-top: 1px solid var(--studio-line);
+  border-radius: 0;
+  padding-inline: 0;
+  background: #ffffff;
+}
+
+.securitySection + .securitySection {
+  border-top: 1px solid var(--studio-line);
+}
+
+.editorPage :global(input),
+.editorPage :global(textarea),
+.editorPage :global([role="combobox"]) {
+  border-radius: 0.35rem;
+}
+
+.editorPage :global(button),
+.editorSecondaryButton,
+.editorPrimaryButton {
+  border-radius: 0.4rem;
+}
+
+.editorMediaCard,
+.editorAsideCard,
+.editorSectionDisclosure {
+  border-radius: 0.4rem !important;
+  background: #ffffff !important;
+}
+
+.editorPhotoStage {
+  background: #f5f5f3;
 }

@@ -1,5 +1,5 @@
 import { FormSection } from "../sections/form-section";
-import styles from "@/modules/dashboard/ui/studio.module.css";
+import styles from "../photo-editor.module.css";
 
 interface PhotoViewProps {
   photoId: string;
@@ -7,7 +7,7 @@ interface PhotoViewProps {
 
 const PhotoView = ({ photoId }: PhotoViewProps) => {
   return (
-    <div className={styles.editorPage}>
+    <div className={styles.page}>
       <FormSection photoId={photoId} />
     </div>
   );

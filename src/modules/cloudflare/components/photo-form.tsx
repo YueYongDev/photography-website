@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { ExposureTimeInput } from "@/components/ui/exposure-time-input";
 import { CopyCheckIcon, CopyIcon, ChevronDown, ChevronRight, SparklesIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -121,7 +122,7 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
     defaultValues: {
       title: "",
       description: "",
-      visibility: "public",
+      visibility: "private",
       isFavorite: false,
       url,
       aspectRatio: imageInfo.aspectRatio,
@@ -503,74 +504,46 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
               )}
             />
 
-            <div className="space-y-4">
-              <FormField
-                name="visibility"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                    <FormLabel className="font-medium">Visibility</FormLabel>
-                    <FormControl>
-                      <div className="flex space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            id="visibility-public"
-                            value="public"
-                            checked={field.value === "public"}
-                            onChange={() => field.onChange("public")}
-                            className="h-4 w-4"
-                          />
-                          <label htmlFor="visibility-public" className="text-sm">Public</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            id="visibility-private"
-                            value="private"
-                            checked={field.value === "private"}
-                            onChange={() => field.onChange("private")}
-                            className="h-4 w-4"
-                          />
-                          <label htmlFor="visibility-private" className="text-sm">Private</label>
-                        </div>
-                      </div>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
+            <div className="space-y-3 rounded-xl border p-4">
+              <p className="text-xs text-muted-foreground">
+                Uploaded photographs are public. Choose where this one should be featured.
+              </p>
               <FormField
                 name="isFavorite"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                    <FormLabel className="font-medium">Favorite</FormLabel>
+                  <FormItem className="flex flex-row items-center justify-between gap-4 space-y-0">
+                    <div className="space-y-1">
+                      <FormLabel className="font-medium">Show on homepage</FormLabel>
+                      <FormDescription>Include in the homepage selection.</FormDescription>
+                    </div>
                     <FormControl>
-                      <div className="flex space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            id="favorite-yes"
-                            value="true"
-                            checked={field.value === true}
-                            onChange={() => field.onChange(true)}
-                            className="h-4 w-4"
-                          />
-                          <label htmlFor="favorite-yes" className="text-sm">Yes</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            id="favorite-no"
-                            value="false"
-                            checked={field.value === false}
-                            onChange={() => field.onChange(false)}
-                            className="h-4 w-4"
-                          />
-                          <label htmlFor="favorite-no" className="text-sm">No</label>
-                        </div>
-                      </div>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        aria-label="Show on homepage"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="visibility"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between gap-4 space-y-0 border-t pt-3">
+                    <div className="space-y-1">
+                      <FormLabel className="font-medium">Add to portfolio</FormLabel>
+                      <FormDescription>Include in the curated Work collection.</FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value === "public"}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked ? "public" : "private")
+                        }
+                        aria-label="Add to portfolio"
+                      />
                     </FormControl>
                   </FormItem>
                 )}

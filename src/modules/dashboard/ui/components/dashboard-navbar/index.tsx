@@ -27,6 +27,8 @@ export const DashboardNavbar = ({
       href === "/studio/overview" ? pathname === href : pathname.startsWith(href),
     )?.[1] ?? copy.shell.studio;
 
+  if (/^\/studio\/photos\/[^/]+$/.test(pathname)) return null;
+
   return (
     <header className={styles.topbar}>
       <div className={styles.topbarTrail}>
