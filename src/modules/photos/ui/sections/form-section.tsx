@@ -118,6 +118,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   const utils = trpc.useUtils();
   const [photo] = trpc.photos.getOne.useSuspenseQuery({ id: photoId });
   const [isCopied, setIsCopied] = useState(false);
+  const [isReturningToLibrary, setIsReturningToLibrary] = useState(false);
   const [previewZoom, setPreviewZoom] = useState(1);
   const [activeInspectorSection, setActiveInspectorSection] =
     useState<InspectorSection>("content");
@@ -215,7 +216,6 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
 
   const update = trpc.photos.update.useMutation({
     onSuccess: async () => {
-      toast.success(copy.editor.updateSuccess);
       await Promise.all([
         utils.photos.getMany.invalidate(),
         utils.photos.getManyWithPrivate.invalidate(),
@@ -224,9 +224,14 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
         utils.photos.getPortfolioPhotos.invalidate(),
         utils.photos.getStudioStats.invalidate(),
       ]);
-      router.push("/studio/photos");
+      setIsReturningToLibrary(true);
+      toast.success(copy.editor.updateSuccess);
+      router.push("/studio/photos", { scroll: false });
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => {
+      setIsReturningToLibrary(false);
+      toast.error(error.message);
+    },
   });
 
   const remove = trpc.photos.remove.useMutation({
@@ -239,7 +244,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
         utils.photos.getPortfolioPhotos.invalidate(),
         utils.photos.getStudioStats.invalidate(),
       ]);
-      router.push("/studio/photos");
+      router.push("/studio/photos", { scroll: false });
     },
     onError: (error) => toast.error(error.message),
   });
@@ -396,7 +401,11 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
 
   return (
     <Form {...form}>
-      <form className={styles.form} onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className={styles.form}
+        onSubmit={form.handleSubmit(onSubmit)}
+        aria-busy={update.isPending || isReturningToLibrary}
+      >
         <header className={styles.header}>
           <div className={styles.headerIdentity}>
             {(isMobile || sidebarState === "collapsed") && (
@@ -408,6 +417,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
             <Link
               className={styles.backLink}
               href="/studio/photos"
+              scroll={false}
               aria-label={copy.editor.backToPhotos}
             >
               <ArrowLeftIcon size={18} />
@@ -421,10 +431,19 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
               </div>
               <span
                 className={styles.saveState}
-                data-dirty={form.formState.isDirty || undefined}
+                data-dirty={
+                  form.formState.isDirty && !update.isPending
+                    ? true
+                    : undefined
+                }
+                data-saving={
+                  update.isPending || isReturningToLibrary || undefined
+                }
               >
                 <span className={styles.saveStateDot} />
-                {form.formState.isDirty
+                {update.isPending || isReturningToLibrary
+                  ? copy.editor.saving
+                  : form.formState.isDirty
                   ? copy.editor.unsavedChanges
                   : copy.editor.allChangesSaved}
               </span>
@@ -435,9 +454,22 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
             <Button
               type="submit"
               className={styles.primaryAction}
-              disabled={update.isPending || !form.formState.isDirty}
+              disabled={
+                update.isPending ||
+                isReturningToLibrary ||
+                !form.formState.isDirty
+              }
             >
-              {update.isPending ? copy.editor.saving : copy.editor.save}
+              {update.isPending || isReturningToLibrary ? (
+                <LoaderCircleIcon
+                  className={styles.saveActionSpinner}
+                  size={13}
+                  aria-hidden="true"
+                />
+              ) : null}
+              {update.isPending || isReturningToLibrary
+                ? copy.editor.saving
+                : copy.editor.save}
             </Button>
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
@@ -462,6 +494,24 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
             </DropdownMenu>
           </div>
         </header>
+
+        {update.isPending || isReturningToLibrary ? (
+          <div
+            className={styles.saveActivity}
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span className={styles.saveActivityIcon} aria-hidden="true">
+              <LoaderCircleIcon size={18} />
+            </span>
+            <span className={styles.saveActivityCopy}>
+              <strong>{copy.editor.savingPhoto}</strong>
+              <small>{copy.editor.savingHint}</small>
+            </span>
+            <span className={styles.saveActivityProgress} aria-hidden="true" />
+          </div>
+        ) : null}
 
         <div className={styles.workspace}>
           <section className={styles.mediaColumn}>

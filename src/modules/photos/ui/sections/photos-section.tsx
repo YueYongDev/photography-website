@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   memo,
+  useCallback,
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -35,6 +38,76 @@ import { trpc } from "@/trpc/client";
 type PortfolioFilter = "all" | "included" | "excluded";
 type SortOrder = "newest" | "oldest";
 type PhotoViewMode = "list" | "comfortable" | "compact";
+
+type PhotoLibrarySessionState = {
+  search: string;
+  portfolio: PortfolioFilter;
+  favoriteOnly: boolean;
+  sort: SortOrder;
+  viewMode: PhotoViewMode;
+  scrollY: number;
+  restoreScroll: boolean;
+};
+
+const photoLibrarySessionKey = "studio:photo-library:v1";
+const defaultPhotoLibrarySession: PhotoLibrarySessionState = {
+  search: "",
+  portfolio: "all",
+  favoriteOnly: false,
+  sort: "newest",
+  viewMode: "list",
+  scrollY: 0,
+  restoreScroll: false,
+};
+
+const readPhotoLibrarySession = (): PhotoLibrarySessionState => {
+  if (typeof window === "undefined") return defaultPhotoLibrarySession;
+
+  try {
+    const value = JSON.parse(
+      window.sessionStorage.getItem(photoLibrarySessionKey) ?? "{}",
+    ) as Partial<PhotoLibrarySessionState>;
+
+    return {
+      search: typeof value.search === "string" ? value.search : "",
+      portfolio: ["all", "included", "excluded"].includes(
+        value.portfolio ?? "",
+      )
+        ? (value.portfolio as PortfolioFilter)
+        : "all",
+      favoriteOnly:
+        typeof value.favoriteOnly === "boolean" ? value.favoriteOnly : false,
+      sort: value.sort === "oldest" ? "oldest" : "newest",
+      viewMode: ["list", "comfortable", "compact"].includes(
+        value.viewMode ?? "",
+      )
+        ? (value.viewMode as PhotoViewMode)
+        : "list",
+      scrollY:
+        typeof value.scrollY === "number" && Number.isFinite(value.scrollY)
+          ? Math.max(0, value.scrollY)
+          : 0,
+      restoreScroll: value.restoreScroll === true,
+    };
+  } catch {
+    return defaultPhotoLibrarySession;
+  }
+};
+
+const updatePhotoLibrarySession = (
+  changes: Partial<PhotoLibrarySessionState>,
+) => {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.setItem(
+      photoLibrarySessionKey,
+      JSON.stringify({ ...readPhotoLibrarySession(), ...changes }),
+    );
+  } catch {
+    // Navigation still works when storage is unavailable; only restoration is skipped.
+  }
+};
 
 type StudioPhoto = {
   id: string;
@@ -70,15 +143,34 @@ export const PhotosSection = () => {
 };
 
 const PhotosSectionContent = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => setIsMounted(true), []);
+
+  if (!isMounted) return <PhotosLibraryLoading />;
+
+  return <PhotosSectionReady />;
+};
+
+const PhotosSectionReady = () => {
   const { copy } = useStudioLocale();
+  const pathname = usePathname();
   const utils = trpc.useUtils();
-  const [search, setSearch] = useState("");
+  const [initialSession] = useState(readPhotoLibrarySession);
+  const [search, setSearch] = useState(initialSession.search);
   const deferredSearch = useDeferredValue(search.trim());
-  const [portfolio, setPortfolio] = useState<PortfolioFilter>("all");
-  const [favoriteOnly, setFavoriteOnly] = useState(false);
-  const [sort, setSort] = useState<SortOrder>("newest");
-  const [viewMode, setViewMode] = useState<PhotoViewMode>("list");
+  const [portfolio, setPortfolio] = useState<PortfolioFilter>(
+    initialSession.portfolio,
+  );
+  const [favoriteOnly, setFavoriteOnly] = useState(
+    initialSession.favoriteOnly,
+  );
+  const [sort, setSort] = useState<SortOrder>(initialSession.sort);
+  const [viewMode, setViewMode] = useState<PhotoViewMode>(
+    initialSession.viewMode,
+  );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const hasRestoredScroll = useRef(false);
 
   const { data: stats } = trpc.photos.getStudioStats.useQuery();
   const { data: photos, ...query } =
@@ -98,6 +190,45 @@ const PhotosSectionContent = () => {
     () => photos?.pages.flatMap((page) => page.items) ?? [],
     [photos],
   );
+
+  useEffect(() => {
+    updatePhotoLibrarySession({
+      search,
+      portfolio,
+      favoriteOnly,
+      sort,
+      viewMode,
+    });
+  }, [favoriteOnly, portfolio, search, sort, viewMode]);
+
+  useEffect(() => {
+    if (!photos || pathname !== "/studio/photos" || hasRestoredScroll.current) {
+      return;
+    }
+
+    const session = readPhotoLibrarySession();
+    if (!session.restoreScroll) return;
+
+    hasRestoredScroll.current = true;
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        window.scrollTo({
+          top: session.scrollY,
+          left: 0,
+          behavior: "auto",
+        });
+        updatePhotoLibrarySession({ restoreScroll: false });
+        hasRestoredScroll.current = false;
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+      hasRestoredScroll.current = false;
+    };
+  }, [pathname, photos]);
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -138,6 +269,13 @@ const PhotosSectionContent = () => {
     setPortfolio("all");
     setFavoriteOnly(false);
   };
+
+  const rememberLibraryPosition = useCallback(() => {
+    updatePhotoLibrarySession({
+      scrollY: window.scrollY,
+      restoreScroll: true,
+    });
+  }, []);
 
   const applyBulkUpdate = async (
     changes: { isPortfolio?: boolean; isFavorite?: boolean },
@@ -362,10 +500,10 @@ const PhotosSectionContent = () => {
               <span aria-hidden="true" />
               <span aria-hidden="true" />
               <span role="columnheader">{copy.photos.columnPhoto}</span>
-              <span role="columnheader">{copy.photos.columnPortfolio}</span>
               <span role="columnheader">{copy.photos.columnLocation}</span>
               <span role="columnheader">{copy.photos.columnCaptured}</span>
               <span role="columnheader">{copy.photos.columnCamera}</span>
+              <span role="columnheader">{copy.photos.columnPortfolio}</span>
               <span role="columnheader">{copy.photos.columnHomepage}</span>
               <span className="sr-only" role="columnheader">
                 {copy.photos.columnActions}
@@ -377,6 +515,7 @@ const PhotosSectionContent = () => {
                 photo={photo}
                 selected={selectedIds.has(photo.id)}
                 onToggle={() => togglePhoto(photo.id)}
+                onEdit={rememberLibraryPosition}
               />
             ))}
           </div>
@@ -393,6 +532,7 @@ const PhotosSectionContent = () => {
               photo={photo}
               selected={selectedIds.has(photo.id)}
               onToggle={() => togglePhoto(photo.id)}
+              onEdit={rememberLibraryPosition}
             />
           ))}
         </div>
@@ -426,10 +566,12 @@ const PhotoListRow = memo(
     photo,
     selected,
     onToggle,
+    onEdit,
   }: {
     photo: StudioPhoto;
     selected: boolean;
     onToggle: () => void;
+    onEdit: () => void;
   }) => {
     const { copy, locale } = useStudioLocale();
     const href = `/studio/photos/${photo.id}`;
@@ -461,6 +603,7 @@ const PhotoListRow = memo(
         <Link
           href={href}
           prefetch={false}
+          onClick={onEdit}
           className={styles.photoListThumb}
           role="cell"
           aria-label={copy.photos.editPhoto(photo.title || copy.photos.untitled)}
@@ -477,22 +620,10 @@ const PhotoListRow = memo(
         </Link>
 
         <div className={styles.photoListPrimary} role="cell">
-          <Link href={href} prefetch={false}>
+          <Link href={href} prefetch={false} onClick={onEdit}>
             {photo.title || copy.photos.untitled}
           </Link>
           <p>{photo.description}</p>
-        </div>
-
-        <div role="cell">
-          <span
-            className={styles.photoListStatus}
-            data-private={!photo.isPortfolio || undefined}
-          >
-            {photo.isPortfolio ? <CheckIcon size={11} /> : <XIcon size={11} />}
-            {photo.isPortfolio
-              ? copy.photos.portfolioIncluded
-              : copy.photos.portfolioExcluded}
-          </span>
         </div>
 
         <div className={styles.photoListTextCell} role="cell">
@@ -506,6 +637,18 @@ const PhotoListRow = memo(
         <div className={styles.photoListTextCell} role="cell">
           <span title={camera || copy.photos.unavailableTechnical}>
             {camera || copy.photos.unavailableTechnical}
+          </span>
+        </div>
+
+        <div role="cell">
+          <span
+            className={styles.photoListStatus}
+            data-private={!photo.isPortfolio || undefined}
+          >
+            {photo.isPortfolio ? <CheckIcon size={11} /> : <XIcon size={11} />}
+            {photo.isPortfolio
+              ? copy.photos.portfolioIncluded
+              : copy.photos.portfolioExcluded}
           </span>
         </div>
 
@@ -528,6 +671,7 @@ const PhotoListRow = memo(
           <Link
             href={href}
             prefetch={false}
+            onClick={onEdit}
             aria-label={copy.photos.editPhoto(photo.title || copy.photos.untitled)}
           >
             <PencilIcon size={13} />
@@ -546,10 +690,12 @@ const PhotoCard = memo(
     photo,
     selected,
     onToggle,
+    onEdit,
   }: {
     photo: StudioPhoto;
     selected: boolean;
     onToggle: () => void;
+    onEdit: () => void;
   }) => {
     const { copy, locale } = useStudioLocale();
     const captured = photo.dateTimeOriginal
@@ -570,6 +716,7 @@ const PhotoCard = memo(
           <Link
             href={href}
             prefetch={false}
+            onClick={onEdit}
             className={styles.photoManagerImageLink}
             aria-label={copy.photos.editPhoto(photo.title || copy.photos.untitled)}
           >
@@ -617,6 +764,7 @@ const PhotoCard = memo(
           <Link
             href={href}
             prefetch={false}
+            onClick={onEdit}
             className={styles.photoQuickEdit}
             aria-label={copy.photos.editPhoto(photo.title || copy.photos.untitled)}
           >
@@ -626,7 +774,7 @@ const PhotoCard = memo(
         </div>
 
         <div className={styles.photoManagerMeta}>
-          <Link href={href} prefetch={false}>
+          <Link href={href} prefetch={false} onClick={onEdit}>
             {photo.title || copy.photos.untitled}
           </Link>
           <p>

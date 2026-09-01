@@ -60,10 +60,10 @@ export const PhotosLibraryLoading = () => {
             <span />
             <span />
             <span>{copy.photos.columnPhoto}</span>
-            <span>{copy.photos.columnPortfolio}</span>
             <span>{copy.photos.columnLocation}</span>
             <span>{copy.photos.columnCaptured}</span>
             <span>{copy.photos.columnCamera}</span>
+            <span>{copy.photos.columnPortfolio}</span>
             <span>{copy.photos.columnHomepage}</span>
             <span />
           </div>
@@ -82,10 +82,10 @@ export const PhotosLibraryLoading = () => {
                 <span />
                 <span />
               </div>
+              <div className={styles.photoLoadingText} />
+              <div className={styles.photoLoadingText} />
+              <div className={styles.photoLoadingText} />
               <div className={styles.photoLoadingBadge} />
-              <div className={styles.photoLoadingText} />
-              <div className={styles.photoLoadingText} />
-              <div className={styles.photoLoadingText} />
               <div className={styles.photoLoadingText} />
               <div className={styles.photoLoadingAction} />
             </div>

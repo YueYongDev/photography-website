@@ -129,6 +129,16 @@
   box-shadow: 0 0 0 3px rgba(182, 121, 69, 0.12);
 }
 
+.saveState[data-saving] {
+  color: var(--studio-ink);
+}
+
+.saveState[data-saving] .saveStateDot {
+  animation: editor-save-pulse 1.2s ease-in-out infinite;
+  background: var(--studio-ink);
+  box-shadow: 0 0 0 0 rgba(32, 36, 34, 0.16);
+}
+
 .actions {
   display: flex;
   flex: 0 0 auto;
@@ -160,6 +170,97 @@
   border-color: #9b9f9d !important;
   background: #9b9f9d !important;
   opacity: 1;
+}
+
+.saveActionSpinner {
+  animation: editor-save-spin 0.8s linear infinite;
+}
+
+.saveActivity {
+  position: fixed;
+  z-index: 80;
+  right: clamp(1rem, 2.2vw, 2rem);
+  bottom: clamp(1rem, 2.2vw, 2rem);
+  display: grid;
+  width: min(22rem, calc(100vw - 2rem));
+  overflow: hidden;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: center;
+  padding: 1rem 1.1rem 1.05rem;
+  border: 1px solid rgba(32, 36, 34, 0.14);
+  border-radius: 0.72rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1.1rem 3.5rem rgba(32, 36, 34, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.saveActivityIcon {
+  display: grid;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--studio-ink);
+  color: #fff;
+}
+
+.saveActivityIcon svg {
+  animation: editor-save-spin 0.8s linear infinite;
+}
+
+.saveActivityCopy {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.saveActivityCopy strong {
+  color: var(--studio-ink);
+  font-family: var(--font-noto-serif-sc), "Songti SC", "Iowan Old Style", serif;
+  font-size: 0.78rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+}
+
+.saveActivityCopy small {
+  overflow: hidden;
+  color: var(--studio-muted);
+  font-size: 0.52rem;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveActivityProgress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 42%;
+  height: 2px;
+  animation: editor-save-progress 1.25s cubic-bezier(0.55, 0, 0.25, 1)
+    infinite;
+  background: var(--studio-ink);
+  transform: translateX(-110%);
+}
+
+@keyframes editor-save-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes editor-save-pulse {
+  50% {
+    box-shadow: 0 0 0 4px rgba(32, 36, 34, 0.08);
+    opacity: 0.58;
+  }
+}
+
+@keyframes editor-save-progress {
+  to {
+    transform: translateX(350%);
+  }
 }
 
 .moreAction {
@@ -993,5 +1094,18 @@
 
   .inspectorScroll {
     scroll-behavior: auto;
+  }
+
+  .saveState[data-saving] .saveStateDot,
+  .saveActionSpinner,
+  .saveActivityIcon svg,
+  .saveActivityProgress {
+    animation: none;
+  }
+
+  .saveActivityProgress {
+    width: 100%;
+    opacity: 0.24;
+    transform: none;
   }
 }

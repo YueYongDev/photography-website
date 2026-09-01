@@ -4,8 +4,14 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { headers } from "next/headers";
 import { cache } from "react";
 
+const developmentTrustedOrigins =
+  process.env.NODE_ENV === "development"
+    ? ["http://localhost:3000", "http://127.0.0.1:3000"]
+    : [];
+
 const trustedOrigins = [
   process.env.NEXT_PUBLIC_APP_URL,
+  ...developmentTrustedOrigins,
   "https://p.yueyong.fun",
 ].filter((origin): origin is string => Boolean(origin));
 

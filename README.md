@@ -75,7 +75,7 @@ QINIU_PUBLIC_URL=https://cdn.ytools.xyz
 # You can generate a random secret using `openssl rand -base64 32`
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000 #Base URL of your app
-BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:3000
+BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 
 NEXT_PUBLIC_APP_URL='http://localhost:3000'
 

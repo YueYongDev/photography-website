@@ -180,6 +180,7 @@ const MapSceneController = ({
 
 const MapLoading = () => {
   const { copy } = useSiteLocale();
+  const loadingLabel = copy.map.loadingMap.replace(/[.…]+$/u, "");
 
   return (
     <section
@@ -190,14 +191,21 @@ const MapLoading = () => {
       <VantaNetBackground className={styles.loadingVanta} />
       <div className={styles.loadingCard}>
         <span className={styles.loadingKicker}>MAP / LIVE ARCHIVE</span>
-        <BlurText
-          text={copy.map.loadingMap}
-          animateBy="letters"
-          direction="bottom"
-          delay={42}
-          stepDuration={0.38}
-          className={styles.loadingLabel}
-        />
+        <div className={styles.loadingHeadline}>
+          <BlurText
+            text={loadingLabel}
+            animateBy="letters"
+            direction="bottom"
+            delay={42}
+            stepDuration={0.38}
+            className={styles.loadingLabel}
+          />
+          <span className={styles.loadingDots} aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
         <div className={styles.loadingCoordinates} aria-hidden="true">
           <span>30.2741° N</span>
           <i />
