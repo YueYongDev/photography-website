@@ -262,7 +262,7 @@ const chinese = {
   },
   home: {
     eyebrow: "PORTFOLIO / 01",
-    titleStart: "拍照的全部意义，",
+    titleStart: "摄影的全部意义，",
     titleEnd: "就在于你不必用言语去解释事物",
     heroAlt: "穿行在香港密集街道中的红色电车",
     heroCaption: "香港 / HKG",
