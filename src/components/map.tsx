@@ -168,6 +168,7 @@ const MapComponent = ({
   return (
     <div className="relative w-full h-full min-h-[300px]" id={id}>
       <Map
+        id={id}
         center={[initialViewState.longitude, initialViewState.latitude]}
         zoom={initialViewState.zoom}
       >

@@ -12,14 +12,19 @@ import {
 
 export const useConfirm = (
   title: string,
-  message: string
-): [() => JSX.Element, () => Promise<unknown>] => {
+  message: string,
+  options?: {
+    cancelLabel?: string;
+    confirmLabel?: string;
+    destructive?: boolean;
+  },
+): [() => JSX.Element, () => Promise<boolean>] => {
   const [promise, setPromise] = useState<{
     resolve: (value: boolean) => void;
   } | null>(null);
 
   const confirm = () =>
-    new Promise((resolve) => {
+    new Promise<boolean>((resolve) => {
       setPromise({ resolve });
     });
 
@@ -38,7 +43,12 @@ export const useConfirm = (
   };
 
   const ConfirmationDialog = () => (
-    <Dialog open={promise !== null} onOpenChange={handleClose}>
+    <Dialog
+      open={promise !== null}
+      onOpenChange={(open) => {
+        if (!open) handleCancel();
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -46,9 +56,14 @@ export const useConfirm = (
         </DialogHeader>
         <DialogFooter className="flex gap-4">
           <Button onClick={handleCancel} variant="outline">
-            Cancel
+            {options?.cancelLabel ?? "Cancel"}
           </Button>
-          <Button onClick={handleConfirm}>Confirm</Button>
+          <Button
+            onClick={handleConfirm}
+            variant={options?.destructive ? "destructive" : "default"}
+          >
+            {options?.confirmLabel ?? "Confirm"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

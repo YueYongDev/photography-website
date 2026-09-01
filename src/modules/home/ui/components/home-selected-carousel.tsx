@@ -116,7 +116,7 @@ export const HomeSelectedCarousel = ({
         aria-label={carouselLabel}
       >
         <div className={styles.homeWorkRail} aria-hidden="true">
-          <span>{String(photos.length).padStart(2, "0")} / SELECTED</span>
+          <span>{String(photos.length).padStart(2, "0")} / SELECTION</span>
           <span>{motionLabel}</span>
         </div>
 

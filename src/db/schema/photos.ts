@@ -242,7 +242,6 @@ export const photosUpdateSchema = photosInsertSchema
     isFavorite: true,
     latitude: true,
     longitude: true,
-    visibility: true,
     make: true,
     model: true,
     lensModel: true,

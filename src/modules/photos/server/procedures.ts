@@ -28,6 +28,7 @@ import { TRPCError } from "@trpc/server";
 import { deletePhotoObjectByUrl } from "@/lib/qiniu-storage";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { PUBLIC_PHOTOS_CACHE_TAG } from "@/lib/cache-tags";
+import { measureServerStep } from "@/lib/server-performance";
 
 type CitySetsCursor =
   | {
@@ -37,8 +38,21 @@ type CitySetsCursor =
   | null
   | undefined;
 
-const getCachedLikedPhotos = unstable_cache(
-  async (limit: number) =>
+// `visibility` used to control the Work page while `isFavorite` controlled the
+// homepage. Treat either legacy flag as selected while old records converge to
+// the single `isFavorite` concept through subsequent edits.
+const selectedPhotoCondition = or(
+  eq(photos.isFavorite, true),
+  eq(photos.visibility, "public"),
+)!;
+
+const unselectedPhotoCondition = and(
+  eq(photos.isFavorite, false),
+  eq(photos.visibility, "private"),
+)!;
+
+const getCachedSelectedPhotos = unstable_cache(
+  async () =>
     db
       .select({
         id: photos.id,
@@ -55,37 +69,25 @@ const getCachedLikedPhotos = unstable_cache(
         updatedAt: photos.updatedAt,
       })
       .from(photos)
-      .where(eq(photos.isFavorite, true))
-      .orderBy(desc(photos.updatedAt))
-      .limit(limit),
-  ["liked-photos-v4"],
+      .where(selectedPhotoCondition)
+      .orderBy(desc(photos.updatedAt), desc(photos.id)),
+  ["selected-photos-v1"],
   { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] },
 );
 
-const getCachedPortfolioPhotos = unstable_cache(
-  async (limit: number) =>
-    db
-      .select({
-        id: photos.id,
-        url: photos.url,
-        title: photos.title,
-        description: photos.description,
-        city: photos.city,
-        countryCode: photos.countryCode,
-        dateTimeOriginal: photos.dateTimeOriginal,
-        blurData: photos.blurData,
-        width: photos.width,
-        height: photos.height,
-        aspectRatio: photos.aspectRatio,
-        updatedAt: photos.updatedAt,
-      })
-      .from(photos)
-      .where(eq(photos.visibility, "public"))
-      .orderBy(desc(photos.updatedAt))
-      .limit(limit),
-  ["portfolio-photos-v1"],
-  { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] },
-);
+const randomSample = <Item>(items: Item[], limit: number) => {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled.slice(0, limit);
+};
 
 const getCachedCitySetsPreview = unstable_cache(
   async (cursor: CitySetsCursor, limit: number) => {
@@ -148,7 +150,12 @@ export const photosRouter = createTRPCRouter({
     .input(photosInsertSchema)
     .mutation(async ({ input }) => {
       const id = input.id ?? crypto.randomUUID();
-      const values = { ...input, id };
+      const values = {
+        ...input,
+        id,
+        isFavorite: false,
+        visibility: "private" as const,
+      };
 
       try {
         await db.insert(photos).values(values);
@@ -307,7 +314,18 @@ export const photosRouter = createTRPCRouter({
       const { id } = input;
       if (!id) throw new TRPCError({ code: "BAD_REQUEST" });
 
-      await db.update(photos).set(input).where(eq(photos.id, id));
+      const values = {
+        ...input,
+        ...(input.isFavorite !== undefined
+          ? {
+              visibility: input.isFavorite
+                ? ("public" as const)
+                : ("private" as const),
+            }
+          : {}),
+      };
+
+      await db.update(photos).set(values).where(eq(photos.id, id));
       const [updatedPhoto] = await db
         .select()
         .from(photos)
@@ -322,11 +340,19 @@ export const photosRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ input }) => {
-      const [photo] = await db
-        .select()
-        .from(photos)
-        .where(eq(photos.id, input.id));
-      return photo;
+      const [photo] = await measureServerStep("photos.getOne", async () =>
+        db
+          .select()
+          .from(photos)
+          .where(eq(photos.id, input.id))
+          .limit(1),
+      );
+      return photo
+        ? {
+            ...photo,
+            isFavorite: photo.isFavorite || photo.visibility === "public",
+          }
+        : photo;
     }),
 
   getMany: baseProcedure
@@ -356,7 +382,6 @@ export const photosRouter = createTRPCRouter({
           url: photos.url,
           title: photos.title,
           description: photos.description,
-          visibility: photos.visibility,
           dateTimeOriginal: photos.dateTimeOriginal,
           make: photos.make,
           model: photos.model,
@@ -364,9 +389,10 @@ export const photosRouter = createTRPCRouter({
           focalLength35mm: photos.focalLength35mm,
           city: photos.city,
           countryCode: photos.countryCode,
-          isFavorite: photos.isFavorite,
-          isPortfolio:
-            sql<boolean>`${photos.visibility} = 'public'`.mapWith(Boolean),
+          isFavorite:
+            sql<boolean>`(${photos.isFavorite} = true or ${photos.visibility} = 'public')`.mapWith(
+              Boolean,
+            ),
           blurData: photos.blurData,
           width: photos.width,
           height: photos.height,
@@ -395,13 +421,12 @@ export const photosRouter = createTRPCRouter({
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
         search: z.string().trim().max(120).optional(),
-        portfolio: z.enum(["all", "included", "excluded"]).default("all"),
-        favoriteOnly: z.boolean().default(false),
+        selection: z.enum(["all", "selected", "unselected"]).default("all"),
         sort: z.enum(["newest", "oldest"]).default("newest"),
       }),
     )
     .query(async ({ input }) => {
-      const { cursor, favoriteOnly, limit, portfolio, search, sort } = input;
+      const { cursor, limit, search, selection, sort } = input;
       const isAscending = sort === "oldest";
       const searchTerm = search
         ? `%${search.replace(/[\\%_]/g, "\\$&")}%`
@@ -430,13 +455,11 @@ export const photosRouter = createTRPCRouter({
           )
         : undefined;
       const whereClause = and(
-        portfolio === "all"
-          ? undefined
-          : eq(
-              photos.visibility,
-              portfolio === "included" ? "public" : "private",
-            ),
-        favoriteOnly ? eq(photos.isFavorite, true) : undefined,
+        selection === "selected"
+          ? selectedPhotoCondition
+          : selection === "unselected"
+            ? unselectedPhotoCondition
+            : undefined,
         searchClause,
         cursorClause,
       );
@@ -447,8 +470,6 @@ export const photosRouter = createTRPCRouter({
           url: photos.url,
           title: photos.title,
           description: photos.description,
-          isPortfolio:
-            sql<boolean>`${photos.visibility} = 'public'`.mapWith(Boolean),
           dateTimeOriginal: photos.dateTimeOriginal,
           make: photos.make,
           model: photos.model,
@@ -456,7 +477,10 @@ export const photosRouter = createTRPCRouter({
           focalLength35mm: photos.focalLength35mm,
           city: photos.city,
           countryCode: photos.countryCode,
-          isFavorite: photos.isFavorite,
+          isFavorite:
+            sql<boolean>`(${photos.isFavorite} = true or ${photos.visibility} = 'public')`.mapWith(
+              Boolean,
+            ),
           blurData: photos.blurData,
           width: photos.width,
           height: photos.height,
@@ -484,40 +508,27 @@ export const photosRouter = createTRPCRouter({
     const [stats] = await db
       .select({
         total: sql<number>`count(*)`.mapWith(Number),
-        portfolio: sql<number>`coalesce(sum(case when ${photos.visibility} = 'public' then 1 else 0 end), 0)`.mapWith(Number),
-        unassigned: sql<number>`coalesce(sum(case when ${photos.visibility} = 'private' then 1 else 0 end), 0)`.mapWith(Number),
-        favorite: sql<number>`coalesce(sum(case when ${photos.isFavorite} = true then 1 else 0 end), 0)`.mapWith(Number),
+        selected: sql<number>`coalesce(sum(case when ${photos.isFavorite} = true or ${photos.visibility} = 'public' then 1 else 0 end), 0)`.mapWith(Number),
+        unselected: sql<number>`coalesce(sum(case when ${photos.isFavorite} = false and ${photos.visibility} = 'private' then 1 else 0 end), 0)`.mapWith(Number),
       })
       .from(photos);
 
-    return stats ?? { total: 0, portfolio: 0, unassigned: 0, favorite: 0 };
+    return stats ?? { total: 0, selected: 0, unselected: 0 };
   }),
 
   bulkUpdate: protectedProcedure
     .input(
       z.object({
         ids: z.array(z.string().uuid()).min(1).max(100),
-        changes: z
-          .object({
-            isPortfolio: z.boolean().optional(),
-            isFavorite: z.boolean().optional(),
-          })
-          .strict()
-          .refine((changes) => Object.keys(changes).length > 0),
+        isFavorite: z.boolean(),
       }),
     )
     .mutation(async ({ input }) => {
       const changes = {
-        ...(input.changes.isPortfolio !== undefined
-          ? {
-              visibility: input.changes.isPortfolio
-                ? ("public" as const)
-                : ("private" as const),
-            }
-          : {}),
-        ...(input.changes.isFavorite !== undefined
-          ? { isFavorite: input.changes.isFavorite }
-          : {}),
+        isFavorite: input.isFavorite,
+        visibility: input.isFavorite
+          ? ("public" as const)
+          : ("private" as const),
         updatedAt: new Date(),
       };
 
@@ -530,13 +541,20 @@ export const photosRouter = createTRPCRouter({
       return { updated: input.ids.length };
     }),
 
-  getLikedPhotos: baseProcedure
-    .input(z.object({ limit: z.number().min(1).max(100).default(10) }))
-    .query(async ({ input }) => getCachedLikedPhotos(input.limit)),
-
-  getPortfolioPhotos: baseProcedure
-    .input(z.object({ limit: z.number().min(1).max(100).default(10) }))
-    .query(async ({ input }) => getCachedPortfolioPhotos(input.limit)),
+  getSelectedPhotos: baseProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(500).optional(),
+        random: z.boolean().default(false),
+      }),
+    )
+    .query(async ({ input }) => {
+      const selectedPhotos = await getCachedSelectedPhotos();
+      const limit = input.limit ?? selectedPhotos.length;
+      return input.random
+        ? randomSample(selectedPhotos, limit)
+        : selectedPhotos.slice(0, limit);
+    }),
 
   getCitySets: baseProcedure
     .input(

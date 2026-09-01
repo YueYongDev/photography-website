@@ -13,8 +13,6 @@ import {
   CopyIcon,
   ExternalLinkIcon,
   Globe2Icon,
-  HouseIcon,
-  ImagesIcon,
   LoaderCircleIcon,
   MapPinIcon,
   MinusIcon,
@@ -23,6 +21,7 @@ import {
   ScanIcon,
   SearchIcon,
   SparklesIcon,
+  StarIcon,
   TrashIcon,
 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
@@ -46,10 +45,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { photosUpdateSchema } from "@/db/schema/photos";
+import { useConfirm } from "@/hooks/use-confirm";
 import { formatGPSCoordinates, parseLatLngText } from "@/lib/utils";
 import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 import {
@@ -68,6 +67,7 @@ import {
   CaptureDateTimeInput,
   FocalLengthInput,
 } from "@/modules/photos/ui/components/camera-metadata-fields";
+import { PhotoEditorLoading } from "@/modules/photos/ui/components/photo-editor-loading";
 import { toPlaceSlug } from "@/modules/travel/lib/country-groups";
 import { trpc } from "@/trpc/client";
 import styles from "../photo-editor.module.css";
@@ -78,7 +78,7 @@ const MapComponent = dynamic(() => import("@/components/map"), {
 });
 
 type PhotoFormValues = z.infer<typeof photosUpdateSchema>;
-type InspectorSection = "content" | "display" | "location" | "technical";
+type InspectorSection = "content" | "location" | "technical";
 
 type AddressSearchResult = {
   id: string;
@@ -100,7 +100,7 @@ export const FormSection = ({ photoId }: { photoId: string }) => {
 
   return (
     <Suspense
-      fallback={<div className={styles.loadingState}>{copy.common.loading}</div>}
+      fallback={<PhotoEditorLoading label={copy.common.loading} />}
     >
       <ErrorBoundary
         fallback={<div className={styles.errorState}>{copy.overview.error}</div>}
@@ -150,7 +150,6 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
       title: photo.title,
       description: photo.description,
       isFavorite: photo.isFavorite,
-      visibility: photo.visibility,
       make: photo.make ?? "",
       model: photo.model ?? "",
       lensModel: photo.lensModel ?? "",
@@ -177,6 +176,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   });
 
   const currentTitle = useWatch({ control: form.control, name: "title" });
+  const isFavorite = useWatch({ control: form.control, name: "isFavorite" });
   const latitude = useWatch({ control: form.control, name: "latitude" });
   const longitude = useWatch({ control: form.control, name: "longitude" });
   const country = useWatch({ control: form.control, name: "country" });
@@ -220,8 +220,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
         utils.photos.getMany.invalidate(),
         utils.photos.getManyWithPrivate.invalidate(),
         utils.photos.getOne.invalidate({ id: photoId }),
-        utils.photos.getLikedPhotos.invalidate(),
-        utils.photos.getPortfolioPhotos.invalidate(),
+        utils.photos.getSelectedPhotos.invalidate(),
         utils.photos.getStudioStats.invalidate(),
       ]);
       setIsReturningToLibrary(true);
@@ -240,14 +239,23 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
       await Promise.all([
         utils.photos.getMany.invalidate(),
         utils.photos.getManyWithPrivate.invalidate(),
-        utils.photos.getLikedPhotos.invalidate(),
-        utils.photos.getPortfolioPhotos.invalidate(),
+        utils.photos.getSelectedPhotos.invalidate(),
         utils.photos.getStudioStats.invalidate(),
       ]);
       router.push("/studio/photos", { scroll: false });
     },
     onError: (error) => toast.error(error.message),
   });
+
+  const [DeleteConfirmDialog, confirmDelete] = useConfirm(
+    copy.editor.deleteConfirmTitle,
+    copy.editor.deleteConfirmDescription,
+    {
+      cancelLabel: copy.editor.cancel,
+      confirmLabel: copy.editor.delete,
+      destructive: true,
+    },
+  );
 
   const generateAIDescription = trpc.photos.generateDescription.useMutation({
     onSuccess: (data) => {
@@ -392,6 +400,19 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     update.mutate(data);
   };
 
+  const onToggleFavorite = () => {
+    form.setValue("isFavorite", !isFavorite, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  };
+
+  const onDelete = async () => {
+    const confirmed = await confirmDelete();
+    if (!confirmed) return;
+    remove.mutate({ id: photoId });
+  };
+
   const navigateInspector = (section: InspectorSection) => {
     setActiveInspectorSection(section);
     window.requestAnimationFrame(() => {
@@ -401,6 +422,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
 
   return (
     <Form {...form}>
+      <DeleteConfirmDialog />
       <form
         className={styles.form}
         onSubmit={form.handleSubmit(onSubmit)}
@@ -452,6 +474,33 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
 
           <div className={styles.actions}>
             <Button
+              type="button"
+              variant="outline"
+              className={styles.favoriteAction}
+              data-active={isFavorite || undefined}
+              aria-pressed={isFavorite ?? false}
+              aria-label={
+                isFavorite
+                  ? copy.editor.removeFromSelection
+                  : copy.editor.addToSelection
+              }
+              onClick={onToggleFavorite}
+              disabled={
+                update.isPending || isReturningToLibrary || remove.isPending
+              }
+            >
+              <StarIcon
+                size={14}
+                fill={isFavorite ? "currentColor" : "none"}
+                aria-hidden="true"
+              />
+              <span>
+                {isFavorite
+                  ? copy.editor.selectedAction
+                  : copy.editor.selectAction}
+              </span>
+            </Button>
+            <Button
               type="submit"
               className={styles.primaryAction}
               disabled={
@@ -482,9 +531,10 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   <MoreVerticalIcon size={18} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className={styles.actionMenu}>
                 <DropdownMenuItem
-                  onClick={() => remove.mutate({ id: photoId })}
+                  className={styles.deleteAction}
+                  onSelect={onDelete}
                   disabled={remove.isPending}
                 >
                   <TrashIcon className="mr-2 size-4" />
@@ -606,7 +656,6 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
               {(
                 [
                   { id: "content", label: copy.editor.contentTab },
-                  { id: "display", label: copy.editor.displayTab },
                   { id: "location", label: copy.editor.locationTab },
                   { id: "technical", label: copy.editor.technicalTab },
                 ] satisfies Array<{ id: InspectorSection; label: string }>
@@ -634,33 +683,11 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   role="tabpanel"
                   aria-labelledby="photo-editor-tab-content"
                 >
-                  <div
-                    className={`${styles.sectionHeading} ${styles.sectionHeadingWithAction}`}
-                  >
+                  <div className={styles.sectionHeading}>
                     <div>
                       <span>01</span>
                       <h2>{copy.editor.contentSection}</h2>
                     </div>
-                    <button
-                      type="button"
-                      className={styles.sectionAiAction}
-                      onClick={() =>
-                        generateAIDescription.mutate({ id: photoId })
-                      }
-                      disabled={generateAIDescription.isPending}
-                    >
-                      <SparklesIcon
-                        className={
-                          generateAIDescription.isPending ? "animate-pulse" : ""
-                        }
-                        size={14}
-                      />
-                      <span>
-                        {generateAIDescription.isPending
-                          ? copy.editor.generating
-                          : copy.editor.aiDescription}
-                      </span>
-                    </button>
                     <p>{copy.editor.contentSectionDescription}</p>
                   </div>
                   <div className={styles.fieldStack}>
@@ -694,81 +721,30 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                             />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </section>
-              )}
-
-              {activeInspectorSection === "display" && (
-                <section
-                  className={styles.inspectorSection}
-                  id="photo-editor-display"
-                  role="tabpanel"
-                  aria-labelledby="photo-editor-tab-display"
-                >
-                  <div className={styles.sectionHeading}>
-                    <div>
-                      <span>02</span>
-                      <h2>{copy.editor.displaySection}</h2>
-                    </div>
-                    <p>{copy.editor.displaySectionDescription}</p>
-                  </div>
-                  <div className={styles.switchList}>
-                    <FormField
-                      name="isFavorite"
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem
-                          className={styles.switchRow}
-                          data-active={field.value || undefined}
-                        >
-                          <span className={styles.switchIcon}>
-                            <HouseIcon size={17} />
-                          </span>
-                          <div className={styles.switchCopy}>
-                            <strong>{copy.editor.homepageDisplay}</strong>
-                            <span>{copy.editor.homepageDisplayDescription}</span>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              size="large"
-                              className={styles.switchControl}
-                              checked={field.value ?? false}
-                              onCheckedChange={field.onChange}
-                              aria-label={copy.editor.homepageDisplay}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name="visibility"
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem
-                          className={styles.switchRow}
-                          data-active={field.value === "public" || undefined}
-                        >
-                          <span className={styles.switchIcon}>
-                            <ImagesIcon size={17} />
-                          </span>
-                          <div className={styles.switchCopy}>
-                            <strong>{copy.editor.portfolioDisplay}</strong>
-                            <span>{copy.editor.portfolioDisplayDescription}</span>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              size="large"
-                              className={styles.switchControl}
-                              checked={field.value === "public"}
-                              onCheckedChange={(checked) =>
-                                field.onChange(checked ? "public" : "private")
+                          <div className={styles.descriptionActions}>
+                            <button
+                              type="button"
+                              className={styles.sectionAiAction}
+                              onClick={() =>
+                                generateAIDescription.mutate({ id: photoId })
                               }
-                              aria-label={copy.editor.portfolioDisplay}
-                            />
-                          </FormControl>
+                              disabled={generateAIDescription.isPending}
+                            >
+                              <SparklesIcon
+                                className={
+                                  generateAIDescription.isPending
+                                    ? "animate-pulse"
+                                    : ""
+                                }
+                                size={15}
+                              />
+                              <span>
+                                {generateAIDescription.isPending
+                                  ? copy.editor.generating
+                                  : copy.editor.aiDescription}
+                              </span>
+                            </button>
+                          </div>
                         </FormItem>
                       )}
                     />
@@ -785,7 +761,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 >
                 <div className={styles.sectionHeading}>
                   <div>
-                    <span>03</span>
+                    <span>02</span>
                     <h2>{copy.editor.locationSection}</h2>
                   </div>
                   <p>{copy.editor.locationSectionDescription}</p>
@@ -934,7 +910,7 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                 >
                   <div className={styles.sectionHeading}>
                     <div>
-                      <span>04</span>
+                      <span>03</span>
                       <h2>{copy.editor.technicalSection}</h2>
                     </div>
                     <p>{copy.editor.technicalSectionDescription}</p>

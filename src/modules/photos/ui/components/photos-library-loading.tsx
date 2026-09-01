@@ -31,7 +31,7 @@ export const PhotosLibraryLoading = () => {
       </div>
 
       <div className={styles.librarySummary} aria-hidden="true">
-        {Array.from({ length: 4 }).map((_, index) => (
+        {Array.from({ length: 3 }).map((_, index) => (
           <div className={styles.libraryMetric} key={index}>
             <div className={`${styles.skeletonBlock} h-3 w-16`} />
             <div className={`${styles.skeletonBlock} mt-3 h-7 w-10`} />
@@ -44,7 +44,6 @@ export const PhotosLibraryLoading = () => {
           <div
             className={`${styles.photoLoadingControl} ${styles.photoLoadingSearch}`}
           />
-          <div className={styles.photoLoadingControl} />
           <div className={styles.photoLoadingControl} />
           <div className={styles.photoLoadingControl} />
           <div
@@ -63,8 +62,7 @@ export const PhotosLibraryLoading = () => {
             <span>{copy.photos.columnLocation}</span>
             <span>{copy.photos.columnCaptured}</span>
             <span>{copy.photos.columnCamera}</span>
-            <span>{copy.photos.columnPortfolio}</span>
-            <span>{copy.photos.columnHomepage}</span>
+            <span>{copy.photos.columnSelected}</span>
             <span />
           </div>
 
@@ -86,7 +84,6 @@ export const PhotosLibraryLoading = () => {
               <div className={styles.photoLoadingText} />
               <div className={styles.photoLoadingText} />
               <div className={styles.photoLoadingBadge} />
-              <div className={styles.photoLoadingText} />
               <div className={styles.photoLoadingAction} />
             </div>
           ))}

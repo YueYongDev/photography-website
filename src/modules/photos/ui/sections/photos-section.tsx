@@ -15,11 +15,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import {
   CheckIcon,
   Clock3Icon,
-  Globe2Icon,
   Grid2X2Icon,
   Grid3X3Icon,
   ListIcon,
-  LockIcon,
   PencilIcon,
   SearchIcon,
   StarIcon,
@@ -35,25 +33,23 @@ import styles from "@/modules/dashboard/ui/studio.module.css";
 import { PhotosLibraryLoading } from "@/modules/photos/ui/components/photos-library-loading";
 import { trpc } from "@/trpc/client";
 
-type PortfolioFilter = "all" | "included" | "excluded";
+type SelectionFilter = "all" | "selected" | "unselected";
 type SortOrder = "newest" | "oldest";
 type PhotoViewMode = "list" | "comfortable" | "compact";
 
 type PhotoLibrarySessionState = {
   search: string;
-  portfolio: PortfolioFilter;
-  favoriteOnly: boolean;
+  selection: SelectionFilter;
   sort: SortOrder;
   viewMode: PhotoViewMode;
   scrollY: number;
   restoreScroll: boolean;
 };
 
-const photoLibrarySessionKey = "studio:photo-library:v1";
+const photoLibrarySessionKey = "studio:photo-library:v2";
 const defaultPhotoLibrarySession: PhotoLibrarySessionState = {
   search: "",
-  portfolio: "all",
-  favoriteOnly: false,
+  selection: "all",
   sort: "newest",
   viewMode: "list",
   scrollY: 0,
@@ -70,13 +66,11 @@ const readPhotoLibrarySession = (): PhotoLibrarySessionState => {
 
     return {
       search: typeof value.search === "string" ? value.search : "",
-      portfolio: ["all", "included", "excluded"].includes(
-        value.portfolio ?? "",
+      selection: ["all", "selected", "unselected"].includes(
+        value.selection ?? "",
       )
-        ? (value.portfolio as PortfolioFilter)
+        ? (value.selection as SelectionFilter)
         : "all",
-      favoriteOnly:
-        typeof value.favoriteOnly === "boolean" ? value.favoriteOnly : false,
       sort: value.sort === "oldest" ? "oldest" : "newest",
       viewMode: ["list", "comfortable", "compact"].includes(
         value.viewMode ?? "",
@@ -114,7 +108,6 @@ type StudioPhoto = {
   url: string;
   title: string;
   description: string;
-  isPortfolio: boolean;
   dateTimeOriginal: Date | null;
   make: string | null;
   model: string | null;
@@ -159,17 +152,17 @@ const PhotosSectionReady = () => {
   const [initialSession] = useState(readPhotoLibrarySession);
   const [search, setSearch] = useState(initialSession.search);
   const deferredSearch = useDeferredValue(search.trim());
-  const [portfolio, setPortfolio] = useState<PortfolioFilter>(
-    initialSession.portfolio,
-  );
-  const [favoriteOnly, setFavoriteOnly] = useState(
-    initialSession.favoriteOnly,
+  const [selection, setSelection] = useState<SelectionFilter>(
+    initialSession.selection,
   );
   const [sort, setSort] = useState<SortOrder>(initialSession.sort);
   const [viewMode, setViewMode] = useState<PhotoViewMode>(
     initialSession.viewMode,
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [updatingFavoriteIds, setUpdatingFavoriteIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const hasRestoredScroll = useRef(false);
 
   const { data: stats } = trpc.photos.getStudioStats.useQuery();
@@ -178,8 +171,7 @@ const PhotosSectionReady = () => {
       {
         limit: 40,
         search: deferredSearch || undefined,
-        portfolio,
-        favoriteOnly,
+        selection,
         sort,
       },
       { getNextPageParam: (lastPage) => lastPage.nextCursor },
@@ -200,12 +192,11 @@ const PhotosSectionReady = () => {
   useEffect(() => {
     updatePhotoLibrarySession({
       search,
-      portfolio,
-      favoriteOnly,
+      selection,
       sort,
       viewMode,
     });
-  }, [favoriteOnly, portfolio, search, sort, viewMode]);
+  }, [search, selection, sort, viewMode]);
 
   useEffect(() => {
     if (!photos || pathname !== "/studio/photos" || hasRestoredScroll.current) {
@@ -238,7 +229,7 @@ const PhotosSectionReady = () => {
 
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [deferredSearch, favoriteOnly, portfolio, sort]);
+  }, [deferredSearch, selection, sort]);
 
   if (!photos) return <PhotosLibraryLoading />;
 
@@ -247,7 +238,7 @@ const PhotosSectionReady = () => {
   const someLoadedSelected =
     !allLoadedSelected && items.some((photo) => selectedIds.has(photo.id));
   const hasActiveFilters =
-    Boolean(deferredSearch) || portfolio !== "all" || favoriteOnly;
+    Boolean(deferredSearch) || selection !== "all";
 
   const togglePhoto = (id: string) => {
     setSelectedIds((current) => {
@@ -272,25 +263,26 @@ const PhotosSectionReady = () => {
 
   const clearFilters = () => {
     setSearch("");
-    setPortfolio("all");
-    setFavoriteOnly(false);
+    setSelection("all");
   };
 
-  const applyBulkUpdate = async (
-    changes: { isPortfolio?: boolean; isFavorite?: boolean },
-  ) => {
+  const invalidateSelectionQueries = async () => {
+    await Promise.all([
+      utils.photos.getManyWithPrivate.invalidate(),
+      utils.photos.getMany.invalidate(),
+      utils.photos.getSelectedPhotos.invalidate(),
+      utils.photos.getStudioStats.invalidate(),
+      utils.summary.getSummary.invalidate(),
+    ]);
+  };
+
+  const applyBulkUpdate = async (isFavorite: boolean) => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
 
     try {
-      await bulkUpdate.mutateAsync({ ids, changes });
-      await Promise.all([
-        utils.photos.getManyWithPrivate.invalidate(),
-        utils.photos.getMany.invalidate(),
-        utils.photos.getLikedPhotos.invalidate(),
-        utils.photos.getPortfolioPhotos.invalidate(),
-        utils.photos.getStudioStats.invalidate(),
-      ]);
+      await bulkUpdate.mutateAsync({ ids, isFavorite });
+      await invalidateSelectionQueries();
       setSelectedIds(new Set());
       toast.success(copy.photos.batchUpdated(ids.length));
     } catch (error) {
@@ -300,19 +292,43 @@ const PhotosSectionReady = () => {
     }
   };
 
+  const toggleFavorite = async (photo: StudioPhoto) => {
+    setUpdatingFavoriteIds((current) => new Set(current).add(photo.id));
+
+    try {
+      const isFavorite = !photo.isFavorite;
+      await bulkUpdate.mutateAsync({ ids: [photo.id], isFavorite });
+      await invalidateSelectionQueries();
+      toast.success(
+        isFavorite
+          ? copy.photos.selectionAdded(photo.title || copy.photos.untitled)
+          : copy.photos.selectionRemoved(photo.title || copy.photos.untitled),
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : copy.photos.batchError,
+      );
+    } finally {
+      setUpdatingFavoriteIds((current) => {
+        const next = new Set(current);
+        next.delete(photo.id);
+        return next;
+      });
+    }
+  };
+
   return (
     <section className={styles.photoLibrary} aria-label={copy.photos.libraryLabel}>
       <div className={styles.librarySummary}>
         <LibraryMetric label={copy.photos.totalStat} value={stats?.total} />
         <LibraryMetric
-          label={copy.photos.portfolioStat}
-          value={stats?.portfolio}
+          label={copy.photos.selectedStat}
+          value={stats?.selected}
         />
         <LibraryMetric
-          label={copy.photos.unassignedStat}
-          value={stats?.unassigned}
+          label={copy.photos.unselectedStat}
+          value={stats?.unselected}
         />
-        <LibraryMetric label={copy.photos.favoriteStat} value={stats?.favorite} />
       </div>
 
       <div className={styles.photoWorkspaceToolbar}>
@@ -338,17 +354,17 @@ const PhotosSectionReady = () => {
           </label>
 
           <label className={styles.photoSelectControl}>
-            <Globe2Icon size={14} aria-hidden="true" />
-            <span className="sr-only">{copy.photos.portfolioFilter}</span>
+            <StarIcon size={14} aria-hidden="true" />
+            <span className="sr-only">{copy.photos.selectionFilter}</span>
             <select
-              value={portfolio}
+              value={selection}
               onChange={(event) =>
-                setPortfolio(event.target.value as PortfolioFilter)
+                setSelection(event.target.value as SelectionFilter)
               }
             >
-              <option value="all">{copy.photos.allPortfolio}</option>
-              <option value="included">{copy.photos.includedPortfolio}</option>
-              <option value="excluded">{copy.photos.excludedPortfolio}</option>
+              <option value="all">{copy.photos.allSelections}</option>
+              <option value="selected">{copy.photos.selectedOnly}</option>
+              <option value="unselected">{copy.photos.unselectedOnly}</option>
             </select>
           </label>
 
@@ -363,17 +379,6 @@ const PhotosSectionReady = () => {
               <option value="oldest">{copy.photos.oldest}</option>
             </select>
           </label>
-
-          <button
-            type="button"
-            className={styles.photoFilterButton}
-            data-active={favoriteOnly || undefined}
-            aria-pressed={favoriteOnly}
-            onClick={() => setFavoriteOnly((current) => !current)}
-          >
-            <StarIcon size={14} fill={favoriteOnly ? "currentColor" : "none"} />
-            {copy.photos.favoriteOnly}
-          </button>
 
           <div className={styles.densitySwitch} aria-label={copy.photos.densityLabel}>
             <button
@@ -437,23 +442,7 @@ const PhotosSectionReady = () => {
               <button
                 type="button"
                 disabled={bulkUpdate.isPending}
-                onClick={() => applyBulkUpdate({ isPortfolio: true })}
-              >
-                <Globe2Icon size={13} />
-                {copy.photos.addPortfolio}
-              </button>
-              <button
-                type="button"
-                disabled={bulkUpdate.isPending}
-                onClick={() => applyBulkUpdate({ isPortfolio: false })}
-              >
-                <LockIcon size={13} />
-                {copy.photos.removePortfolio}
-              </button>
-              <button
-                type="button"
-                disabled={bulkUpdate.isPending}
-                onClick={() => applyBulkUpdate({ isFavorite: true })}
+                onClick={() => applyBulkUpdate(true)}
               >
                 <StarIcon size={13} />
                 {copy.photos.addFavorite}
@@ -461,7 +450,7 @@ const PhotosSectionReady = () => {
               <button
                 type="button"
                 disabled={bulkUpdate.isPending}
-                onClick={() => applyBulkUpdate({ isFavorite: false })}
+                onClick={() => applyBulkUpdate(false)}
               >
                 {copy.photos.removeFavorite}
               </button>
@@ -502,8 +491,7 @@ const PhotosSectionReady = () => {
               <span role="columnheader">{copy.photos.columnLocation}</span>
               <span role="columnheader">{copy.photos.columnCaptured}</span>
               <span role="columnheader">{copy.photos.columnCamera}</span>
-              <span role="columnheader">{copy.photos.columnPortfolio}</span>
-              <span role="columnheader">{copy.photos.columnHomepage}</span>
+              <span role="columnheader">{copy.photos.columnSelected}</span>
               <span className="sr-only" role="columnheader">
                 {copy.photos.columnActions}
               </span>
@@ -514,6 +502,8 @@ const PhotosSectionReady = () => {
                 photo={photo}
                 selected={selectedIds.has(photo.id)}
                 onToggle={() => togglePhoto(photo.id)}
+                onFavoriteToggle={() => toggleFavorite(photo)}
+                favoritePending={updatingFavoriteIds.has(photo.id)}
                 onEdit={rememberLibraryPosition}
               />
             ))}
@@ -531,6 +521,8 @@ const PhotosSectionReady = () => {
               photo={photo}
               selected={selectedIds.has(photo.id)}
               onToggle={() => togglePhoto(photo.id)}
+              onFavoriteToggle={() => toggleFavorite(photo)}
+              favoritePending={updatingFavoriteIds.has(photo.id)}
               onEdit={rememberLibraryPosition}
             />
           ))}
@@ -565,15 +557,21 @@ const PhotoListRow = memo(
     photo,
     selected,
     onToggle,
+    onFavoriteToggle,
+    favoritePending,
     onEdit,
   }: {
     photo: StudioPhoto;
     selected: boolean;
     onToggle: () => void;
+    onFavoriteToggle: () => void;
+    favoritePending: boolean;
     onEdit: () => void;
   }) => {
     const { copy, locale } = useStudioLocale();
     const href = `/studio/photos/${photo.id}`;
+    const [prefetchEditor, setPrefetchEditor] = useState(false);
+    const registerEditorIntent = () => setPrefetchEditor(true);
     const captured = photo.dateTimeOriginal
       ? new Date(photo.dateTimeOriginal).toLocaleDateString(
           locale === "zh-CN" ? "zh-CN" : "en-US",
@@ -588,6 +586,9 @@ const PhotoListRow = memo(
         className={styles.photoListRow}
         data-selected={selected || undefined}
         role="row"
+        onPointerEnter={registerEditorIntent}
+        onFocusCapture={registerEditorIntent}
+        onTouchStart={registerEditorIntent}
       >
         <div className={styles.photoListSelect} role="cell">
           <Checkbox
@@ -601,7 +602,7 @@ const PhotoListRow = memo(
 
         <Link
           href={href}
-          prefetch={false}
+          prefetch={prefetchEditor}
           onClick={onEdit}
           className={styles.photoListThumb}
           role="cell"
@@ -619,7 +620,7 @@ const PhotoListRow = memo(
         </Link>
 
         <div className={styles.photoListPrimary} role="cell">
-          <Link href={href} prefetch={false} onClick={onEdit}>
+          <Link href={href} prefetch={prefetchEditor} onClick={onEdit}>
             {photo.title || copy.photos.untitled}
           </Link>
           <p>{photo.description}</p>
@@ -639,37 +640,34 @@ const PhotoListRow = memo(
           </span>
         </div>
 
-        <div role="cell">
-          <span
-            className={styles.photoListStatus}
-            data-private={!photo.isPortfolio || undefined}
-          >
-            {photo.isPortfolio ? <CheckIcon size={11} /> : <XIcon size={11} />}
-            {photo.isPortfolio
-              ? copy.photos.portfolioIncluded
-              : copy.photos.portfolioExcluded}
-          </span>
-        </div>
-
         <div className={styles.photoListFavoriteCell} role="cell">
-          <span
+          <button
+            type="button"
             className={styles.photoListFavorite}
             data-active={photo.isFavorite || undefined}
+            disabled={favoritePending}
+            aria-pressed={photo.isFavorite}
+            aria-label={
+              photo.isFavorite
+                ? copy.photos.removeFavoriteFrom(photo.title || copy.photos.untitled)
+                : copy.photos.addFavoriteTo(photo.title || copy.photos.untitled)
+            }
             title={
               photo.isFavorite ? copy.photos.selected : copy.photos.notSelected
             }
+            onClick={onFavoriteToggle}
           >
             <StarIcon size={13} fill={photo.isFavorite ? "currentColor" : "none"} />
             <span>
               {photo.isFavorite ? copy.photos.selectedShort : copy.photos.notSelected}
             </span>
-          </span>
+          </button>
         </div>
 
         <div className={styles.photoListActions} role="cell">
           <Link
             href={href}
-            prefetch={false}
+            prefetch={prefetchEditor}
             onClick={onEdit}
             aria-label={copy.photos.editPhoto(photo.title || copy.photos.untitled)}
           >
@@ -689,11 +687,15 @@ const PhotoCard = memo(
     photo,
     selected,
     onToggle,
+    onFavoriteToggle,
+    favoritePending,
     onEdit,
   }: {
     photo: StudioPhoto;
     selected: boolean;
     onToggle: () => void;
+    onFavoriteToggle: () => void;
+    favoritePending: boolean;
     onEdit: () => void;
   }) => {
     const { copy, locale } = useStudioLocale();
@@ -705,16 +707,21 @@ const PhotoCard = memo(
       : copy.photos.unknownDate;
     const location = [photo.city, photo.countryCode].filter(Boolean).join(", ");
     const href = `/studio/photos/${photo.id}`;
+    const [prefetchEditor, setPrefetchEditor] = useState(false);
+    const registerEditorIntent = () => setPrefetchEditor(true);
 
     return (
       <article
         className={styles.photoManagerCard}
         data-selected={selected || undefined}
+        onPointerEnter={registerEditorIntent}
+        onFocusCapture={registerEditorIntent}
+        onTouchStart={registerEditorIntent}
       >
         <div className={styles.photoManagerImage}>
           <Link
             href={href}
-            prefetch={false}
+            prefetch={prefetchEditor}
             onClick={onEdit}
             className={styles.photoManagerImageLink}
             aria-label={copy.photos.editPhoto(photo.title || copy.photos.untitled)}
@@ -740,29 +747,28 @@ const PhotoCard = memo(
             />
           </div>
 
-          <span
-            className={styles.photoStatusBadge}
-            data-private={!photo.isPortfolio || undefined}
+          <button
+            type="button"
+            className={styles.photoFavoriteMark}
+            data-active={photo.isFavorite || undefined}
+            disabled={favoritePending}
+            aria-pressed={photo.isFavorite}
+            aria-label={
+              photo.isFavorite
+                ? copy.photos.removeFavoriteFrom(photo.title || copy.photos.untitled)
+                : copy.photos.addFavoriteTo(photo.title || copy.photos.untitled)
+            }
+            title={
+              photo.isFavorite ? copy.photos.selected : copy.photos.notSelected
+            }
+            onClick={onFavoriteToggle}
           >
-            {photo.isPortfolio ? <CheckIcon size={10} /> : <XIcon size={10} />}
-            {photo.isPortfolio
-              ? copy.photos.portfolioIncluded
-              : copy.photos.portfolioExcluded}
-          </span>
-
-          {photo.isFavorite ? (
-            <span
-              className={styles.photoFavoriteMark}
-              aria-label={copy.photos.selected}
-              title={copy.photos.selected}
-            >
-              <StarIcon size={12} fill="currentColor" />
-            </span>
-          ) : null}
+            <StarIcon size={13} fill={photo.isFavorite ? "currentColor" : "none"} />
+          </button>
 
           <Link
             href={href}
-            prefetch={false}
+            prefetch={prefetchEditor}
             onClick={onEdit}
             className={styles.photoQuickEdit}
             aria-label={copy.photos.editPhoto(photo.title || copy.photos.untitled)}
@@ -773,7 +779,7 @@ const PhotoCard = memo(
         </div>
 
         <div className={styles.photoManagerMeta}>
-          <Link href={href} prefetch={false} onClick={onEdit}>
+          <Link href={href} prefetch={prefetchEditor} onClick={onEdit}>
             {photo.title || copy.photos.untitled}
           </Link>
           <p>
@@ -784,7 +790,7 @@ const PhotoCard = memo(
           {selected ? (
             <span className={styles.selectedIndicator}>
               <CheckIcon size={11} />
-              {copy.photos.selectedShort}
+              {copy.photos.checkedShort}
             </span>
           ) : null}
         </div>

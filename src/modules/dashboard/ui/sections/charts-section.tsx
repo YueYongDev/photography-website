@@ -3,7 +3,6 @@
 import { trpc } from "@/trpc/client";
 import dynamic from "next/dynamic";
 import styles from "../studio.module.css";
-import { useLazyVisibility } from "@/hooks/use-lazy-visibility";
 
 const ChartLoading = () => (
   <div className={`${styles.skeletonBlock} min-h-80 bg-muted`} />
@@ -27,7 +26,6 @@ const PhotosByCityBarChart = dynamic(
 
 export const ChartsSection = () => {
   const { data: summary, isLoading } = trpc.summary.getSummary.useQuery();
-  const { targetRef, shouldRender } = useLazyVisibility();
 
   if (isLoading) {
     return (
@@ -39,18 +37,9 @@ export const ChartsSection = () => {
   }
 
   return (
-    <div className={styles.chartsGrid} ref={targetRef}>
-      {shouldRender ? (
-        <>
-          <PhotosByYearLineChart data={summary?.data?.yearlyStats || {}} />
-          <PhotosByCityBarChart data={summary?.data?.topCities || []} />
-        </>
-      ) : (
-        <>
-          <ChartLoading />
-          <ChartLoading />
-        </>
-      )}
+    <div className={styles.chartsGrid}>
+      <PhotosByYearLineChart data={summary?.data?.yearlyStats || {}} />
+      <PhotosByCityBarChart data={summary?.data?.topCities || []} />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { headers } from "next/headers";
 import { cache } from "react";
+import { measureServerStep } from "@/lib/server-performance";
 
 const developmentTrustedOrigins =
   process.env.NODE_ENV === "development"
@@ -41,10 +42,12 @@ export const auth = betterAuth({
  * React's request cache makes the layout, page and server-side tRPC prefetch
  * share one Better Auth lookup during the same render.
  */
-export const getCurrentSession = cache(async () =>
-  auth.api.getSession({
-    headers: await headers(),
-  })
+export const getCurrentSession = cache(() =>
+  measureServerStep("auth.getCurrentSession", async () =>
+    auth.api.getSession({
+      headers: await headers(),
+    }),
+  )
 );
 
 /**

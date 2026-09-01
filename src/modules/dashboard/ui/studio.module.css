@@ -1167,7 +1167,7 @@
 
 .librarySummary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0.65rem 0 0.45rem;
   overflow: hidden;
   border: 1px solid var(--studio-line);
@@ -1218,7 +1218,7 @@
 
 .photoControlBar {
   display: grid;
-  grid-template-columns: minmax(14rem, 1fr) auto auto auto auto;
+  grid-template-columns: minmax(14rem, 1fr) auto auto auto;
   gap: 0.5rem;
   align-items: center;
 }
@@ -1437,7 +1437,7 @@
 }
 
 .photoList {
-  min-width: 68rem;
+  min-width: 62rem;
 }
 
 .photoListHeader,
@@ -1445,7 +1445,7 @@
   display: grid;
   grid-template-columns:
     2rem 4.5rem minmax(12rem, 1.8fr) minmax(7rem, 0.8fr) 7rem
-    minmax(8rem, 1fr) 6.5rem 6.5rem 4rem;
+    minmax(8rem, 1fr) 7.5rem 4rem;
   gap: 0.75rem;
   align-items: center;
   padding-inline: 0.75rem;
@@ -1585,15 +1585,41 @@
 
 .photoListFavorite {
   display: inline-flex;
+  min-height: 1.85rem;
   align-items: center;
+  justify-content: center;
   gap: 0.3rem;
+  border: 1px solid var(--studio-line);
+  border-radius: 0.32rem;
+  padding: 0 0.55rem;
+  background: #fff;
   color: var(--studio-faint);
+  cursor: pointer;
+  font: inherit;
   font-size: 0.5rem;
   white-space: nowrap;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
 }
 
 .photoListFavorite[data-active] {
+  border-color: var(--studio-ink);
+  background: var(--studio-ink);
+  color: white;
+}
+
+.photoListFavorite:hover:not(:disabled) {
+  border-color: var(--studio-ink);
   color: var(--studio-ink);
+}
+
+.photoListFavorite[data-active]:hover:not(:disabled) {
+  color: white;
+}
+
+.photoListFavorite:disabled,
+.photoFavoriteMark:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .photoListActions {
@@ -1739,11 +1765,25 @@
   width: 1.65rem;
   height: 1.65rem;
   place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.74);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);
-  color: var(--studio-ink);
+  color: rgba(32, 36, 33, 0.58);
+  cursor: pointer;
   box-shadow: 0 2px 8px rgba(20, 24, 22, 0.14);
   backdrop-filter: blur(8px);
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.photoFavoriteMark:hover:not(:disabled) {
+  color: var(--studio-ink);
+  transform: scale(1.05);
+}
+
+.photoFavoriteMark[data-active] {
+  border-color: var(--studio-ink);
+  background: var(--studio-ink);
+  color: white;
 }
 
 .photoQuickEdit {
@@ -2298,7 +2338,7 @@
   }
 
   .photoControlBar {
-    grid-template-columns: minmax(12rem, 1fr) auto auto;
+    grid-template-columns: minmax(12rem, 1fr) auto auto auto;
   }
 
   .photoFilterButton {
@@ -2439,15 +2479,15 @@
   }
 
   .librarySummary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .libraryMetric:nth-child(2) {
-    border-right: 0;
+    border-right: 1px solid var(--studio-line);
   }
 
   .libraryMetric:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--studio-line);
+    border-bottom: 0;
   }
 
   .photoWorkspaceToolbar {

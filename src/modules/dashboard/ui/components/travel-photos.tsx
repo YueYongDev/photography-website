@@ -9,14 +9,18 @@ interface TravelPhotosProps {
 }
 
 export const TravelPhotos = ({ data }: TravelPhotosProps) => {
-  const getMap = useMapStore((state) => state.getMap);
-  const city = getMap("city");
+  const cityMap = useMapStore((state) => state.maps.city);
   const { copy, locale } = useStudioLocale();
 
   const handleHover = (citySet: DashboardTravelCitySet) => {
-    if (!citySet.coverPhoto.longitude || !citySet.coverPhoto.latitude) return;
+    if (
+      citySet.coverPhoto.longitude === null ||
+      citySet.coverPhoto.latitude === null
+    ) {
+      return;
+    }
 
-    city?.flyTo({
+    cityMap?.flyTo({
       center: [citySet.coverPhoto.longitude, citySet.coverPhoto.latitude],
       zoom: 11,
       duration: 1500,
@@ -64,6 +68,7 @@ export const TravelPhotos = ({ data }: TravelPhotosProps) => {
               src={citySet.coverPhoto.url || "/placeholder.svg"}
               alt={citySet.city}
               fill
+              sizes="(max-width: 760px) 30vw, 96px"
               className="object-contain"
               blurhash={citySet.coverPhoto.blurData}
             />

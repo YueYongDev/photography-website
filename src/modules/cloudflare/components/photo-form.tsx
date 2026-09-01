@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { ExposureTimeInput } from "@/components/ui/exposure-time-input";
 import { CopyCheckIcon, CopyIcon, ChevronDown, ChevronRight, SparklesIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -33,6 +32,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
+import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 
 const MapComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
@@ -84,6 +84,7 @@ const convertExifLongitude = (exif: TExifData | TExifFormData | null) => {
 };
 
 export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormProps) {
+  const { copy } = useStudioLocale();
   const [isCopied, setIsCopied] = useState(false);
   const [cameraInfoOpen, setCameraInfoOpen] = useState(true);
   const [exposureInfoOpen, setExposureInfoOpen] = useState(true);
@@ -504,50 +505,10 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
               )}
             />
 
-            <div className="space-y-3 rounded-xl border p-4">
-              <p className="text-xs text-muted-foreground">
-                Uploaded photographs are public. Choose where this one should be featured.
+            <div className="rounded-xl border p-4">
+              <p className="text-xs leading-5 text-muted-foreground">
+                {copy.photos.uploadDefaultSelection}
               </p>
-              <FormField
-                name="isFavorite"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between gap-4 space-y-0">
-                    <div className="space-y-1">
-                      <FormLabel className="font-medium">Show on homepage</FormLabel>
-                      <FormDescription>Include in the homepage selection.</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-label="Show on homepage"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="visibility"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between gap-4 space-y-0 border-t pt-3">
-                    <div className="space-y-1">
-                      <FormLabel className="font-medium">Add to portfolio</FormLabel>
-                      <FormDescription>Include in the curated Work collection.</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value === "public"}
-                        onCheckedChange={(checked) =>
-                          field.onChange(checked ? "public" : "private")
-                        }
-                        aria-label="Add to portfolio"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
             </div>
 
             <FormItem>

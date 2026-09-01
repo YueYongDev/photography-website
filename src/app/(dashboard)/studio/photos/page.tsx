@@ -14,8 +14,7 @@ const StudioPhotosPage = () => {
   void trpc.photos.getManyWithPrivate.prefetchInfinite({
     limit: 40,
     search: undefined,
-    portfolio: "all",
-    favoriteOnly: false,
+    selection: "all",
     sort: "newest",
   });
 

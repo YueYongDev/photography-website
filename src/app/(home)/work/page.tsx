@@ -12,7 +12,9 @@ const WorkPage = async () => {
   let photos: WorkPhoto[] = [];
 
   try {
-    const result = await trpc.photos.getPortfolioPhotos({ limit: 48 });
+    const result = await trpc.photos.getSelectedPhotos({
+      random: false,
+    });
     photos = result;
   } catch {
     // Keep the editorial selection honest when the archive is unavailable.

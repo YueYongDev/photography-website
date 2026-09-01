@@ -2,7 +2,7 @@ import { db } from "@/db/drizzle";
 import { citySets, photos } from "@/db/schema/photos";
 import { posts } from "@/db/schema/posts";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { and, count, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNotNull, or, sql } from "drizzle-orm";
 
 export const summaryRouter = createTRPCRouter({
   getSummary: protectedProcedure.query(async () => {
@@ -32,7 +32,12 @@ export const summaryRouter = createTRPCRouter({
       db
         .select({ count: count() })
         .from(photos)
-        .where(eq(photos.isFavorite, true))
+        .where(
+          or(
+            eq(photos.isFavorite, true),
+            eq(photos.visibility, "public"),
+          ),
+        )
         .limit(1),
       db
         .select({
