@@ -190,6 +190,12 @@ const PhotosSectionReady = () => {
     () => photos?.pages.flatMap((page) => page.items) ?? [],
     [photos],
   );
+  const rememberLibraryPosition = useCallback(() => {
+    updatePhotoLibrarySession({
+      scrollY: window.scrollY,
+      restoreScroll: true,
+    });
+  }, []);
 
   useEffect(() => {
     updatePhotoLibrarySession({
@@ -269,13 +275,6 @@ const PhotosSectionReady = () => {
     setPortfolio("all");
     setFavoriteOnly(false);
   };
-
-  const rememberLibraryPosition = useCallback(() => {
-    updatePhotoLibrarySession({
-      scrollY: window.scrollY,
-      restoreScroll: true,
-    });
-  }, []);
 
   const applyBulkUpdate = async (
     changes: { isPortfolio?: boolean; isFavorite?: boolean },

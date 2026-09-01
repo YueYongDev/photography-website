@@ -705,8 +705,15 @@
   font-size: clamp(3.2rem, 4.8vw, 5.1rem);
 }
 
+.homeJourneyContent {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
 .homeJourneyCarousel {
   display: grid;
+  width: 100%;
   flex: 1;
   grid-template-rows: minmax(0, 1fr) auto auto;
   min-height: 0;
@@ -715,7 +722,7 @@
 
 .homeJourneyViewport {
   height: 100%;
-  min-height: 0;
+  min-height: clamp(20rem, 42svh, 34rem);
   overflow: hidden;
 }
 

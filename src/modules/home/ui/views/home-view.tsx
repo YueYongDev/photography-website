@@ -17,6 +17,16 @@ import styles from "@/modules/site/ui/public-site.module.css";
 
 export type { HomeSelectedPhoto } from "@/modules/home/ui/components/home-selected-carousel";
 
+const homePlaces = [
+  { name: "New Zealand", code: "NZ", href: "/places/nz" },
+  { name: "Uzbekistan", code: "UZ", href: "/places/uz" },
+  { name: "Australia", code: "AU", href: "/places/au" },
+  { name: "Norway", code: "NO", href: "/places/no" },
+  { name: "Iceland", code: "IS", href: "/places/is" },
+  { name: "Japan", code: "JP", href: "/places/jp" },
+  { name: "United Kingdom", code: "GB", href: "/places/gb" },
+] as const;
+
 export const HomeView = ({
   selectedPhotos,
 }: {
@@ -99,7 +109,7 @@ export const HomeView = ({
           <h2>{copy.home.journeysTitle}</h2>
         </div>
 
-        <div data-motion-reveal>
+        <div className={styles.homeJourneyContent} data-motion-reveal>
           <HomeJourneysCarousel />
         </div>
       </section>
@@ -114,11 +124,7 @@ export const HomeView = ({
 
         <div className={styles.homePlacesList} data-motion-reveal="right">
           <div className={styles.atlasLines}>
-            {[
-              { name: "New Zealand", code: "NZ", href: "/places/nz" },
-              { name: "Uzbekistan", code: "UZ", href: "/places/uz" },
-              { name: "Australia", code: "AU", href: "/places/au" },
-            ].map((country, index) => (
+            {homePlaces.map((country, index) => (
               <Link
                 href={country.href}
                 className={styles.atlasLine}
