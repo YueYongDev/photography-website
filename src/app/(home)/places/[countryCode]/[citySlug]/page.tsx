@@ -10,6 +10,7 @@ import { HydrateClient, trpc } from "@/trpc/server";
 type Params = Promise<{ countryCode: string; citySlug: string }>;
 
 const findCity = cache(async (countryCode: string, citySlug: string) => {
+  const decodedCitySlug = decodeURIComponent(citySlug);
   let archive: TravelArchive = { items: [] };
   try {
     archive = await trpc.travel.getArchive({ limit: 60 });
@@ -19,7 +20,9 @@ const findCity = cache(async (countryCode: string, citySlug: string) => {
   const country = getCountryGroups(archive).find(
     (group) => group.code.toLowerCase() === countryCode.toLowerCase(),
   );
-  const city = country?.cities.find((entry) => toPlaceSlug(entry.city) === citySlug);
+  const city = country?.cities.find(
+    (entry) => toPlaceSlug(entry.city) === decodedCitySlug,
+  );
   return { country, city };
 });
 

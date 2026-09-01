@@ -14,14 +14,33 @@ import {
 import {
   type TravelCityEntry,
   type TravelCountryGroup,
+  type TravelPhotoEntry,
 } from "@/modules/travel/lib/country-groups";
 import { CountryGalleryViewer } from "@/modules/travel/ui/components/country-gallery-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
 
 export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
   const { copy, locale } = useSiteLocale();
-  const [selectedCity, setSelectedCity] = useState<TravelCityEntry | null>(null);
+  const [selection, setSelection] = useState<{
+    city: TravelCityEntry;
+    photoId: string;
+  } | null>(null);
   const countryName = localizeCountryName(country.name, country.code, locale);
+  const galleryItems = country.cities.flatMap((city) => {
+    const photos: TravelPhotoEntry[] = city.photos?.length
+      ? city.photos
+      : [
+          {
+            id: `cover-${city.id}`,
+            ...city.image,
+            title: city.city,
+            description: "",
+            blurData: "",
+          },
+        ];
+
+    return photos.map((photo) => ({ city, photo }));
+  });
   const fallbackHref =
     country.code === "NZ"
       ? "/journeys/newzealand-2026"
@@ -60,20 +79,30 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
       </div>
 
       <div className={styles.countryGalleryHead}>
-        <p>{copy.common.places}</p>
+        <p>{copy.common.frames}</p>
       </div>
 
       <div className={styles.countryGalleryGrid}>
-        {country.cities.map((city, index) => {
+        {galleryItems.map(({ city, photo }, index) => {
           const cityName = localizePlaceName(city.city, locale);
-          const cardContents = (
-            <>
+
+          return (
+            <button
+              type="button"
+              className={styles.countryGalleryCard}
+              data-motion-image
+              data-motion-parallax
+              data-motion-hover
+              onClick={() => setSelection({ city, photoId: photo.id })}
+              aria-label={copy.country.openGallery(cityName, city.photoCount)}
+              key={`${city.id}-${photo.id}`}
+            >
               <div className={styles.countryGalleryImage}>
                 <Image
-                  src={city.image.url}
-                  alt={cityName}
+                  src={photo.url}
+                  alt={photo.title || cityName}
                   fill
-                  loader={getArchiveImageLoader(city.image.url)}
+                  loader={getArchiveImageLoader(photo.url)}
                   priority={index < 3}
                   sizes="(max-width: 600px) 92vw, (max-width: 900px) 46vw, 31vw"
                   className={styles.imageCover}
@@ -84,29 +113,14 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div className={styles.countryGalleryCopy}>
-                <p>{copy.country.cityFrames(city.year, city.photoCount)}</p>
-                <h2>{cityName}</h2>
+                <p>{city.year}</p>
+                <h2>{photo.title || cityName}</h2>
               </div>
               <ArrowUpRight
                 className={styles.countryGalleryArrow}
                 size={17}
                 strokeWidth={1.3}
               />
-            </>
-          );
-
-          return (
-            <button
-              type="button"
-              className={styles.countryGalleryCard}
-              data-motion-image
-              data-motion-parallax
-              data-motion-hover
-              onClick={() => setSelectedCity(city)}
-              aria-label={copy.country.openGallery(cityName, city.photoCount)}
-              key={city.id}
-            >
-              {cardContents}
             </button>
           );
         })}
@@ -123,15 +137,16 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
         <ArrowUpRight size={16} strokeWidth={1.4} />
       </Link>
 
-      {selectedCity && (
+      {selection && (
         <CountryGalleryViewer
           cities={country.cities}
-          initialCityId={selectedCity.id}
+          initialCityId={selection.city.id}
+          initialPhotoId={selection.photoId}
           countryCode={country.code}
           countryName={countryName}
           fallbackHref={fallbackHref}
           locale={locale}
-          onClose={() => setSelectedCity(null)}
+          onClose={() => setSelection(null)}
         />
       )}
     </section>

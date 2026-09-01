@@ -103,7 +103,9 @@ export const TravelSection = ({ archive }: { archive: TravelArchive }) => {
                 </div>
               </dl>
               <span className={styles.countryArchiveOpen}>
-                {copy.travel.openCountry}{" "}
+                {locale === "zh-CN"
+                  ? `查看全部 ${country.frames} 张照片`
+                  : `View all ${country.frames} photographs`}{" "}
                 <ArrowUpRight size={15} strokeWidth={1.4} />
               </span>
             </div>

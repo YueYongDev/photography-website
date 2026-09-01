@@ -16,6 +16,7 @@ import { trpc } from "@/trpc/client";
 type Props = {
   cities: TravelCityEntry[];
   initialCityId: string;
+  initialPhotoId: string;
   countryCode: string;
   countryName: string;
   fallbackHref: string;
@@ -26,27 +27,30 @@ type Props = {
 export const CountryGalleryViewer = ({
   cities,
   initialCityId,
+  initialPhotoId,
   countryCode,
   countryName,
   fallbackHref,
   locale,
   onClose,
 }: Props) => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activePhotoId, setActivePhotoId] = useState(initialPhotoId);
   const city =
     cities.find((entry) => entry.id === initialCityId) ?? cities[0];
   const cityName = city ? localizePlaceName(city.city, locale) : countryName;
   const query = trpc.photos.getCitySetByCity.useQuery(
     { city: city?.city ?? "", countryCode },
-    { enabled: Boolean(city) },
+    { enabled: Boolean(city) && !city?.photos?.length },
   );
 
   const photos = useMemo(() => {
     if (!city) return [];
 
-    const remotePhotos = query.data
-      ? [query.data.coverPhoto, ...(query.data.photos ?? [])]
-      : [];
+    const remotePhotos = city.photos?.length
+      ? city.photos
+      : query.data
+        ? [query.data.coverPhoto, ...(query.data.photos ?? [])]
+        : [];
     const seen = new Set<string>();
     const items = remotePhotos.flatMap((photo) => {
       if (!photo || seen.has(photo.id)) return [];
@@ -90,6 +94,11 @@ export const CountryGalleryViewer = ({
 
   if (!city || photos.length === 0) return null;
 
+  const activeIndex = Math.max(
+    photos.findIndex((photo) => photo.id === activePhotoId),
+    0,
+  );
+
   const actionHref = city.id.startsWith("fallback-")
     ? fallbackHref
     : `/places/${countryCode.toLowerCase()}/${toPlaceSlug(city.city)}`;
@@ -105,7 +114,7 @@ export const CountryGalleryViewer = ({
       contextLabel={`${countryName} / ${countryCode} · ${cityName}`}
       photos={photos}
       onClose={onClose}
-      onSelect={setActiveIndex}
+      onSelect={(index) => setActivePhotoId(photos[index]?.id ?? photos[0].id)}
       wrap={false}
     />
   );

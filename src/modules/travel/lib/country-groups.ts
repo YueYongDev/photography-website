@@ -11,6 +11,13 @@ export type TravelImage = {
   aspectRatio: number;
 };
 
+export type TravelPhotoEntry = TravelImage & {
+  id: string;
+  title: string;
+  description: string;
+  blurData: string;
+};
+
 export type TravelCityEntry = {
   id: string;
   city: string;
@@ -19,6 +26,7 @@ export type TravelCityEntry = {
   photoCount: number;
   year: string;
   image: TravelImage;
+  photos?: TravelPhotoEntry[];
 };
 
 export type TravelCountryGroup = {
@@ -111,13 +119,22 @@ const toYear = (
   return year === null ? "Archive" : String(year);
 };
 
-export const toPlaceSlug = (value: string) =>
-  value
+export const toPlaceSlug = (value: string) => {
+  const asciiSlug = value
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+
+  if (asciiSlug) return asciiSlug;
+
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+    .replace(/(^-|-$)/g, "");
+};
 
 export const getTravelEntries = (archive: TravelArchive): TravelCityEntry[] => {
   const remoteEntries = archive.items
