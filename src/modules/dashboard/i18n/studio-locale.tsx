@@ -251,6 +251,9 @@ const english = {
     exposureInfoDescription: "Focal length, aperture, ISO and time",
     coordinatesInvalid: "Use coordinates in latitude, longitude format",
     coordinatesPasted: "Coordinates pasted",
+    locationResolving: "Identifying the place from GPS…",
+    locationResolveError:
+      "GPS is available, but the place could not be identified. Try again later or search manually.",
     coordinatesPasteError: "The clipboard could not be read",
     addressSearch: "Search address",
     addressSearchPlaceholder: "City, landmark or street address",
@@ -546,6 +549,8 @@ const chinese: typeof english = {
     exposureInfoDescription: "焦距、光圈、ISO、快门与拍摄时间",
     coordinatesInvalid: "坐标格式不正确，请使用“纬度, 经度”",
     coordinatesPasted: "坐标已粘贴",
+    locationResolving: "正在根据 GPS 识别地点…",
+    locationResolveError: "已有 GPS，但暂时无法识别地点，请稍后重试或手动搜索。",
     coordinatesPasteError: "无法读取剪贴板",
     addressSearch: "搜索地址",
     addressSearchPlaceholder: "输入城市、景点或详细地址",

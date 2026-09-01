@@ -141,8 +141,10 @@
 
 .reviewWorkspace { display: grid; min-height: 0; flex: 1 1 auto; grid-template-columns: minmax(21rem, 0.78fr) minmax(32rem, 1.22fr); overflow: hidden; }
 .reviewWorkspace[data-importing] { grid-template-columns: minmax(22rem, 0.75fr) minmax(25rem, 1.25fr); }
-.queuePane { min-height: 0; overflow-y: auto; border-right: 1px solid var(--batch-line-strong); background: #fbfbfa; scrollbar-color: var(--batch-line-strong) transparent; scrollbar-width: thin; }
-.queueRow { position: relative; display: grid; min-height: 4.75rem; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; border-bottom: 1px solid var(--batch-line); background: white; transition: background 140ms ease, box-shadow 140ms ease; }
+.reviewWorkspace[data-importing] .queueRow { grid-template-columns: minmax(0, 1fr); }
+.reviewWorkspace[data-importing] .rowMain { width: 100%; grid-column: 1; padding-right: 0.75rem; }
+.queuePane { min-height: 0; overflow-y: auto; overscroll-behavior: contain; contain: layout paint; border-right: 1px solid var(--batch-line-strong); background: #fbfbfa; scrollbar-color: var(--batch-line-strong) transparent; scrollbar-width: thin; }
+.queueRow { position: relative; display: grid; min-height: 4.75rem; contain: layout paint style; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; border-bottom: 1px solid var(--batch-line); background: white; transition: background 140ms ease, box-shadow 140ms ease; }
 .queueRow:hover { background: #f8f8f6; }
 .queueRow[data-active] { background: #f3f4f1; box-shadow: inset 2px 0 0 var(--batch-ink); }
 .queueRow[data-complete] { background: #f5f8f5; }
@@ -155,14 +157,14 @@
 .rowCheckbox input:focus-visible + span { outline: 2px solid rgba(32, 36, 33, 0.2); outline-offset: 2px; }
 .rowMain { display: grid; min-width: 0; min-height: 4.75rem; grid-template-columns: 1.45rem 4.25rem minmax(0, 1fr) auto; gap: 0.6rem; align-items: center; border: 0; padding: 0.5rem 0.25rem 0.5rem 0; background: transparent; color: inherit; cursor: pointer; font: inherit; text-align: left; }
 .rowNumber { color: var(--batch-faint); font-family: "Iowan Old Style", Baskerville, serif; font-size: 0.54rem; font-style: italic; }
-.rowThumb { position: relative; display: block; width: 4.25rem; overflow: hidden; aspect-ratio: 4 / 3; background: #e8e9e6; }
+.rowThumb { position: relative; display: grid; width: 4.25rem; overflow: hidden; place-items: center; aspect-ratio: 4 / 3; background: #e8e9e6; color: var(--batch-faint); }
 .rowThumb img { object-fit: cover; }
 .rowCopy { display: flex; min-width: 0; flex-direction: column; gap: 0.18rem; }
 .rowCopy strong { overflow: hidden; font-family: "Iowan Old Style", Baskerville, "Songti SC", serif; font-size: 0.78rem; font-weight: 400; letter-spacing: -0.01em; text-overflow: ellipsis; white-space: nowrap; }
 .rowCopy small { overflow: hidden; color: var(--batch-muted); font-size: 0.48rem; text-overflow: ellipsis; white-space: nowrap; }
 .rowProgress { display: block; width: 100%; height: 2px; margin-top: 0.18rem; overflow: hidden; background: var(--batch-line); }
 .rowProgress i { display: block; height: 100%; background: var(--batch-ink); transition: width 180ms ease; }
-.statusBadge { display: inline-flex; min-height: 1.45rem; align-items: center; gap: 0.28rem; border: 1px solid var(--batch-line); border-radius: 99px; padding: 0 0.42rem; color: var(--batch-muted); font-size: 0.47rem; white-space: nowrap; }
+.statusBadge { display: inline-flex; min-height: 1.45rem; align-items: center; justify-self: end; gap: 0.28rem; border: 1px solid var(--batch-line); border-radius: 99px; padding: 0 0.42rem; color: var(--batch-muted); font-size: 0.47rem; white-space: nowrap; }
 .statusBadge[data-review] { border-color: rgba(148, 103, 45, 0.25); background: #fbf7ef; color: #805d2f; }
 .statusBadge[data-complete] { border-color: rgba(63, 102, 83, 0.22); background: #edf5f0; color: #315344; }
 .statusBadge[data-error] { border-color: rgba(166, 78, 66, 0.25); background: #fff1ee; color: #8d4037; }
@@ -181,7 +183,7 @@
 .inspectorHeader button { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; border: 1px solid var(--batch-line); background: white; color: var(--batch-ink); cursor: pointer; }
 .inspectorHeader button + button { border-left: 0; }
 .inspectorHeader button:disabled { color: var(--batch-faint); cursor: default; }
-.inspectorScroll { min-height: 0; flex: 1; overflow-y: auto; scrollbar-color: var(--batch-line-strong) transparent; scrollbar-width: thin; }
+.inspectorScroll { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; contain: layout paint; scrollbar-color: var(--batch-line-strong) transparent; scrollbar-width: thin; }
 .inspectorPreview { position: relative; height: clamp(22rem, 50vh, 38rem); min-height: 22rem; overflow: hidden; background: #e9eae7; }
 .inspectorPreview img { object-fit: contain; }
 .inspectorPreview > span { position: absolute; right: 0.6rem; bottom: 0.6rem; padding: 0.28rem 0.4rem; background: rgba(32, 36, 33, 0.76); color: white; font-size: 0.46rem; letter-spacing: 0.05em; backdrop-filter: blur(8px); }

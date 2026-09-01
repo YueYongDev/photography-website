@@ -56,6 +56,8 @@ import styles from "./batch-photo-importer.module.css";
 
 const MAX_BATCH_SIZE = 50;
 const IMPORT_CONCURRENCY = 2;
+const PREPARATION_CONCURRENCY = 3;
+const QUEUE_THUMBNAIL_MAX_SIZE = 192;
 const ACCEPTED_IMAGE_TYPES = new Set([
   "image/avif",
   "image/gif",
@@ -74,12 +76,14 @@ type QueueStatus =
   | "error";
 
 type CaptionStatus = "idle" | "generating" | "complete" | "error";
+type LocationStatus = "idle" | "resolving" | "resolved" | "error";
 
 type ImportPhoto = {
   id: string;
   file: File;
   fingerprint: string;
   previewUrl: string;
+  thumbnailUrl?: string;
   status: QueueStatus;
   progress: number;
   error?: string;
@@ -91,8 +95,14 @@ type ImportPhoto = {
   generatedDescription: boolean;
   captionStatus: CaptionStatus;
   captionError?: string;
+  locationStatus: LocationStatus;
+  country: string;
   city: string;
   countryCode: string;
+  region: string;
+  district: string;
+  fullAddress: string;
+  placeFormatted: string;
   dateTimeOriginal: string;
   captureTimezoneOffset: number;
   make: string;
@@ -110,6 +120,47 @@ type ImportPhoto = {
 };
 
 type ImportCopy = ReturnType<typeof getImportCopy>;
+
+type ReverseGeocodingLocation = {
+  country: string | null;
+  countryCode: string | null;
+  region: string | null;
+  city: string | null;
+  district: string | null;
+  fullAddress: string | null;
+  placeFormatted: string | null;
+};
+
+async function runWithConcurrency<T>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T) => Promise<void>,
+) {
+  let cursor = 0;
+  const workerCount = Math.min(concurrency, items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (cursor < items.length) {
+        const item = items[cursor];
+        cursor += 1;
+        await worker(item);
+      }
+    }),
+  );
+}
+
+async function createQueueThumbnailUrl(file: File) {
+  const thumbnail = await imageCompression(file, {
+    maxSizeMB: 0.06,
+    maxWidthOrHeight: QUEUE_THUMBNAIL_MAX_SIZE,
+    useWebWorker: true,
+    fileType: "image/jpeg",
+    initialQuality: 0.72,
+  });
+
+  return URL.createObjectURL(thumbnail);
+}
 
 const getImportCopy = (locale: "en" | "zh-CN") =>
   locale === "zh-CN"
@@ -191,6 +242,9 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         iso: "ISO",
         shutter: "快门（秒）",
         gpsRecorded: "已从照片读取 GPS 坐标",
+        gpsResolving: "正在根据 GPS 识别地点…",
+        gpsResolved: "已根据 GPS 自动识别地点",
+        gpsUnresolved: "已读取 GPS 坐标，未识别到地点，可手动填写",
         noGps: "照片中没有 GPS，可填写城市与国家代码",
         previous: "上一张",
         next: "下一张",
@@ -311,6 +365,9 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         iso: "ISO",
         shutter: "Shutter (seconds)",
         gpsRecorded: "GPS coordinates were read from this photograph",
+        gpsResolving: "Identifying the place from GPS…",
+        gpsResolved: "Place identified automatically from GPS",
+        gpsUnresolved: "GPS was read, but no place was found; add it manually",
         noGps: "No GPS found; add a city and country code if known",
         previous: "Previous",
         next: "Next",
@@ -411,7 +468,7 @@ const getReviewIssues = (photo: ImportPhoto, copy: ImportCopy) => {
   if (!photo.description.trim()) issues.push(copy.issueRequiredDescription);
   else if (photo.generatedDescription) issues.push(copy.issueDescription);
   if (!photo.dateTimeOriginal) issues.push(copy.issueDate);
-  if (!photo.city.trim() && photo.latitude === undefined) issues.push(copy.issueLocation);
+  if (!photo.city.trim()) issues.push(copy.issueLocation);
   return issues;
 };
 
@@ -445,6 +502,7 @@ export function BatchPhotoImporter({
   const [queue, setQueue] = useState<ImportPhoto[]>([]);
   const queueRef = useRef(queue);
   const previewUrlsRef = useRef(new Set<string>());
+  const locationQueueRef = useRef<Promise<void>>(Promise.resolve());
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
@@ -495,6 +553,70 @@ export function BatchPhotoImporter({
     [],
   );
 
+  const enqueueLocationLookup = useCallback(
+    (photoId: string, latitude: number, longitude: number) => {
+      locationQueueRef.current = locationQueueRef.current.then(async () => {
+        if (!queueRef.current.some((photo) => photo.id === photoId)) return;
+
+        try {
+          const response = await fetch(
+            `/api/geocoding/reverse?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}&lang=${locale}`,
+          );
+          const payload = (await response.json()) as {
+            location?: ReverseGeocodingLocation | null;
+          };
+
+          if (!response.ok || !payload.location) {
+            throw new Error("Location lookup failed");
+          }
+
+          const location = payload.location;
+          syncQueue((current) =>
+            current.map((photo) =>
+              photo.id === photoId
+                ? {
+                    ...photo,
+                    locationStatus:
+                      photo.city.trim() || location.city ? "resolved" : "error",
+                    country: photo.country.trim()
+                      ? photo.country
+                      : (location.country ?? ""),
+                    countryCode: photo.countryCode.trim()
+                      ? photo.countryCode
+                      : (location.countryCode ?? ""),
+                    region: photo.region.trim()
+                      ? photo.region
+                      : (location.region ?? ""),
+                    city: photo.city.trim()
+                      ? photo.city
+                      : (location.city ?? ""),
+                    district: photo.district.trim()
+                      ? photo.district
+                      : (location.district ?? ""),
+                    fullAddress: photo.fullAddress.trim()
+                      ? photo.fullAddress
+                      : (location.fullAddress ?? ""),
+                    placeFormatted: photo.placeFormatted.trim()
+                      ? photo.placeFormatted
+                      : (location.placeFormatted ?? ""),
+                  }
+                : photo,
+            ),
+          );
+        } catch {
+          syncQueue((current) =>
+            current.map((photo) =>
+              photo.id === photoId
+                ? { ...photo, locationStatus: "error" }
+                : photo,
+            ),
+          );
+        }
+      });
+    },
+    [locale, syncQueue],
+  );
+
   const prepareFile = useCallback(
     async (photo: ImportPhoto) => {
       try {
@@ -502,8 +624,26 @@ export function BatchPhotoImporter({
           getPhotoExif(photo.file),
           getImageInfo(photo.file),
         ]);
+        let thumbnailUrl: string | undefined;
+
+        try {
+          thumbnailUrl = await createQueueThumbnailUrl(photo.file);
+        } catch (error) {
+          console.warn("Failed to create queue thumbnail:", error);
+        }
+
+        if (!queueRef.current.some((item) => item.id === photo.id)) {
+          if (thumbnailUrl) URL.revokeObjectURL(thumbnailUrl);
+          return;
+        }
+
+        if (thumbnailUrl) previewUrlsRef.current.add(thumbnailUrl);
         const exif: TExifFormData = convertExifToFormData(rawExif);
         const generatedTitle = titleFromFilename(photo.file.name, copy.genericTitle);
+        const latitude = coordinateFromExif(exif.latitude);
+        const longitude = coordinateFromExif(exif.longitude);
+        const hasCoordinates =
+          latitude !== undefined && longitude !== undefined;
 
         syncQueue((current) =>
           current.map((item) =>
@@ -513,10 +653,12 @@ export function BatchPhotoImporter({
                   status: "ready",
                   progress: 0,
                   imageInfo,
+                  thumbnailUrl,
                   title: generatedTitle,
                   description: copy.draftDescription(generatedTitle),
                   generatedTitle: true,
                   generatedDescription: true,
+                  locationStatus: hasCoordinates ? "resolving" : "idle",
                   dateTimeOriginal: formatExifDateTimeInput(
                     exif.dateTimeOriginal,
                   ),
@@ -529,13 +671,17 @@ export function BatchPhotoImporter({
                   iso: exif.iso,
                   exposureTime: exif.exposureTime,
                   exposureCompensation: exif.exposureCompensation,
-                  latitude: coordinateFromExif(exif.latitude),
-                  longitude: coordinateFromExif(exif.longitude),
+                  latitude,
+                  longitude,
                   gpsAltitude: exif.gpsAltitude,
                 }
               : item,
           ),
         );
+
+        if (hasCoordinates) {
+          enqueueLocationLookup(photo.id, latitude, longitude);
+        }
       } catch (error) {
         syncQueue((current) =>
           current.map((item) =>
@@ -550,7 +696,7 @@ export function BatchPhotoImporter({
         );
       }
     },
-    [copy, syncQueue],
+    [copy, enqueueLocationLookup, syncQueue],
   );
 
   const addFiles = useCallback(
@@ -597,8 +743,14 @@ export function BatchPhotoImporter({
           generatedTitle: true,
           generatedDescription: true,
           captionStatus: "idle",
+          locationStatus: "idle",
+          country: "",
           city: "",
           countryCode: "",
+          region: "",
+          district: "",
+          fullAddress: "",
+          placeFormatted: "",
           dateTimeOriginal: "",
           captureTimezoneOffset: DEFAULT_CAPTURE_TIMEZONE_OFFSET,
           make: "",
@@ -614,7 +766,11 @@ export function BatchPhotoImporter({
         return next;
       });
       setActiveId((current) => current ?? additions[0]?.id ?? null);
-      await Promise.all(additions.map(prepareFile));
+      await runWithConcurrency(
+        additions,
+        PREPARATION_CONCURRENCY,
+        prepareFile,
+      );
     },
     [copy, isGeneratingCaptions, isImporting, prepareFile, syncQueue],
   );
@@ -644,8 +800,11 @@ export function BatchPhotoImporter({
     const index = queueRef.current.findIndex((photo) => photo.id === id);
     const target = queueRef.current[index];
     if (!target || isImporting || isGeneratingCaptions || target.status === "complete") return;
-    URL.revokeObjectURL(target.previewUrl);
-    previewUrlsRef.current.delete(target.previewUrl);
+    [target.previewUrl, target.thumbnailUrl].forEach((url) => {
+      if (!url) return;
+      URL.revokeObjectURL(url);
+      previewUrlsRef.current.delete(url);
+    });
     const next = queueRef.current.filter((photo) => photo.id !== id);
     syncQueue(() => next);
     setSelectedIds((current) => {
@@ -703,6 +862,9 @@ export function BatchPhotoImporter({
   const readyPhotos = queue.filter(
     (photo) => photo.status === "ready" || photo.status === "error",
   );
+  const resolvingLocationCount = queue.filter(
+    (photo) => photo.locationStatus === "resolving",
+  ).length;
   const reviewNoteCount = readyPhotos.reduce(
     (total, photo) => total + getReviewIssues(photo, copy).length,
     0,
@@ -948,6 +1110,11 @@ export function BatchPhotoImporter({
         blurData: photo.imageInfo.blurhash,
         city: photo.city.trim() || undefined,
         countryCode: photo.countryCode.trim().toUpperCase() || undefined,
+        country: photo.country.trim() || undefined,
+        region: photo.region.trim() || undefined,
+        district: photo.district.trim() || undefined,
+        fullAddress: photo.fullAddress.trim() || undefined,
+        placeFormatted: photo.placeFormatted.trim() || undefined,
         make: photo.make.trim() || undefined,
         model: photo.model.trim() || undefined,
         lensModel: photo.lensModel.trim() || undefined,
@@ -980,6 +1147,13 @@ export function BatchPhotoImporter({
       toast.error(copy.closeDuringCaption);
       return;
     }
+
+    if (
+      queueRef.current.some((photo) => photo.locationStatus === "resolving")
+    ) {
+      await locationQueueRef.current;
+    }
+
     const pending = queueRef.current.filter((photo) => photo.status !== "complete");
     const notImportable = pending.filter((photo) => !isImportable(photo));
     if (preparingCount || notImportable.length) {
@@ -1251,7 +1425,13 @@ export function BatchPhotoImporter({
                 ) : null}
                 <button type="button" className={styles.rowMain} onClick={() => setActiveId(photo.id)}>
                   <span className={styles.rowNumber}>{String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.rowThumb}><Image src={photo.previewUrl} alt="" fill unoptimized sizes="72px" /></span>
+                  <span className={styles.rowThumb}>
+                    {photo.thumbnailUrl ? (
+                      <Image src={photo.thumbnailUrl} alt="" fill unoptimized loading="lazy" decoding="async" sizes="72px" />
+                    ) : (
+                      <FileImageIcon size={17} aria-hidden="true" />
+                    )}
+                  </span>
                   <span className={styles.rowCopy}>
                     <strong>{photo.title || photo.file.name}</strong>
                     <small>{photo.file.name} · {formatFileSize(photo.file.size)}</small>
@@ -1301,7 +1481,7 @@ export function BatchPhotoImporter({
             <><button type="button" className={styles.textButton} onClick={requestClose}>{copy.cancel}</button><button type="button" className={styles.textButton} onClick={() => fileInputRef.current?.click()} disabled={isGeneratingCaptions || queue.length >= MAX_BATCH_SIZE}><ImagePlusIcon size={14} />{copy.addMore}</button></>
           ) : <span>{copy.imported(completedCount, queue.length)}</span>}
         </div>
-        <button type="button" className={styles.primaryButton} disabled={isImporting || isGeneratingCaptions || preparingCount > 0 || invalidPhotos.length > 0} onClick={() => void runImport()}>
+        <button type="button" className={styles.primaryButton} disabled={isImporting || isGeneratingCaptions || preparingCount > 0 || resolvingLocationCount > 0 || invalidPhotos.length > 0} onClick={() => void runImport()}>
           {isImporting ? <LoaderCircleIcon className={styles.spin} size={15} /> : failedCount > 0 ? <RotateCcwIcon size={15} /> : <UploadCloudIcon size={15} />}
           {failedCount > 0 ? copy.retryImport(failedCount) : copy.startImport(queue.length - completedCount)}
         </button>
@@ -1400,7 +1580,21 @@ function PhotoInspector({
             <Field label={copy.city}><input value={photo.city} disabled={disabled} placeholder={copy.cityPlaceholder} onChange={(event) => onChange({ city: event.target.value })} /></Field>
             <Field label={copy.country}><input value={photo.countryCode} disabled={disabled} maxLength={2} placeholder={copy.countryPlaceholder} onChange={(event) => onChange({ countryCode: event.target.value.toUpperCase() })} /></Field>
           </div>
-          <div className={styles.locationHint}><MapPinIcon size={13} /><span>{photo.latitude !== undefined ? copy.gpsRecorded : copy.noGps}</span>{photo.latitude !== undefined ? <code>{photo.latitude.toFixed(5)}, {photo.longitude?.toFixed(5)}</code> : null}</div>
+          <div className={styles.locationHint}>
+            {photo.locationStatus === "resolving" ? <LoaderCircleIcon size={13} className="animate-spin" /> : <MapPinIcon size={13} />}
+            <span>
+              {photo.latitude === undefined
+                ? copy.noGps
+                : photo.locationStatus === "resolving"
+                  ? copy.gpsResolving
+                  : photo.locationStatus === "resolved"
+                    ? copy.gpsResolved
+                    : photo.locationStatus === "error"
+                      ? copy.gpsUnresolved
+                      : copy.gpsRecorded}
+            </span>
+            {photo.latitude !== undefined ? <code>{photo.latitude.toFixed(5)}, {photo.longitude?.toFixed(5)}</code> : null}
+          </div>
           <div className={styles.dateTimeGrid}>
             <Field label={copy.date}><input type="datetime-local" step="1" value={photo.dateTimeOriginal} disabled={disabled} onChange={(event) => onChange({ dateTimeOriginal: event.target.value })} /></Field>
             <Field label={copy.timeZone}>

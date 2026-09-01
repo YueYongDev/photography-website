@@ -62,7 +62,7 @@ export const HomeView = ({
             />
 
             <span className={styles.homeHeroPhotoIndex} aria-hidden="true">
-              HKG / 01
+              HKG
             </span>
           </div>
           <figcaption className={styles.imageCaption}>

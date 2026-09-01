@@ -54,12 +54,12 @@ const english = {
     notRecorded: "Not recorded",
   },
   home: {
-    eyebrow: "PORTFOLIO / 01",
+    eyebrow: "PORTFOLIO",
     titleStart: "Photography is the",
     titleEnd: "beauty of life captured",
     heroAlt: "A red tram moving through a dense Hong Kong street",
     heroCaption: "Hong Kong / HKG",
-    workEyebrow: "01 / Work",
+    workEyebrow: "Work",
     workTitle: "Selected photographs",
     workLink: "View all photographs",
     workEntries: [
@@ -67,14 +67,14 @@ const english = {
       { title: "Untitled" },
       { title: "Untitled" },
     ],
-    journeysEyebrow: "04 / Journeys",
+    journeysEyebrow: "Journeys",
     journeysTitle: "Journeys",
     journeysLink: "All journeys",
-    travelEyebrow: "02 / Places",
+    travelEyebrow: "Places",
     travelTitle: "PLACES",
   },
   work: {
-    eyebrow: "01 / Work",
+    eyebrow: "Work",
     title: "Selected photographs",
     description:
       "A smaller edit drawn from photographs made in daily life and while travelling. This page follows one sequence rather than countries or cities.",
@@ -88,7 +88,7 @@ const english = {
     emptyTitle: "No photographs selected",
   },
   journeys: {
-    eyebrow: "04 / Journeys",
+    eyebrow: "Journeys",
     title: "Journeys",
     descriptionLines: [
       "Photographic journeys and field notes,",
@@ -116,7 +116,7 @@ const english = {
     browseByPlace: (country: string) => `View ${country}`,
   },
   travel: {
-    eyebrow: "02 / Places",
+    eyebrow: "Places",
     title: "PLACES",
     description:
       "A geographic index of the archive — countries first, cities within, and every photograph kept close to where it was made.",
@@ -142,7 +142,7 @@ const english = {
     photoAlt: (city: string) => `${city} photograph`,
   },
   discover: {
-    eyebrow: "03 / Map",
+    eyebrow: "Map",
     title: "MAP",
     description:
       "The same photographic archive, read spatially. Move from a complete world view to the places where each frame was made.",
@@ -201,7 +201,7 @@ const english = {
     date: "Date",
   },
   about: {
-    eyebrow: "05 / About",
+    eyebrow: "About",
     title: "Hi, I’m YueYong.",
     paragraphOne:
       "I’m a software engineer based in Hangzhou, China. I take photographs in everyday life and while travelling.",
@@ -261,12 +261,12 @@ const chinese = {
     notRecorded: "未记录",
   },
   home: {
-    eyebrow: "PORTFOLIO / 01",
+    eyebrow: "PORTFOLIO",
     titleStart: "摄影的全部意义，",
     titleEnd: "就在于你不必用言语去解释事物",
     heroAlt: "穿行在香港密集街道中的红色电车",
     heroCaption: "香港 / HKG",
-    workEyebrow: "01 / 作品",
+    workEyebrow: "作品",
     workTitle: "照片选集",
     workLink: "查看照片选集",
     workEntries: [
@@ -274,14 +274,14 @@ const chinese = {
       { title: "无题" },
       { title: "无题" },
     ],
-    journeysEyebrow: "04 / 旅程",
+    journeysEyebrow: "旅程",
     journeysTitle: "JOURNEYS",
     journeysLink: "全部旅程",
-    travelEyebrow: "02 / 足迹",
+    travelEyebrow: "足迹",
     travelTitle: "足迹",
   },
   work: {
-    eyebrow: "01 / 选集",
+    eyebrow: "选集",
     title: "照片选集",
     description: "删繁就简三秋树，\n领异标新二月花。",
     attribution: "郑燮",
@@ -294,7 +294,7 @@ const chinese = {
     emptyTitle: "暂无照片",
   },
   journeys: {
-    eyebrow: "04 / 旅程",
+    eyebrow: "旅程",
     title: "旅程",
     descriptionLines: ["两岸青山相对出，", "孤帆一片日边来。"],
     attribution: "李白《望天门山》",
@@ -319,7 +319,7 @@ const chinese = {
     browseByPlace: (country: string) => `查看${country}`,
   },
   travel: {
-    eyebrow: "02 / 足迹",
+    eyebrow: "足迹",
     title: "足迹",
     description: "人生到处知何似？\n应似飞鸿踏雪泥。",
     attribution: "苏轼《和子由渑池怀旧》",
@@ -344,7 +344,7 @@ const chinese = {
     photoAlt: (city: string) => `${city}的照片`,
   },
   discover: {
-    eyebrow: "03 / 地图",
+    eyebrow: "地图",
     title: "地图",
     description: "换一种空间视角阅读同一份照片档案；从完整的世界，走近每一张照片拍下的地方。",
   },
@@ -401,7 +401,7 @@ const chinese = {
     date: "日期",
   },
   about: {
-    eyebrow: "05 / 关于",
+    eyebrow: "关于",
     title: "见山之后",
     paragraphOne:
       "“我之所以写徐霞客，是想告诉你：所谓百年功名、千秋霸业、万古流芳，与一件事情相比，其实算不了什么。这件事情就是——用你喜欢的方式度过一生。”。 ——当年明月",

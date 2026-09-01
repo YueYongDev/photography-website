@@ -100,6 +100,16 @@ type AddressSearchResult = {
   placeFormatted: string;
 };
 
+type ReverseGeocodingLocation = {
+  country: string | null;
+  countryCode: string | null;
+  region: string | null;
+  city: string | null;
+  district: string | null;
+  fullAddress: string | null;
+  placeFormatted: string | null;
+};
+
 export const FormSection = ({ photoId }: { photoId: string }) => {
   const { copy } = useStudioLocale();
 
@@ -135,6 +145,17 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     string | null
   >(null);
   const [mapRevision, setMapRevision] = useState(0);
+  const [isLocationResolving, setIsLocationResolving] = useState(false);
+  const [locationResolveError, setLocationResolveError] = useState(false);
+  const locationRequestRef = useRef(0);
+  const initialLocationKey =
+    photo.latitude !== null &&
+    photo.longitude !== null &&
+    (photo.city || photo.region) &&
+    (photo.countryCode || photo.country)
+      ? `${photo.latitude},${photo.longitude},${locale}`
+      : null;
+  const resolvedLocationKeyRef = useRef<string | null>(initialLocationKey);
   const [coordinateText, setCoordinateText] = useState(() =>
     photo.latitude !== null && photo.longitude !== null
       ? `${photo.latitude}, ${photo.longitude}`
@@ -322,6 +343,76 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     form.setValue("longitude", lng, { shouldDirty: true });
     setCoordinateText(`${lat}, ${lng}`);
   };
+
+  useEffect(() => {
+    if (!hasCoordinates) return;
+
+    const locationKey = `${latitude},${longitude},${locale}`;
+    if (resolvedLocationKeyRef.current === locationKey) return;
+
+    const requestId = ++locationRequestRef.current;
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setIsLocationResolving(true);
+      setLocationResolveError(false);
+
+      try {
+        const response = await fetch(
+          `/api/geocoding/reverse?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}&lang=${locale}`,
+          { signal: controller.signal },
+        );
+        const payload = (await response.json()) as {
+          location?: ReverseGeocodingLocation | null;
+        };
+
+        if (!response.ok || !payload.location) {
+          throw new Error("Location lookup failed");
+        }
+        if (locationRequestRef.current !== requestId) return;
+
+        const location = payload.location;
+        form.setValue("country", location.country ?? undefined, {
+          shouldDirty: true,
+        });
+        form.setValue("countryCode", location.countryCode ?? undefined, {
+          shouldDirty: true,
+        });
+        form.setValue("region", location.region ?? undefined, {
+          shouldDirty: true,
+        });
+        form.setValue("city", location.city ?? undefined, {
+          shouldDirty: true,
+        });
+        form.setValue("district", location.district ?? undefined, {
+          shouldDirty: true,
+        });
+        form.setValue("fullAddress", location.fullAddress ?? undefined, {
+          shouldDirty: true,
+        });
+        form.setValue(
+          "placeFormatted",
+          location.placeFormatted ?? undefined,
+          { shouldDirty: true },
+        );
+        resolvedLocationKeyRef.current = locationKey;
+        setLocationResolveError(false);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        if (locationRequestRef.current === requestId) {
+          setLocationResolveError(true);
+        }
+      } finally {
+        if (locationRequestRef.current === requestId) {
+          setIsLocationResolving(false);
+        }
+      }
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [form, hasCoordinates, latitude, locale, longitude]);
 
   const searchAddress = async () => {
     if (isAddressSearching) return;
@@ -859,10 +950,16 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   </a>
                 </div>
                 <div className={styles.locationSummary}>
-                  <MapPinIcon size={17} />
+                  {isLocationResolving ? (
+                    <LoaderCircleIcon className="animate-spin" size={17} />
+                  ) : (
+                    <MapPinIcon size={17} />
+                  )}
                   <div>
                     <strong>
-                      {locationDetail || copy.photos.unknownLocation}
+                      {isLocationResolving
+                        ? copy.editor.locationResolving
+                        : locationDetail || copy.photos.unknownLocation}
                     </strong>
                     <span>
                       {hasCoordinates
@@ -871,6 +968,11 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                     </span>
                   </div>
                 </div>
+                {locationResolveError ? (
+                  <p className={styles.addressSearchMessage} role="status">
+                    {copy.editor.locationResolveError}
+                  </p>
+                ) : null}
                 <div className={styles.coordinateHead}>
                   <FormLabel htmlFor="photo-coordinates">
                     {copy.editor.gps}
