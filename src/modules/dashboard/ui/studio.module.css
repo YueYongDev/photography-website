@@ -1386,6 +1386,22 @@
   letter-spacing: 0.055em;
 }
 
+.selectionHint[data-refreshing] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.selectionHint[data-refreshing]::before {
+  width: 0.38rem;
+  height: 0.38rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--studio-accent);
+  content: "";
+  animation: studio-loading-pulse 1.8s ease-out infinite;
+}
+
 .batchActions {
   display: flex;
   min-width: 0;

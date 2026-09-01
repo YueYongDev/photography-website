@@ -24,6 +24,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { keepPreviousData } from "@tanstack/react-query";
 
 import BlurImage from "@/components/blur-image";
 import { InfiniteScroll } from "@/components/infinite-scroll";
@@ -179,7 +180,10 @@ const PhotosSectionReady = () => {
         selection,
         sort,
       },
-      { getNextPageParam: (lastPage) => lastPage.nextCursor },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        placeholderData: keepPreviousData,
+      },
     );
 
   const bulkUpdate = trpc.photos.bulkUpdate.useMutation();
@@ -323,7 +327,11 @@ const PhotosSectionReady = () => {
   };
 
   return (
-    <section className={styles.photoLibrary} aria-label={copy.photos.libraryLabel}>
+    <section
+      className={styles.photoLibrary}
+      aria-label={copy.photos.libraryLabel}
+      aria-busy={query.isPlaceholderData}
+    >
       <div className={styles.librarySummary}>
         <LibraryMetric label={copy.photos.totalStat} value={stats?.total} />
         <LibraryMetric
@@ -469,7 +477,15 @@ const PhotosSectionReady = () => {
               </button>
             </div>
           ) : (
-            <span className={styles.selectionHint}>{copy.photos.selectionHint}</span>
+            <span
+              className={styles.selectionHint}
+              data-refreshing={query.isPlaceholderData || undefined}
+              aria-live="polite"
+            >
+              {query.isPlaceholderData
+                ? copy.photos.refreshing
+                : copy.photos.selectionHint}
+            </span>
           )}
         </div>
       </div>

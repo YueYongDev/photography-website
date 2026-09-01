@@ -38,6 +38,34 @@ type CitySetsCursor =
   | null
   | undefined;
 
+type PhotoPlace = {
+  country: string | null;
+  countryCode: string | null;
+  region: string | null;
+  city: string | null;
+};
+
+type CitySetPlace = {
+  country: string;
+  countryCode: string;
+  city: string;
+  usesRegion: boolean;
+};
+
+const getCitySetPlace = (photo: PhotoPlace): CitySetPlace | null => {
+  const country = photo.country?.trim();
+  const countryCode = photo.countryCode?.trim().toUpperCase();
+  const usesRegion = countryCode === "JP" || countryCode === "TW";
+  const city = (usesRegion ? photo.region : photo.city)?.trim();
+
+  if (!country || !countryCode || !city) return null;
+
+  return { country, countryCode, city, usesRegion };
+};
+
+const getCitySetPlaceKey = (place: CitySetPlace) =>
+  `${place.country}\u0000${place.city}`;
+
 // `visibility` used to control the Work page while `isFavorite` controlled the
 // homepage. Treat either legacy flag as selected while old records converge to
 // the single `isFavorite` concept through subsequent edits.
@@ -142,7 +170,7 @@ const getCachedCitySetsPreview = unstable_cache(
 
     return { items, nextCursor };
   },
-  ["city-set-previews-v2"],
+  ["city-set-previews-v3"],
   { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] },
 );
 
@@ -153,6 +181,7 @@ export const photosRouter = createTRPCRouter({
       const id = input.id ?? crypto.randomUUID();
       const values = {
         ...input,
+        countryCode: input.countryCode?.trim().toUpperCase() ?? input.countryCode,
         id,
         isFavorite: false,
         visibility: "private" as const,
@@ -170,24 +199,21 @@ export const photosRouter = createTRPCRouter({
           throw new Error("Inserted photo could not be read back");
         }
 
-        const cityName =
-          values.countryCode === "JP" || values.countryCode === "TW"
-            ? values.region
-            : values.city;
+        const citySetPlace = getCitySetPlace(insertedPhoto);
 
-        if (insertedPhoto.country && cityName && insertedPhoto.countryCode) {
+        if (citySetPlace) {
           await db
             .insert(citySets)
             .values({
-              country: insertedPhoto.country,
-              countryCode: insertedPhoto.countryCode,
-              city: cityName,
+              country: citySetPlace.country,
+              countryCode: citySetPlace.countryCode,
+              city: citySetPlace.city,
               photoCount: 1,
               coverPhotoId: insertedPhoto.id,
             })
             .onDuplicateKeyUpdate({
               set: {
-                countryCode: insertedPhoto.countryCode,
+                countryCode: citySetPlace.countryCode,
                 photoCount: sql`${citySets.photoCount} + 1`,
                 coverPhotoId: sql`COALESCE(${citySets.coverPhotoId}, ${insertedPhoto.id})`,
                 updatedAt: new Date(),
@@ -199,8 +225,8 @@ export const photosRouter = createTRPCRouter({
             .from(citySets)
             .where(
               and(
-                eq(citySets.country, insertedPhoto.country),
-                eq(citySets.city, cityName),
+                eq(citySets.country, citySetPlace.country),
+                eq(citySets.city, citySetPlace.city),
               ),
             );
 
@@ -312,11 +338,17 @@ export const photosRouter = createTRPCRouter({
   update: protectedProcedure
     .input(photosUpdateSchema)
     .mutation(async ({ input }) => {
-      const { id } = input;
+      const { id, ...inputValues } = input;
       if (!id) throw new TRPCError({ code: "BAD_REQUEST" });
 
       const values = {
-        ...input,
+        ...inputValues,
+        ...(inputValues.countryCode !== undefined
+          ? {
+              countryCode:
+                inputValues.countryCode?.trim().toUpperCase() ?? null,
+            }
+          : {}),
         ...(input.isFavorite !== undefined
           ? {
               visibility: input.isFavorite
@@ -326,14 +358,105 @@ export const photosRouter = createTRPCRouter({
           : {}),
       };
 
-      await db.update(photos).set(values).where(eq(photos.id, id));
-      const [updatedPhoto] = await db
-        .select()
-        .from(photos)
-        .where(eq(photos.id, id))
-        .limit(1);
+      const updatedPhoto = await db.transaction(async (tx) => {
+        const [previousPhoto] = await tx
+          .select()
+          .from(photos)
+          .where(eq(photos.id, id))
+          .limit(1);
 
-      if (!updatedPhoto) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!previousPhoto) throw new TRPCError({ code: "NOT_FOUND" });
+
+        await tx.update(photos).set(values).where(eq(photos.id, id));
+
+        const [nextPhoto] = await tx
+          .select()
+          .from(photos)
+          .where(eq(photos.id, id))
+          .limit(1);
+
+        if (!nextPhoto) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const placesToReconcile = new Map<string, CitySetPlace>();
+        const previousPlace = getCitySetPlace(previousPhoto);
+        const nextPlace = getCitySetPlace(nextPhoto);
+
+        if (previousPlace) {
+          placesToReconcile.set(
+            getCitySetPlaceKey(previousPlace),
+            previousPlace,
+          );
+        }
+        if (nextPlace) {
+          placesToReconcile.set(getCitySetPlaceKey(nextPlace), nextPlace);
+        }
+
+        for (const place of placesToReconcile.values()) {
+          const matchingPhotos = await tx
+            .select({ id: photos.id })
+            .from(photos)
+            .where(
+              and(
+                eq(photos.country, place.country),
+                eq(photos.countryCode, place.countryCode),
+                place.usesRegion
+                  ? eq(photos.region, place.city)
+                  : eq(photos.city, place.city),
+              ),
+            )
+            .orderBy(desc(photos.updatedAt), desc(photos.id));
+
+          const [existingCitySet] = await tx
+            .select()
+            .from(citySets)
+            .where(
+              and(
+                eq(citySets.country, place.country),
+                eq(citySets.city, place.city),
+              ),
+            )
+            .limit(1);
+
+          if (matchingPhotos.length === 0) {
+            if (existingCitySet) {
+              await tx
+                .delete(citySets)
+                .where(eq(citySets.id, existingCitySet.id));
+            }
+            continue;
+          }
+
+          const matchingPhotoIds = new Set(
+            matchingPhotos.map((photo) => photo.id),
+          );
+          const coverPhotoId =
+            existingCitySet &&
+            matchingPhotoIds.has(existingCitySet.coverPhotoId)
+              ? existingCitySet.coverPhotoId
+              : matchingPhotos[0].id;
+
+          await tx
+            .insert(citySets)
+            .values({
+              country: place.country,
+              countryCode: place.countryCode,
+              city: place.city,
+              coverPhotoId,
+              photoCount: matchingPhotos.length,
+            })
+            .onDuplicateKeyUpdate({
+              set: {
+                countryCode: place.countryCode,
+                coverPhotoId,
+                photoCount: matchingPhotos.length,
+                updatedAt: new Date(),
+              },
+            });
+        }
+
+        return nextPhoto;
+      });
+
       revalidateTag(PUBLIC_PHOTOS_CACHE_TAG, { expire: 0 });
       return updatedPhoto;
     }),

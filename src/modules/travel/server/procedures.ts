@@ -44,7 +44,7 @@ const getCachedTravelArchive = unstable_cache(
 
     return { items };
   },
-  ["travel-archive-v2"],
+  ["travel-archive-v3"],
   { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
 );
 
