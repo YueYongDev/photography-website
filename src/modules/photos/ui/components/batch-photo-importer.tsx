@@ -56,7 +56,6 @@ import styles from "./batch-photo-importer.module.css";
 
 const MAX_BATCH_SIZE = 50;
 const IMPORT_CONCURRENCY = 2;
-const CAPTION_CONCURRENCY = 2;
 const ACCEPTED_IMAGE_TYPES = new Set([
   "image/avif",
   "image/gif",
@@ -874,29 +873,18 @@ export function BatchPhotoImporter({
     setBulkOpen(false);
     setShowImportWarning(false);
     setCaptionProgress({ done: 0, total: ids.length, failed: 0 });
-    let cursor = 0;
     let successCount = 0;
     let failureCount = 0;
-    const worker = async () => {
-      while (cursor < ids.length) {
-        const id = ids[cursor];
-        cursor += 1;
-        const succeeded = await generateCaptionForPhoto(id);
-        if (succeeded) successCount += 1;
-        else failureCount += 1;
-        setCaptionProgress((current) => current
-          ? {
-              ...current,
-              done: current.done + 1,
-              failed: current.failed + (succeeded ? 0 : 1),
-            }
-          : current);
-      }
-    };
-
-    await Promise.all(
-      Array.from({ length: Math.min(CAPTION_CONCURRENCY, ids.length) }, worker),
-    );
+    for (const [index, id] of ids.entries()) {
+      const succeeded = await generateCaptionForPhoto(id);
+      if (succeeded) successCount += 1;
+      else failureCount += 1;
+      setCaptionProgress({
+        done: index + 1,
+        total: ids.length,
+        failed: failureCount,
+      });
+    }
     setIsGeneratingCaptions(false);
     if (failureCount) toast.error(copy.captionPartial(successCount, failureCount));
     else toast.success(copy.captionSuccess(successCount));
