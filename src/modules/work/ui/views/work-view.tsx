@@ -28,7 +28,6 @@ export type WorkPhoto = {
   height: number | null;
   aspectRatio: number | null;
   updatedAt: Date | string;
-  sequence: number;
 };
 
 const getOrientationClass = (aspectRatio: number) => {
@@ -145,13 +144,6 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
       }),
     [streamItems],
   );
-  const startLabel = leadItem
-    ? copy.work.startLabel.replace(
-        "01",
-        String(leadItem.photo.sequence).padStart(2, "0"),
-      )
-    : copy.work.startLabel;
-
   const renderPhoto = (
     { photo, photoIndex }: WorkRowItem,
     frameClassName = "",
@@ -204,9 +196,7 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
           </span>
         </button>
         <figcaption className={styles.workFrameMeta}>
-          <strong>
-            {String(photo.sequence).padStart(2, "0")} / {title}
-          </strong>
+          <strong>{title}</strong>
           <span>
             {photo.city
               ? localizePlaceName(photo.city, locale)
@@ -251,7 +241,7 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
 
           {photos.length > 0 && (
             <a className={styles.workMastheadJump} href="#work-selection">
-              <span>{startLabel}</span>
+              <span>{copy.work.startLabel}</span>
               <ArrowDown aria-hidden="true" size={18} strokeWidth={1.4} />
             </a>
           )}

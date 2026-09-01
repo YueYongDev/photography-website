@@ -13,10 +13,7 @@ const WorkPage = async () => {
 
   try {
     const result = await trpc.photos.getPortfolioPhotos({ limit: 48 });
-    photos = result.map((photo, index) => ({
-      ...photo,
-      sequence: index + 1,
-    }));
+    photos = result;
   } catch {
     // Keep the editorial selection honest when the archive is unavailable.
   }
