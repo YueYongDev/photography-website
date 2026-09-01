@@ -113,8 +113,11 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div className={styles.countryGalleryCopy}>
-                <p>{city.year}</p>
-                <h2>{photo.title || cityName}</h2>
+                <p>
+                  {city.year}
+                  {photo.title ? ` · ${photo.title}` : ""}
+                </p>
+                <h2>{cityName}</h2>
               </div>
               <ArrowUpRight
                 className={styles.countryGalleryArrow}
