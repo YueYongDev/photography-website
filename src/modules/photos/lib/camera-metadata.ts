@@ -3,6 +3,76 @@ export type CameraPreset = {
   label: string;
 };
 
+export const DEFAULT_CAPTURE_TIMEZONE_OFFSET = 8 * 60;
+
+const CAPTURE_TIMEZONE_OFFSETS = [
+  -720,
+  -660,
+  -600,
+  -570,
+  -540,
+  -480,
+  -420,
+  -360,
+  -300,
+  -240,
+  -210,
+  -180,
+  -150,
+  -120,
+  -60,
+  0,
+  60,
+  120,
+  180,
+  210,
+  240,
+  270,
+  300,
+  330,
+  345,
+  360,
+  390,
+  420,
+  480,
+  525,
+  540,
+  570,
+  600,
+  630,
+  660,
+  720,
+  765,
+  780,
+  825,
+  840,
+] as const;
+
+export type CaptureTimeZoneOption = {
+  value: number;
+  label: string;
+};
+
+export const formatCaptureTimezoneOffset = (offsetMinutes: number) => {
+  const sign = offsetMinutes >= 0 ? "+" : "−";
+  const absoluteMinutes = Math.abs(offsetMinutes);
+  const hours = Math.floor(absoluteMinutes / 60);
+  const minutes = absoluteMinutes % 60;
+
+  return `UTC${sign}${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+};
+
+export const getCaptureTimeZoneOptions = (
+  locale: "en" | "zh-CN",
+): CaptureTimeZoneOption[] =>
+  CAPTURE_TIMEZONE_OFFSETS.map((value) => ({
+    value,
+    label:
+      value === DEFAULT_CAPTURE_TIMEZONE_OFFSET
+        ? `${formatCaptureTimezoneOffset(value)} · ${locale === "zh-CN" ? "东八区（默认）" : "China Standard Time (default)"}`
+        : formatCaptureTimezoneOffset(value),
+  }));
+
 const trimDecimal = (value: number, maximumFractionDigits: number) =>
   new Intl.NumberFormat("en-US", {
     maximumFractionDigits,
@@ -47,23 +117,104 @@ export const formatShutterSpeed = (seconds: number) => {
 
 export const formatLocalDateTimeInput = (
   value: Date | string | null | undefined,
+  timezoneOffsetMinutes = DEFAULT_CAPTURE_TIMEZONE_OFFSET,
 ) => {
   if (!value) return "";
 
   const date = value instanceof Date ? value : new Date(value);
   if (!Number.isFinite(date.getTime())) return "";
 
+  const captureDate = new Date(
+    date.getTime() + timezoneOffsetMinutes * 60_000,
+  );
+
   const pad = (part: number) => String(part).padStart(2, "0");
   return [
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
-    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`,
+    `${captureDate.getUTCFullYear()}-${pad(captureDate.getUTCMonth() + 1)}-${pad(captureDate.getUTCDate())}`,
+    `${pad(captureDate.getUTCHours())}:${pad(captureDate.getUTCMinutes())}:${pad(captureDate.getUTCSeconds())}`,
   ].join("T");
 };
 
-export const parseLocalDateTimeInput = (value: string) => {
+export const parseLocalDateTimeInput = (
+  value: string,
+  timezoneOffsetMinutes = DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+) => {
   if (!value) return undefined;
-  const date = new Date(value);
+
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/,
+  );
+  if (!match) return undefined;
+
+  const [, year, month, day, hours, minutes, seconds = "0"] = match;
+  const date = new Date(
+    Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hours),
+      Number(minutes),
+      Number(seconds),
+    ) -
+      timezoneOffsetMinutes * 60_000,
+  );
+
   return Number.isFinite(date.getTime()) ? date : undefined;
+};
+
+export const formatExifDateTimeInput = (value: unknown) => {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    const match = value
+      .trim()
+      .match(
+        /^(\d{4})[:-](\d{2})[:-](\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/,
+      );
+
+    if (match) {
+      const [, year, month, day, hours, minutes, seconds = "00"] = match;
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    }
+  }
+
+  const date = value instanceof Date ? value : new Date(String(value));
+  if (!Number.isFinite(date.getTime())) return "";
+
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
+export const formatCaptureDate = (
+  value: Date | string,
+  timezoneOffsetMinutes: number,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+
+  const captureDate = new Date(
+    date.getTime() + timezoneOffsetMinutes * 60_000,
+  );
+
+  return new Intl.DateTimeFormat(locale, {
+    ...options,
+    timeZone: "UTC",
+  }).format(captureDate);
+};
+
+export const getCaptureYear = (
+  value: Date | string | null | undefined,
+  timezoneOffsetMinutes = DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+) => {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+
+  return new Date(
+    date.getTime() + timezoneOffsetMinutes * 60_000,
+  ).getUTCFullYear();
 };
 
 export const APERTURE_PRESETS: CameraPreset[] = [

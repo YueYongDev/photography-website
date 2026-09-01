@@ -8,6 +8,7 @@ export const summaryRouter = createTRPCRouter({
   getSummary: protectedProcedure.query(async () => {
     const currentYear = new Date().getFullYear();
     const startYear = currentYear - 4;
+    const captureYear = sql<number>`YEAR(DATE_ADD(${photos.dateTimeOriginal}, INTERVAL ${photos.captureTimezoneOffset} MINUTE))`;
 
     const [
       photoCountRows,
@@ -41,18 +42,18 @@ export const summaryRouter = createTRPCRouter({
         .limit(1),
       db
         .select({
-          year: sql<number>`YEAR(${photos.dateTimeOriginal})`,
+          year: captureYear,
           count: count(),
         })
         .from(photos)
         .where(
           and(
             isNotNull(photos.dateTimeOriginal),
-            gte(sql<number>`YEAR(${photos.dateTimeOriginal})`, startYear)
+            gte(captureYear, startYear)
           )
         )
-        .groupBy(sql`YEAR(${photos.dateTimeOriginal})`)
-        .orderBy(desc(sql`YEAR(${photos.dateTimeOriginal})`)),
+        .groupBy(captureYear)
+        .orderBy(desc(captureYear)),
       db
         .select({
           city: citySets.city,

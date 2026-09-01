@@ -34,6 +34,7 @@ const getCachedTravelArchive = unstable_cache(
             height: true,
             aspectRatio: true,
             dateTimeOriginal: true,
+            captureTimezoneOffset: true,
           },
         },
       },
@@ -43,7 +44,7 @@ const getCachedTravelArchive = unstable_cache(
 
     return { items };
   },
-  ["travel-archive-v1"],
+  ["travel-archive-v2"],
   { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
 );
 
@@ -106,6 +107,7 @@ export const travelRouter = createTRPCRouter({
               longitude: true,
               latitude: true,
               dateTimeOriginal: true,
+              captureTimezoneOffset: true,
             },
           },
           photos: {

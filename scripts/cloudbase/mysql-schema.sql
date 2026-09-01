@@ -95,6 +95,7 @@ CREATE TABLE photo_site_photos (
   longitude DOUBLE NULL,
   gps_altitude DOUBLE NULL,
   datetime_original DATETIME(3) NULL,
+  capture_timezone_offset INT NOT NULL DEFAULT 480,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   _openid VARCHAR(64) NOT NULL DEFAULT '',

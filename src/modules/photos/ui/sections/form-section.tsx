@@ -53,18 +53,23 @@ import { formatGPSCoordinates, parseLatLngText } from "@/lib/utils";
 import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 import {
   APERTURE_PRESETS,
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
   EXPOSURE_COMPENSATION_PRESETS,
   formatAperture,
+  formatCaptureDate,
   formatExposureCompensation,
   formatIso,
+  formatLocalDateTimeInput,
   formatShutterSpeed,
   ISO_PRESETS,
+  parseLocalDateTimeInput,
   SHUTTER_FRACTION_PRESETS,
   SHUTTER_SECONDS_PRESETS,
 } from "@/modules/photos/lib/camera-metadata";
 import {
   CameraPresetSelect,
   CaptureDateTimeInput,
+  CaptureTimeZoneSelect,
   FocalLengthInput,
 } from "@/modules/photos/ui/components/camera-metadata-fields";
 import { PhotoEditorLoading } from "@/modules/photos/ui/components/photo-editor-loading";
@@ -172,6 +177,8 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
       dateTimeOriginal: photo.dateTimeOriginal
         ? new Date(photo.dateTimeOriginal)
         : undefined,
+      captureTimezoneOffset:
+        photo.captureTimezoneOffset ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET,
     },
   });
 
@@ -190,6 +197,9 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
   });
   const cameraMake = useWatch({ control: form.control, name: "make" });
   const cameraModel = useWatch({ control: form.control, name: "model" });
+  const captureTimezoneOffset =
+    useWatch({ control: form.control, name: "captureTimezoneOffset" }) ??
+    DEFAULT_CAPTURE_TIMEZONE_OFFSET;
   const hasCoordinates =
     latitude !== undefined &&
     latitude !== null &&
@@ -295,11 +305,16 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
     fullAddress ??
     [city ?? region, country].filter(Boolean).join(", ");
   const capturedLabel = photo.dateTimeOriginal
-    ? new Intl.DateTimeFormat(locale === "zh-CN" ? "zh-CN" : "en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-      }).format(new Date(photo.dateTimeOriginal))
+    ? formatCaptureDate(
+        photo.dateTimeOriginal,
+        photo.captureTimezoneOffset ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+        locale === "zh-CN" ? "zh-CN" : "en-US",
+        {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+        },
+      ) ?? copy.editor.notRecorded
     : copy.editor.notRecorded;
 
   const setCoordinates = (lat: number, lng: number) => {
@@ -1094,10 +1109,50 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                                 ref={field.ref}
                                 name={field.name}
                                 value={field.value}
+                                timezoneOffsetMinutes={captureTimezoneOffset}
                                 onBlur={field.onBlur}
                                 onChange={field.onChange}
                               />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        name="captureTimezoneOffset"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{copy.editor.captureTimeZone}</FormLabel>
+                            <CaptureTimeZoneSelect
+                              ariaLabel={copy.editor.captureTimeZone}
+                              locale={locale}
+                              value={field.value}
+                              onChange={(nextOffset) => {
+                                const captureDate =
+                                  form.getValues("dateTimeOriginal");
+                                const wallTime = formatLocalDateTimeInput(
+                                  captureDate,
+                                  captureTimezoneOffset,
+                                );
+
+                                field.onChange(nextOffset);
+                                if (wallTime) {
+                                  form.setValue(
+                                    "dateTimeOriginal",
+                                    parseLocalDateTimeInput(
+                                      wallTime,
+                                      nextOffset,
+                                    ),
+                                    {
+                                      shouldDirty: true,
+                                      shouldTouch: true,
+                                      shouldValidate: true,
+                                    },
+                                  );
+                                }
+                              }}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}

@@ -1,4 +1,8 @@
 import type { TravelArchive } from "@/modules/travel/ui/views/travel-view";
+import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  getCaptureYear,
+} from "@/modules/photos/lib/camera-metadata";
 
 export type TravelImage = {
   url: string;
@@ -99,10 +103,12 @@ const fallbackEntries: TravelCityEntry[] = [
   },
 ];
 
-const toYear = (value: Date | string | null | undefined) => {
-  if (!value) return "Archive";
-  const year = new Date(value).getFullYear();
-  return Number.isNaN(year) ? "Archive" : String(year);
+const toYear = (
+  value: Date | string | null | undefined,
+  timezoneOffsetMinutes = DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+) => {
+  const year = getCaptureYear(value, timezoneOffsetMinutes);
+  return year === null ? "Archive" : String(year);
 };
 
 export const toPlaceSlug = (value: string) =>
@@ -122,7 +128,11 @@ export const getTravelEntries = (archive: TravelArchive): TravelCityEntry[] => {
       country: item.country,
       countryCode: item.countryCode.toUpperCase(),
       photoCount: item.photoCount,
-      year: toYear(item.coverPhoto?.dateTimeOriginal ?? item.updatedAt),
+      year: toYear(
+        item.coverPhoto?.dateTimeOriginal ?? item.updatedAt,
+        item.coverPhoto?.captureTimezoneOffset ??
+          DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+      ),
       image: {
         url: item.coverPhoto!.url,
         width: item.coverPhoto!.width,

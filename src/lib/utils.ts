@@ -188,7 +188,10 @@ export async function getPhotoExif(file: File): Promise<TExifData> {
     const arrayBuffer = await file.arrayBuffer();
     
     // 解析 EXIF 数据
-    const exifData = await exifr.parse(arrayBuffer);
+    // Keep EXIF dates as the camera's wall-clock string. Reviving them as
+    // JavaScript Date objects would silently apply the browser's own timezone
+    // before the photographer has chosen the capture timezone.
+    const exifData = await exifr.parse(arrayBuffer, { reviveValues: false });
     
     if (!exifData) {
       return {};

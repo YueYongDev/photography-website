@@ -33,6 +33,16 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
+import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  formatExifDateTimeInput,
+  formatLocalDateTimeInput,
+  parseLocalDateTimeInput,
+} from "@/modules/photos/lib/camera-metadata";
+import {
+  CaptureDateTimeInput,
+  CaptureTimeZoneSelect,
+} from "@/modules/photos/ui/components/camera-metadata-fields";
 
 const MapComponent = dynamic(() => import("@/components/map"), {
   ssr: false,
@@ -84,7 +94,7 @@ const convertExifLongitude = (exif: TExifData | TExifFormData | null) => {
 };
 
 export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormProps) {
-  const { copy } = useStudioLocale();
+  const { copy, locale } = useStudioLocale();
   const [isCopied, setIsCopied] = useState(false);
   const [cameraInfoOpen, setCameraInfoOpen] = useState(true);
   const [exposureInfoOpen, setExposureInfoOpen] = useState(true);
@@ -142,10 +152,15 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
       exposureTime: exif?.exposureTime,
       exposureCompensation: exif?.exposureCompensation,
       gpsAltitude: exif?.gpsAltitude,
-      // 将dateTimeOriginal从字符串转换为Date对象
-      dateTimeOriginal: exif?.dateTimeOriginal ? new Date(exif.dateTimeOriginal) : undefined,
+      dateTimeOriginal: parseLocalDateTimeInput(
+        formatExifDateTimeInput(exif?.dateTimeOriginal),
+        DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+      ),
+      captureTimezoneOffset: DEFAULT_CAPTURE_TIMEZONE_OFFSET,
     },
   });
+  const captureTimezoneOffset =
+    form.watch("captureTimezoneOffset") ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET;
 
   const onSubmit = (values: z.infer<typeof photosInsertSchema>) => {
     const formData = {
@@ -454,18 +469,44 @@ export function PhotoForm({ exif, imageInfo, url, onCreateSuccess }: PhotoFormPr
                         <FormItem>
                           <FormLabel>Date Taken</FormLabel>
                           <FormControl>
-                            <Input
-                              type="datetime-local"
-                              value={
-                                field.value
-                                  ? new Date(field.value).toISOString().slice(0, 16)
-                                  : ""
-                              }
-                              onChange={(e) =>
-                                field.onChange(new Date(e.target.value).toISOString())
-                              }
+                            <CaptureDateTimeInput
+                              value={field.value}
+                              timezoneOffsetMinutes={captureTimezoneOffset}
+                              onChange={field.onChange}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="captureTimezoneOffset"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Capture time zone</FormLabel>
+                          <CaptureTimeZoneSelect
+                            ariaLabel="Capture time zone"
+                            locale={locale}
+                            value={field.value}
+                            onChange={(nextOffset) => {
+                              const wallTime = formatLocalDateTimeInput(
+                                form.getValues("dateTimeOriginal"),
+                                captureTimezoneOffset,
+                              );
+                              field.onChange(nextOffset);
+                              if (wallTime) {
+                                form.setValue(
+                                  "dateTimeOriginal",
+                                  parseLocalDateTimeInput(
+                                    wallTime,
+                                    nextOffset,
+                                  ),
+                                  { shouldDirty: true },
+                                );
+                              }
+                            }}
+                          />
                           <FormMessage />
                         </FormItem>
                       )}

@@ -1,5 +1,6 @@
 .numericInput,
 .dateTimeInput,
+.timeZoneTrigger,
 .presetTrigger {
   min-height: 2.55rem;
   border-color: var(--studio-line-strong);
@@ -13,6 +14,7 @@
 
 .numericInput:focus-visible,
 .dateTimeInput:focus-visible,
+.timeZoneTrigger:focus-visible,
 .presetTrigger:focus-visible {
   border-color: var(--studio-ink);
   outline: none;
@@ -24,6 +26,11 @@
 }
 
 .presetTrigger {
+  height: 2.55rem;
+  padding-inline: 0.75rem;
+}
+
+.timeZoneTrigger {
   height: 2.55rem;
   padding-inline: 0.75rem;
 }
@@ -57,4 +64,3 @@
 .presetSeparator {
   background: var(--studio-line);
 }
-

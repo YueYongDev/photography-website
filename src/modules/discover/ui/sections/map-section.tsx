@@ -23,7 +23,9 @@ import {
 } from "@/components/ui/map";
 import type { Photo } from "@/db/schema/photos";
 import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
   formatAperture,
+  formatCaptureDate,
   formatFocalLength,
   formatIso,
   formatShutterSpeed,
@@ -345,11 +347,17 @@ export const MapSection = () => {
     ? selectedGroup.photos.slice(0, 6).map((photo) => {
         const title = photo.title || copy.common.untitled;
         const date = photo.dateTimeOriginal
-          ? new Date(photo.dateTimeOriginal).toLocaleDateString(locale, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
+          ? formatCaptureDate(
+              photo.dateTimeOriginal,
+              photo.captureTimezoneOffset ??
+                DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+              locale,
+              {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              },
+            )
           : null;
         const location =
           photo.placeFormatted ||

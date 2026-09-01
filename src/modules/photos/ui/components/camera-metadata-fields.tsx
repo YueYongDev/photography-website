@@ -17,7 +17,9 @@ import {
 } from "@/components/ui/select";
 import {
   cameraValueKey,
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
   formatLocalDateTimeInput,
+  getCaptureTimeZoneOptions,
   includesCameraPreset,
   parseLocalDateTimeInput,
   type CameraPreset,
@@ -171,20 +173,69 @@ type CaptureDateTimeInputProps = Omit<
 > & {
   value: Date | string | null | undefined;
   onChange: (value: Date | undefined) => void;
+  timezoneOffsetMinutes?: number;
 };
 
 export const CaptureDateTimeInput = React.forwardRef<
   HTMLInputElement,
   CaptureDateTimeInputProps
->(({ onChange, value, ...props }, ref) => (
+>(({ onChange, timezoneOffsetMinutes = DEFAULT_CAPTURE_TIMEZONE_OFFSET, value, ...props }, ref) => (
   <Input
     {...props}
     ref={ref}
     className={styles.dateTimeInput}
     type="datetime-local"
     step="1"
-    value={formatLocalDateTimeInput(value)}
-    onChange={(event) => onChange(parseLocalDateTimeInput(event.target.value))}
+    value={formatLocalDateTimeInput(value, timezoneOffsetMinutes)}
+    onChange={(event) =>
+      onChange(
+        parseLocalDateTimeInput(event.target.value, timezoneOffsetMinutes),
+      )
+    }
   />
 ));
 CaptureDateTimeInput.displayName = "CaptureDateTimeInput";
+
+export function CaptureTimeZoneSelect({
+  ariaLabel,
+  locale,
+  onChange,
+  value = DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+}: {
+  ariaLabel: string;
+  locale: "en" | "zh-CN";
+  onChange: (value: number) => void;
+  value?: number | null;
+}) {
+  const options = React.useMemo(
+    () => getCaptureTimeZoneOptions(locale),
+    [locale],
+  );
+  const selectedValue = value ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET;
+  const selectedOption =
+    options.find((option) => option.value === selectedValue) ?? options[0];
+
+  return (
+    <Select
+      value={String(selectedValue)}
+      onValueChange={(nextValue) => onChange(Number(nextValue))}
+    >
+      <FormControl>
+        <SelectTrigger className={styles.timeZoneTrigger} aria-label={ariaLabel}>
+          <SelectValue>{selectedOption.label}</SelectValue>
+        </SelectTrigger>
+      </FormControl>
+      <SelectContent className={styles.presetContent} position="popper">
+        {options.map((option) => (
+          <SelectItem
+            className={styles.presetItem}
+            key={option.value}
+            value={String(option.value)}
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}

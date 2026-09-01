@@ -62,6 +62,7 @@ const getCachedSelectedPhotos = unstable_cache(
         city: photos.city,
         countryCode: photos.countryCode,
         dateTimeOriginal: photos.dateTimeOriginal,
+        captureTimezoneOffset: photos.captureTimezoneOffset,
         blurData: photos.blurData,
         width: photos.width,
         height: photos.height,
@@ -71,7 +72,7 @@ const getCachedSelectedPhotos = unstable_cache(
       .from(photos)
       .where(selectedPhotoCondition)
       .orderBy(desc(photos.updatedAt), desc(photos.id)),
-  ["selected-photos-v1"],
+  ["selected-photos-v2"],
   { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] },
 );
 
@@ -383,6 +384,7 @@ export const photosRouter = createTRPCRouter({
           title: photos.title,
           description: photos.description,
           dateTimeOriginal: photos.dateTimeOriginal,
+          captureTimezoneOffset: photos.captureTimezoneOffset,
           make: photos.make,
           model: photos.model,
           lensModel: photos.lensModel,
@@ -471,6 +473,7 @@ export const photosRouter = createTRPCRouter({
           title: photos.title,
           description: photos.description,
           dateTimeOriginal: photos.dateTimeOriginal,
+          captureTimezoneOffset: photos.captureTimezoneOffset,
           make: photos.make,
           model: photos.model,
           lensModel: photos.lensModel,

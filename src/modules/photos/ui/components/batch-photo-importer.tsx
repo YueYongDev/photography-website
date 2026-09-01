@@ -15,9 +15,11 @@ import {
   LoaderCircleIcon,
   MapPinIcon,
   RotateCcwIcon,
+  ShieldCheckIcon,
   SparklesIcon,
   Trash2Icon,
   UploadCloudIcon,
+  WandSparklesIcon,
   XIcon,
 } from "lucide-react";
 import {
@@ -42,12 +44,19 @@ import {
   type TImageInfo,
 } from "@/lib/utils";
 import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
+import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  formatExifDateTimeInput,
+  getCaptureTimeZoneOptions,
+  parseLocalDateTimeInput,
+} from "@/modules/photos/lib/camera-metadata";
 import { trpc } from "@/trpc/client";
 
 import styles from "./batch-photo-importer.module.css";
 
 const MAX_BATCH_SIZE = 50;
 const IMPORT_CONCURRENCY = 2;
+const CAPTION_CONCURRENCY = 2;
 const ACCEPTED_IMAGE_TYPES = new Set([
   "image/avif",
   "image/gif",
@@ -65,6 +74,8 @@ type QueueStatus =
   | "complete"
   | "error";
 
+type CaptionStatus = "idle" | "generating" | "complete" | "error";
+
 type ImportPhoto = {
   id: string;
   file: File;
@@ -79,9 +90,12 @@ type ImportPhoto = {
   description: string;
   generatedTitle: boolean;
   generatedDescription: boolean;
+  captionStatus: CaptionStatus;
+  captionError?: string;
   city: string;
   countryCode: string;
   dateTimeOriginal: string;
+  captureTimezoneOffset: number;
   make: string;
   model: string;
   lensModel: string;
@@ -122,11 +136,25 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         clear: "清除",
         bulkEdit: "批量设置",
         bulkHint: "以下内容只会应用到左侧勾选的照片。",
+        generateCaptions: "AI 批量生成文案",
+        retryCaptions: (count: number) => `重试 ${count} 张文案`,
+        generateCaptionsHint: "为勾选的照片逐张生成不同的标题与描述",
+        captionPrivacy: "生成文案时只发送最长边 1024 px 的低清预览给 AI 服务，不上传 OSS；用于入库的高清压缩图仅在点击“导入”后上传。",
+        captionGenerating: "正在生成文案",
+        captionGenerated: "文案已生成",
+        captionFailed: "文案生成失败",
+        captionProgress: (done: number, total: number) => `已完成 ${done} / ${total}`,
+        captionSuccess: (count: number) => `已为 ${count} 张照片生成标题与描述`,
+        captionPartial: (success: number, failed: number) =>
+          `${success} 张生成成功，${failed} 张失败；原文案已保留，可重试失败项。`,
+        closeDuringCaption: "文案仍在生成，请等待完成后再关闭窗口。",
         city: "城市 / 地点",
         cityPlaceholder: "如 Hangzhou",
         country: "国家代码",
         countryPlaceholder: "如 CN",
         applyLocation: "应用地点",
+        timeZone: "拍摄时区",
+        applyTimeZone: "应用时区",
         seriesName: "系列名称",
         seriesPlaceholder: "如 富春江暮色",
         startNumber: "起始序号",
@@ -136,6 +164,7 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         applyDescription: "应用描述",
         noSelection: "请先勾选需要批量修改的照片",
         locationApplied: (count: number) => `已为 ${count} 张照片更新地点`,
+        timeZoneApplied: (count: number) => `已为 ${count} 张照片更新拍摄时区`,
         seriesApplied: (count: number) => `已为 ${count} 张照片连续命名`,
         descriptionApplied: (count: number) => `已为 ${count} 张照片更新描述`,
         photoCount: (count: number) => `${count} 张照片`,
@@ -227,11 +256,25 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         clear: "Clear",
         bulkEdit: "Edit together",
         bulkHint: "Changes below apply only to checked photographs.",
+        generateCaptions: "Generate AI captions",
+        retryCaptions: (count: number) => `Retry ${count} captions`,
+        generateCaptionsHint: "Create a distinct title and description for every checked photograph",
+        captionPrivacy: "Caption generation sends only a low-resolution 1024 px preview to the AI service, not object storage; the high-resolution compressed library image uploads only after you click Import.",
+        captionGenerating: "Generating captions",
+        captionGenerated: "Caption generated",
+        captionFailed: "Caption failed",
+        captionProgress: (done: number, total: number) => `${done} of ${total} complete`,
+        captionSuccess: (count: number) => `Titles and descriptions generated for ${count} photographs`,
+        captionPartial: (success: number, failed: number) =>
+          `${success} succeeded and ${failed} failed. Existing copy was kept on failed photographs so they can be retried.`,
+        closeDuringCaption: "Captions are still being generated. Wait for them to finish before closing.",
         city: "City / place",
         cityPlaceholder: "e.g. Hangzhou",
         country: "Country code",
         countryPlaceholder: "e.g. CN",
         applyLocation: "Apply place",
+        timeZone: "Capture time zone",
+        applyTimeZone: "Apply time zone",
         seriesName: "Series name",
         seriesPlaceholder: "e.g. Fuchun River dusk",
         startNumber: "Starts at",
@@ -241,6 +284,7 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         applyDescription: "Apply description",
         noSelection: "Select the photographs you want to edit together first",
         locationApplied: (count: number) => `Place updated on ${count} photographs`,
+        timeZoneApplied: (count: number) => `Capture time zone updated on ${count} photographs`,
         seriesApplied: (count: number) => `${count} photographs numbered`,
         descriptionApplied: (count: number) => `Description updated on ${count} photographs`,
         photoCount: (count: number) => `${count} photographs`,
@@ -343,19 +387,22 @@ const coordinateFromExif = (value?: string) => {
   return Number.isFinite(coordinate) ? coordinate : undefined;
 };
 
-const dateTimeForInput = (value: unknown) => {
-  if (!value) return "";
-  const date = value instanceof Date ? value : new Date(String(value));
-  if (!Number.isFinite(date.getTime())) return "";
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return localDate.toISOString().slice(0, 16);
-};
-
 const numericValue = (value: string) => {
   if (value.trim() === "") return undefined;
   const number = Number(value);
   return Number.isFinite(number) ? number : undefined;
 };
+
+const fileToDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") resolve(reader.result);
+      else reject(new Error("Unable to read the image preview"));
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Unable to read the image preview"));
+    reader.readAsDataURL(file);
+  });
 
 const getReviewIssues = (photo: ImportPhoto, copy: ImportCopy) => {
   const issues: string[] = [];
@@ -388,9 +435,14 @@ export function BatchPhotoImporter({
 }) {
   const { locale } = useStudioLocale();
   const copy = useMemo(() => getImportCopy(locale), [locale]);
+  const timeZoneOptions = useMemo(
+    () => getCaptureTimeZoneOptions(locale),
+    [locale],
+  );
   const utils = trpc.useUtils();
   const createUpload = trpc.storage.createPhotoUpload.useMutation();
   const createPhoto = trpc.photos.create.useMutation();
+  const generatePhotoCopy = trpc.ai.generatePhotoDescriptionFromImageData.useMutation();
   const [queue, setQueue] = useState<ImportPhoto[]>([]);
   const queueRef = useRef(queue);
   const previewUrlsRef = useRef(new Set<string>());
@@ -401,11 +453,20 @@ export function BatchPhotoImporter({
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkCity, setBulkCity] = useState("");
   const [bulkCountry, setBulkCountry] = useState("");
+  const [bulkTimezoneOffset, setBulkTimezoneOffset] = useState(
+    DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  );
   const [seriesName, setSeriesName] = useState("");
   const [seriesStart, setSeriesStart] = useState("1");
   const [sharedDescription, setSharedDescription] = useState("");
   const [showImportWarning, setShowImportWarning] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isGeneratingCaptions, setIsGeneratingCaptions] = useState(false);
+  const [captionProgress, setCaptionProgress] = useState<{
+    done: number;
+    total: number;
+    failed: number;
+  } | null>(null);
   const handledCloseRequestRef = useRef(closeRequestSignal);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -457,7 +518,9 @@ export function BatchPhotoImporter({
                   description: copy.draftDescription(generatedTitle),
                   generatedTitle: true,
                   generatedDescription: true,
-                  dateTimeOriginal: dateTimeForInput(exif.dateTimeOriginal),
+                  dateTimeOriginal: formatExifDateTimeInput(
+                    exif.dateTimeOriginal,
+                  ),
                   make: exif.make ?? "",
                   model: exif.model ?? "",
                   lensModel: exif.lensModel ?? "",
@@ -493,6 +556,7 @@ export function BatchPhotoImporter({
 
   const addFiles = useCallback(
     async (fileList: File[] | FileList) => {
+      if (isImporting || isGeneratingCaptions) return;
       const incoming = Array.from(fileList);
       const valid = incoming.filter(
         (file) => ACCEPTED_IMAGE_TYPES.has(file.type) && file.size <= IMAGE_SIZE_LIMIT,
@@ -533,9 +597,11 @@ export function BatchPhotoImporter({
           description: "",
           generatedTitle: true,
           generatedDescription: true,
+          captionStatus: "idle",
           city: "",
           countryCode: "",
           dateTimeOriginal: "",
+          captureTimezoneOffset: DEFAULT_CAPTURE_TIMEZONE_OFFSET,
           make: "",
           model: "",
           lensModel: "",
@@ -551,7 +617,7 @@ export function BatchPhotoImporter({
       setActiveId((current) => current ?? additions[0]?.id ?? null);
       await Promise.all(additions.map(prepareFile));
     },
-    [copy, prepareFile, syncQueue],
+    [copy, isGeneratingCaptions, isImporting, prepareFile, syncQueue],
   );
 
   const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
@@ -578,7 +644,7 @@ export function BatchPhotoImporter({
   const removePhoto = (id: string) => {
     const index = queueRef.current.findIndex((photo) => photo.id === id);
     const target = queueRef.current[index];
-    if (!target || isImporting || target.status === "complete") return;
+    if (!target || isImporting || isGeneratingCaptions || target.status === "complete") return;
     URL.revokeObjectURL(target.previewUrl);
     previewUrlsRef.current.delete(target.previewUrl);
     const next = queueRef.current.filter((photo) => photo.id !== id);
@@ -600,13 +666,20 @@ export function BatchPhotoImporter({
     setSelectedIds(new Set());
     setNeedsReviewOnly(false);
     setBulkOpen(false);
+    setBulkTimezoneOffset(DEFAULT_CAPTURE_TIMEZONE_OFFSET);
     setShowImportWarning(false);
     setIsImporting(false);
+    setIsGeneratingCaptions(false);
+    setCaptionProgress(null);
   };
 
   const requestClose = () => {
     if (isImporting) {
       toast.error(copy.closeDuringImport);
+      return;
+    }
+    if (isGeneratingCaptions) {
+      toast.error(copy.closeDuringCaption);
       return;
     }
     const hasUnfinished = queue.some((photo) => photo.status !== "complete");
@@ -625,6 +698,9 @@ export function BatchPhotoImporter({
   }, [closeRequestSignal]);
 
   const selectedPhotos = queue.filter((photo) => selectedIds.has(photo.id));
+  const selectedCaptionFailureCount = selectedPhotos.filter(
+    (photo) => photo.status === "ready" && photo.captionStatus === "error",
+  ).length;
   const readyPhotos = queue.filter(
     (photo) => photo.status === "ready" || photo.status === "error",
   );
@@ -680,6 +756,19 @@ export function BatchPhotoImporter({
     toast.success(copy.locationApplied(selectedPhotos.length));
   };
 
+  const applyTimeZone = () => {
+    if (!requireSelection()) return;
+    syncQueue((current) =>
+      current.map((photo) =>
+        selectedIds.has(photo.id)
+          ? { ...photo, captureTimezoneOffset: bulkTimezoneOffset }
+          : photo,
+      ),
+    );
+    setShowImportWarning(false);
+    toast.success(copy.timeZoneApplied(selectedPhotos.length));
+  };
+
   const applySeriesNames = () => {
     if (!requireSelection() || !seriesName.trim()) return;
     const start = Math.max(0, Number.parseInt(seriesStart, 10) || 1);
@@ -715,6 +804,102 @@ export function BatchPhotoImporter({
     );
     setShowImportWarning(false);
     toast.success(copy.descriptionApplied(selectedPhotos.length));
+  };
+
+  const generateCaptionForPhoto = async (id: string) => {
+    const photo = queueRef.current.find((item) => item.id === id);
+    if (!photo || photo.status !== "ready") return false;
+
+    updatePhoto(id, {
+      captionStatus: "generating",
+      captionError: undefined,
+    });
+
+    try {
+      const preview = await imageCompression(photo.file, {
+        maxSizeMB: 0.28,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+        fileType: "image/jpeg",
+        initialQuality: 0.82,
+      });
+      const imageData = await fileToDataUrl(preview);
+      const result = await generatePhotoCopy.mutateAsync({
+        imageData,
+        language: locale,
+        context: {
+          fileName: photo.file.name,
+          city: photo.city.trim() || undefined,
+          countryCode: photo.countryCode.trim().toUpperCase() || undefined,
+          dateTimeOriginal: photo.dateTimeOriginal || undefined,
+          make: photo.make.trim() || undefined,
+          model: photo.model.trim() || undefined,
+        },
+      });
+      updatePhoto(id, {
+        title: result.title,
+        description: result.description,
+        generatedTitle: false,
+        generatedDescription: false,
+        captionStatus: "complete",
+        captionError: undefined,
+      });
+      return true;
+    } catch (error) {
+      updatePhoto(id, {
+        captionStatus: "error",
+        captionError: error instanceof Error ? error.message : copy.captionFailed,
+      });
+      return false;
+    }
+  };
+
+  const runCaptionGeneration = async () => {
+    if (isGeneratingCaptions || isImporting || preparingCount > 0) return;
+    if (!requireSelection()) return;
+    const retryFailuresOnly = selectedCaptionFailureCount > 0;
+    const ids = queueRef.current
+      .filter((photo) =>
+        selectedIds.has(photo.id) &&
+        photo.status === "ready" &&
+        (!retryFailuresOnly || photo.captionStatus === "error"),
+      )
+      .map((photo) => photo.id);
+    if (!ids.length) {
+      toast.error(copy.noSelection);
+      return;
+    }
+
+    setIsGeneratingCaptions(true);
+    setBulkOpen(false);
+    setShowImportWarning(false);
+    setCaptionProgress({ done: 0, total: ids.length, failed: 0 });
+    let cursor = 0;
+    let successCount = 0;
+    let failureCount = 0;
+    const worker = async () => {
+      while (cursor < ids.length) {
+        const id = ids[cursor];
+        cursor += 1;
+        const succeeded = await generateCaptionForPhoto(id);
+        if (succeeded) successCount += 1;
+        else failureCount += 1;
+        setCaptionProgress((current) => current
+          ? {
+              ...current,
+              done: current.done + 1,
+              failed: current.failed + (succeeded ? 0 : 1),
+            }
+          : current);
+      }
+    };
+
+    await Promise.all(
+      Array.from({ length: Math.min(CAPTION_CONCURRENCY, ids.length) }, worker),
+    );
+    setIsGeneratingCaptions(false);
+    if (failureCount) toast.error(copy.captionPartial(successCount, failureCount));
+    else toast.success(copy.captionSuccess(successCount));
   };
 
   const invalidateLibrary = async () => {
@@ -787,7 +972,11 @@ export function BatchPhotoImporter({
         latitude: photo.latitude,
         longitude: photo.longitude,
         gpsAltitude: photo.gpsAltitude,
-        dateTimeOriginal: photo.dateTimeOriginal || undefined,
+        dateTimeOriginal: parseLocalDateTimeInput(
+          photo.dateTimeOriginal,
+          photo.captureTimezoneOffset,
+        ),
+        captureTimezoneOffset: photo.captureTimezoneOffset,
       });
       updatePhoto(id, { status: "complete", progress: 100, error: undefined });
     } catch (error) {
@@ -799,6 +988,10 @@ export function BatchPhotoImporter({
   };
 
   const runImport = async (skipWarning = false) => {
+    if (isGeneratingCaptions) {
+      toast.error(copy.closeDuringCaption);
+      return;
+    }
     const pending = queueRef.current.filter((photo) => photo.status !== "complete");
     const notImportable = pending.filter((photo) => !isImportable(photo));
     if (preparingCount || notImportable.length) {
@@ -940,18 +1133,6 @@ export function BatchPhotoImporter({
     <div className={styles.importer}>
       <StepRail current={isImporting ? 2 : 1} labels={copy.steps} />
 
-      <header className={styles.reviewHeader}>
-        <div>
-          <p className={styles.dropEyebrow}>{isImporting ? `03 / ${copy.steps[2]}` : `02 / ${copy.steps[1]}`}</p>
-          <h2>{isImporting ? copy.importingTitle : copy.reviewTitle}</h2>
-          <p>{isImporting ? copy.importingDescription : copy.reviewDescription}</p>
-        </div>
-        <div className={styles.reviewSummary}>
-          <span>{copy.photoCount(queue.length)}</span>
-          <span data-alert={reviewNoteCount > 0 || undefined}>{copy.reviewCount(reviewNoteCount)}</span>
-        </div>
-      </header>
-
       {preparingCount > 0 ? (
         <div className={styles.preparingBar} role="status">
           <LoaderCircleIcon size={15} />
@@ -972,20 +1153,58 @@ export function BatchPhotoImporter({
           </div>
           <div className={styles.toolbarActions}>
             <span>{copy.selected(selectedIds.size)}</span>
-            <button type="button" onClick={() => setSelectedIds(new Set(queue.map((photo) => photo.id)))}>{copy.chooseAll}</button>
-            <button type="button" onClick={() => setSelectedIds(new Set())}>{copy.clear}</button>
-            <button type="button" className={styles.bulkButton} data-active={bulkOpen || undefined} onClick={() => setBulkOpen((open) => !open)}>
+            <button type="button" disabled={isGeneratingCaptions} onClick={() => setSelectedIds(new Set(queue.map((photo) => photo.id)))}>{copy.chooseAll}</button>
+            <button type="button" disabled={isGeneratingCaptions} onClick={() => setSelectedIds(new Set())}>{copy.clear}</button>
+            <button
+              type="button"
+              className={styles.captionButton}
+              disabled={isGeneratingCaptions || preparingCount > 0}
+              title={`${copy.generateCaptionsHint} — ${copy.captionPrivacy}`}
+              onClick={() => void runCaptionGeneration()}
+            >
+              {isGeneratingCaptions ? <LoaderCircleIcon className={styles.spin} size={14} /> : <WandSparklesIcon size={14} />}
+              {isGeneratingCaptions && captionProgress
+                ? copy.captionProgress(captionProgress.done, captionProgress.total)
+                : selectedCaptionFailureCount > 0
+                  ? copy.retryCaptions(selectedCaptionFailureCount)
+                  : copy.generateCaptions}
+            </button>
+            <button type="button" disabled={isGeneratingCaptions} className={styles.bulkButton} data-active={bulkOpen || undefined} onClick={() => setBulkOpen((open) => !open)}>
               <SparklesIcon size={14} />{copy.bulkEdit}
             </button>
           </div>
         </div>
       ) : (
         <div className={styles.importProgress}>
-          <div><span>{copy.imported(completedCount, queue.length)}</span><strong>{overallProgress}%</strong></div>
+          <div><span><b>{copy.importingTitle}</b>{copy.imported(completedCount, queue.length)}</span><strong>{overallProgress}%</strong></div>
           <div className={styles.progressTrack}><span style={{ width: `${overallProgress}%` }} /></div>
           <p>{copy.keepOpen}</p>
         </div>
       )}
+
+      {!isImporting ? (
+        <div className={styles.captionNotice} data-running={isGeneratingCaptions || undefined}>
+          {captionProgress ? <WandSparklesIcon size={14} /> : <ShieldCheckIcon size={14} />}
+          <span>
+            <strong>
+              {captionProgress
+                ? isGeneratingCaptions
+                  ? copy.captionGenerating
+                  : captionProgress.failed
+                    ? copy.captionPartial(captionProgress.total - captionProgress.failed, captionProgress.failed)
+                    : copy.captionGenerated
+                : copy.generateCaptionsHint}
+            </strong>
+            <small>{copy.captionPrivacy}</small>
+          </span>
+          {captionProgress ? <em>{copy.captionProgress(captionProgress.done, captionProgress.total)}</em> : null}
+          {captionProgress ? (
+            <span className={styles.captionTrack} aria-hidden="true">
+              <i style={{ width: `${Math.round((captionProgress.done / captionProgress.total) * 100)}%` }} />
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {bulkOpen && !isImporting ? (
         <section className={styles.bulkPanel}>
@@ -1000,6 +1219,26 @@ export function BatchPhotoImporter({
               <label><span>{copy.seriesName}</span><input value={seriesName} onChange={(event) => setSeriesName(event.target.value)} placeholder={copy.seriesPlaceholder} /></label>
               <label className={styles.numberField}><span>{copy.startNumber}</span><input type="number" min="0" value={seriesStart} onChange={(event) => setSeriesStart(event.target.value)} /></label>
               <button type="button" onClick={applySeriesNames}>{copy.applySeries}</button>
+            </div>
+            <div className={`${styles.bulkGroup} ${styles.timeZoneGroup}`}>
+              <label>
+                <span>{copy.timeZone}</span>
+                <select
+                  value={bulkTimezoneOffset}
+                  onChange={(event) =>
+                    setBulkTimezoneOffset(Number(event.target.value))
+                  }
+                >
+                  {timeZoneOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button type="button" onClick={applyTimeZone}>
+                {copy.applyTimeZone}
+              </button>
             </div>
             <div className={`${styles.bulkGroup} ${styles.descriptionGroup}`}>
               <label><span>{copy.sharedDescription}</span><input value={sharedDescription} onChange={(event) => setSharedDescription(event.target.value)} placeholder={copy.descriptionPlaceholder} /></label>
@@ -1018,7 +1257,7 @@ export function BatchPhotoImporter({
               <article key={photo.id} className={styles.queueRow} data-active={active || undefined} data-complete={photo.status === "complete" || undefined} data-error={photo.status === "error" || undefined}>
                 {!isImporting ? (
                   <label className={styles.rowCheckbox} onClick={(event) => event.stopPropagation()}>
-                    <input type="checkbox" checked={selectedIds.has(photo.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(photo.id)) next.delete(photo.id); else next.add(photo.id); return next; })} />
+                    <input type="checkbox" disabled={isGeneratingCaptions} checked={selectedIds.has(photo.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(photo.id)) next.delete(photo.id); else next.add(photo.id); return next; })} />
                     <span><CheckIcon size={11} /></span>
                   </label>
                 ) : null}
@@ -1034,7 +1273,7 @@ export function BatchPhotoImporter({
                   </span>
                   <QueueStatusBadge photo={photo} issues={issues} copy={copy} />
                 </button>
-                {!isImporting && photo.status !== "complete" ? (
+                {!isImporting && !isGeneratingCaptions && photo.status !== "complete" ? (
                   <button type="button" className={styles.removeButton} onClick={() => removePhoto(photo.id)} aria-label={copy.remove}><Trash2Icon size={14} /></button>
                 ) : null}
               </article>
@@ -1048,7 +1287,8 @@ export function BatchPhotoImporter({
           <PhotoInspector
             photo={activePhoto}
             copy={copy}
-            disabled={isImporting || activePhoto.status === "complete"}
+            timeZoneOptions={timeZoneOptions}
+            disabled={isImporting || isGeneratingCaptions || activePhoto.status === "complete"}
             onChange={(changes) => updatePhoto(activePhoto.id, changes)}
             onPrevious={() => activeIndex > 0 && setActiveId(filteredQueue[activeIndex - 1].id)}
             onNext={() => activeIndex < filteredQueue.length - 1 && setActiveId(filteredQueue[activeIndex + 1].id)}
@@ -1070,10 +1310,10 @@ export function BatchPhotoImporter({
       <footer className={styles.importFooter}>
         <div>
           {!isImporting ? (
-            <><button type="button" className={styles.textButton} onClick={requestClose}>{copy.cancel}</button><button type="button" className={styles.textButton} onClick={() => fileInputRef.current?.click()} disabled={queue.length >= MAX_BATCH_SIZE}><ImagePlusIcon size={14} />{copy.addMore}</button></>
+            <><button type="button" className={styles.textButton} onClick={requestClose}>{copy.cancel}</button><button type="button" className={styles.textButton} onClick={() => fileInputRef.current?.click()} disabled={isGeneratingCaptions || queue.length >= MAX_BATCH_SIZE}><ImagePlusIcon size={14} />{copy.addMore}</button></>
           ) : <span>{copy.imported(completedCount, queue.length)}</span>}
         </div>
-        <button type="button" className={styles.primaryButton} disabled={isImporting || preparingCount > 0 || invalidPhotos.length > 0} onClick={() => void runImport()}>
+        <button type="button" className={styles.primaryButton} disabled={isImporting || isGeneratingCaptions || preparingCount > 0 || invalidPhotos.length > 0} onClick={() => void runImport()}>
           {isImporting ? <LoaderCircleIcon className={styles.spin} size={15} /> : failedCount > 0 ? <RotateCcwIcon size={15} /> : <UploadCloudIcon size={15} />}
           {failedCount > 0 ? copy.retryImport(failedCount) : copy.startImport(queue.length - completedCount)}
         </button>
@@ -1118,6 +1358,8 @@ function QueueStatusBadge({ photo, issues, copy }: { photo: ImportPhoto; issues:
   if (photo.status === "complete") return <span className={styles.statusBadge} data-complete><CheckCircle2Icon size={12} />{copy.uploadComplete}</span>;
   if (photo.status === "error") return <span className={styles.statusBadge} data-error title={photo.error}><AlertCircleIcon size={12} />{copy.uploadFailed}</span>;
   if (["preparing", "compressing", "uploading", "saving"].includes(photo.status)) return <span className={styles.statusBadge}><LoaderCircleIcon className={styles.spin} size={12} />{photo.status === "preparing" ? copy.processing : `${photo.progress}%`}</span>;
+  if (photo.captionStatus === "generating") return <span className={styles.statusBadge}><LoaderCircleIcon className={styles.spin} size={12} />{copy.captionGenerating}</span>;
+  if (photo.captionStatus === "error") return <span className={styles.statusBadge} data-error title={photo.captionError}><AlertCircleIcon size={12} />{copy.captionFailed}</span>;
   return issues.length ? <span className={styles.statusBadge} data-review><CircleDashedIcon size={12} />{copy.suggestions(issues.length)}</span> : <span className={styles.statusBadge} data-complete><CheckCircle2Icon size={12} />{copy.ready}</span>;
 }
 
@@ -1128,6 +1370,7 @@ function Field({ label, children, className }: { label: string; children: ReactN
 function PhotoInspector({
   photo,
   copy,
+  timeZoneOptions,
   disabled,
   onChange,
   onPrevious,
@@ -1137,6 +1380,7 @@ function PhotoInspector({
 }: {
   photo: ImportPhoto;
   copy: ImportCopy;
+  timeZoneOptions: ReturnType<typeof getCaptureTimeZoneOptions>;
   disabled: boolean;
   onChange: (changes: Partial<ImportPhoto>) => void;
   onPrevious: () => void;
@@ -1158,7 +1402,7 @@ function PhotoInspector({
           <span>{photo.imageInfo ? `${photo.imageInfo.width} × ${photo.imageInfo.height}` : copy.processing}</span>
         </div>
 
-        {photo.error ? <div className={styles.photoError}><AlertCircleIcon size={15} /><span>{photo.error}</span></div> : null}
+        {photo.error || photo.captionError ? <div className={styles.photoError}><AlertCircleIcon size={15} /><span>{photo.captionError ?? photo.error}</span></div> : null}
         {issues.length ? <div className={styles.issueList}>{issues.map((issue) => <span key={issue}><CircleDashedIcon size={11} />{issue}</span>)}</div> : null}
 
         <div className={styles.inspectorFields}>
@@ -1169,7 +1413,24 @@ function PhotoInspector({
             <Field label={copy.country}><input value={photo.countryCode} disabled={disabled} maxLength={2} placeholder={copy.countryPlaceholder} onChange={(event) => onChange({ countryCode: event.target.value.toUpperCase() })} /></Field>
           </div>
           <div className={styles.locationHint}><MapPinIcon size={13} /><span>{photo.latitude !== undefined ? copy.gpsRecorded : copy.noGps}</span>{photo.latitude !== undefined ? <code>{photo.latitude.toFixed(5)}, {photo.longitude?.toFixed(5)}</code> : null}</div>
-          <Field label={copy.date}><input type="datetime-local" value={photo.dateTimeOriginal} disabled={disabled} onChange={(event) => onChange({ dateTimeOriginal: event.target.value })} /></Field>
+          <div className={styles.dateTimeGrid}>
+            <Field label={copy.date}><input type="datetime-local" step="1" value={photo.dateTimeOriginal} disabled={disabled} onChange={(event) => onChange({ dateTimeOriginal: event.target.value })} /></Field>
+            <Field label={copy.timeZone}>
+              <select
+                value={photo.captureTimezoneOffset}
+                disabled={disabled}
+                onChange={(event) =>
+                  onChange({ captureTimezoneOffset: Number(event.target.value) })
+                }
+              >
+                {timeZoneOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
 
           <details className={styles.cameraDetails}>
             <summary><span><FileImageIcon size={14} />{copy.camera}</span><em>{[photo.make, photo.model].filter(Boolean).join(" ") || "—"}</em></summary>

@@ -13,6 +13,17 @@ const getZhipuApiKey = () => {
   return apiKey;
 };
 
+const photoCopySchema = z.object({
+  title: z.string().trim().min(1).max(80),
+  description: z.string().trim().min(1).max(800),
+});
+
+const parsePhotoCopy = (rawResponse: string) => {
+  const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+  const json = JSON.parse(jsonMatch ? jsonMatch[0] : rawResponse);
+  return photoCopySchema.parse(json);
+};
+
 /**
  * AI内容生成模块
  * 提供通用的AI内容生成服务，支持多种内容类型并返回中文结果
@@ -239,6 +250,112 @@ ${exifText}
           title: "未命名照片",
           description: "一个美好的瞬间被永远定格。"
         };
+      }
+    }),
+
+  /**
+   * 根据浏览器生成的低清预览生成照片标题和描述。
+   * 预览仅发送给 AI 服务，不会经过对象存储。
+   */
+  generatePhotoDescriptionFromImageData: protectedProcedure
+    .input(z.object({
+      imageData: z
+        .string()
+        .max(1_500_000, "图片预览过大")
+        .regex(
+          /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/,
+          "无效的图片预览",
+        ),
+      language: z.enum(["zh-CN", "en"]).default("zh-CN"),
+      context: z.object({
+        fileName: z.string().max(255),
+        city: z.string().max(120).optional(),
+        countryCode: z.string().max(2).optional(),
+        dateTimeOriginal: z.string().max(50).optional(),
+        make: z.string().max(120).optional(),
+        model: z.string().max(120).optional(),
+      }).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const contextEntries = input.context
+        ? [
+            ["fileName", input.context.fileName],
+            ["city", input.context.city],
+            ["countryCode", input.context.countryCode],
+            ["dateTimeOriginal", input.context.dateTimeOriginal],
+            ["cameraMake", input.context.make],
+            ["cameraModel", input.context.model],
+          ].filter((entry): entry is [string, string] => Boolean(entry[1]))
+        : [];
+      const contextText = contextEntries.length
+        ? contextEntries.map(([key, value]) => `${key}: ${value}`).join("\n")
+        : "No reliable metadata was supplied.";
+      const prompt = input.language === "zh-CN"
+        ? `你是摄影资料编辑。请根据这张低清预览，为照片生成独立的中文标题和描述。
+
+可信的照片资料（只可作为辅助，不要把文件名当成画面事实）：
+${contextText}
+
+要求：
+- 只写画面中可见或由资料明确提供的内容；不要虚构人物身份、精确地点、事件或故事。
+- 标题自然克制，4–14 个汉字，不使用引号和句号。
+- 描述为 1–2 句、约 35–90 个汉字，具体说明主体、环境、光线或构图。
+- 若地点无法确认，不要猜测地点。
+- 只返回合法 JSON，格式为 {"title":"...","description":"..."}，不要使用 Markdown。`
+        : `You are editing metadata for a photography archive. Create a distinct English title and description from this low-resolution preview.
+
+Trusted photo metadata (supporting context only; do not treat the filename as visual fact):
+${contextText}
+
+Requirements:
+- Describe only what is visible or explicitly supplied. Do not invent identities, exact locations, events, or backstories.
+- Use a restrained, natural title of 2–8 words, without quotation marks or a trailing period.
+- Write a concrete one- or two-sentence description of the subject, setting, light, or composition.
+- Do not guess a location when it cannot be established.
+- Return valid JSON only as {"title":"...","description":"..."}; do not use Markdown.`;
+
+      try {
+        const apiKey = getZhipuApiKey();
+        const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "glm-4v-plus-0111",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "image_url", image_url: { url: input.imageData } },
+                  { type: "text", text: prompt },
+                ],
+              },
+            ],
+            temperature: 0.45,
+            stream: false,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Zhipu AI API error: ${response.status} ${errorText}`);
+        }
+
+        const data = await response.json();
+        const rawResponse = data.choices?.[0]?.message?.content;
+        if (typeof rawResponse !== "string" || !rawResponse.trim()) {
+          throw new Error("The AI service returned an empty response");
+        }
+        return parsePhotoCopy(rawResponse);
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        console.error("Failed to generate photo copy from preview:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "照片文案生成失败",
+        });
       }
     }),
 

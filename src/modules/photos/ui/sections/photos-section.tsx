@@ -31,6 +31,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useStudioLocale } from "@/modules/dashboard/i18n/studio-locale";
 import styles from "@/modules/dashboard/ui/studio.module.css";
 import { PhotosLibraryLoading } from "@/modules/photos/ui/components/photos-library-loading";
+import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  formatCaptureDate,
+} from "@/modules/photos/lib/camera-metadata";
 import { trpc } from "@/trpc/client";
 
 type SelectionFilter = "all" | "selected" | "unselected";
@@ -109,6 +113,7 @@ type StudioPhoto = {
   title: string;
   description: string;
   dateTimeOriginal: Date | null;
+  captureTimezoneOffset: number;
   make: string | null;
   model: string | null;
   lensModel: string | null;
@@ -573,7 +578,9 @@ const PhotoListRow = memo(
     const [prefetchEditor, setPrefetchEditor] = useState(false);
     const registerEditorIntent = () => setPrefetchEditor(true);
     const captured = photo.dateTimeOriginal
-      ? new Date(photo.dateTimeOriginal).toLocaleDateString(
+      ? formatCaptureDate(
+          photo.dateTimeOriginal,
+          photo.captureTimezoneOffset ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET,
           locale === "zh-CN" ? "zh-CN" : "en-US",
           { year: "numeric", month: "short", day: "2-digit" },
         )
@@ -700,7 +707,9 @@ const PhotoCard = memo(
   }) => {
     const { copy, locale } = useStudioLocale();
     const captured = photo.dateTimeOriginal
-      ? new Date(photo.dateTimeOriginal).toLocaleDateString(
+      ? formatCaptureDate(
+          photo.dateTimeOriginal,
+          photo.captureTimezoneOffset ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET,
           locale === "zh-CN" ? "zh-CN" : "en-US",
           { year: "numeric", month: "short", day: "2-digit" },
         )

@@ -6,6 +6,11 @@ import { ErrorBoundary } from "react-error-boundary";
 
 import BlurImage from "@/components/blur-image";
 import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  formatCaptureDate,
+  getCaptureYear,
+} from "@/modules/photos/lib/camera-metadata";
+import {
   localizeCountryName,
   localizePlaceName,
   useSiteLocale,
@@ -71,7 +76,11 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
     (photo) => photo.id !== cityData.coverPhoto?.id
   ) ?? [];
   const year = cityData.coverPhoto?.dateTimeOriginal
-    ? new Date(cityData.coverPhoto.dateTimeOriginal).getFullYear()
+    ? getCaptureYear(
+        cityData.coverPhoto.dateTimeOriginal,
+        cityData.coverPhoto.captureTimezoneOffset ??
+          DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+      ) ?? copy.common.archive
     : copy.common.archive;
   const coverAspectRatio =
     cityData.coverPhoto?.width && cityData.coverPhoto.height
@@ -80,11 +89,16 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
   const viewerPhotos = [cityData.coverPhoto, ...cityPhotos].flatMap((photo) => {
     if (!photo) return [];
     const photoDate = photo.dateTimeOriginal
-      ? new Date(photo.dateTimeOriginal).toLocaleDateString(locale, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+      ? formatCaptureDate(
+          photo.dateTimeOriginal,
+          photo.captureTimezoneOffset ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+          locale,
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          },
+        )
       : null;
 
     return [

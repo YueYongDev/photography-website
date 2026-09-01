@@ -65,6 +65,9 @@ export const photos = mysqlTable(
       mode: "date",
       fsp: 3,
     }),
+    captureTimezoneOffset: int("capture_timezone_offset")
+      .notNull()
+      .default(480),
 
     ...timestamps,
     openId: varchar("_openid", { length: 64 }).notNull().default(""),
@@ -170,6 +173,13 @@ const optionalDate = z
     return date;
   });
 
+const optionalCaptureTimezoneOffset = z
+  .number()
+  .int()
+  .min(-720)
+  .max(840)
+  .optional();
+
 export const photosInsertSchema = z.object({
   id: z.string().uuid().optional(),
   url: z.string().min(1),
@@ -226,6 +236,7 @@ export const photosInsertSchema = z.object({
   longitude: optionalNumber,
   gpsAltitude: optionalNumber,
   dateTimeOriginal: optionalDate,
+  captureTimezoneOffset: optionalCaptureTimezoneOffset,
 });
 
 export const photosSelectSchema = photosInsertSchema.extend({
@@ -252,6 +263,7 @@ export const photosUpdateSchema = photosInsertSchema
     exposureTime: true,
     exposureCompensation: true,
     dateTimeOriginal: true,
+    captureTimezoneOffset: true,
     country: true,
     countryCode: true,
     region: true,

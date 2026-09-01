@@ -9,6 +9,10 @@ import "react-photo-album/rows.css";
 
 import { getArchiveImageLoader } from "@/lib/archive-image-loader";
 import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  getCaptureYear,
+} from "@/modules/photos/lib/camera-metadata";
+import {
   localizePlaceName,
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
@@ -23,6 +27,7 @@ export type WorkPhoto = {
   city: string | null;
   countryCode: string | null;
   dateTimeOriginal: Date | string | null;
+  captureTimezoneOffset: number;
   blurData: string | null;
   width: number | null;
   height: number | null;
@@ -68,11 +73,11 @@ const buildWorkStory = (photos: WorkPhoto[]) => {
 
 const photoYear = (
   value: WorkPhoto["dateTimeOriginal"],
+  timezoneOffsetMinutes: number,
   archiveLabel: string,
 ) => {
-  if (!value) return archiveLabel;
-  const year = new Date(value).getFullYear();
-  return Number.isNaN(year) ? archiveLabel : String(year);
+  const year = getCaptureYear(value, timezoneOffsetMinutes);
+  return year === null ? archiveLabel : String(year);
 };
 
 const getWorkTargetRowHeight = (containerWidth: number) =>
@@ -94,9 +99,10 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
     new Set(
       photos
         .map((photo) => {
-          if (!photo.dateTimeOriginal) return null;
-          const year = new Date(photo.dateTimeOriginal).getFullYear();
-          return Number.isNaN(year) ? null : year;
+          return getCaptureYear(
+            photo.dateTimeOriginal,
+            photo.captureTimezoneOffset ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+          );
         })
         .filter((year): year is number => year !== null),
     ),
@@ -201,7 +207,11 @@ export const WorkView = ({ photos }: { photos: WorkPhoto[] }) => {
             {photo.city
               ? localizePlaceName(photo.city, locale)
               : copy.work.fieldStudy}{" "}
-            · {photoYear(photo.dateTimeOriginal, copy.common.archive)}
+            · {photoYear(
+              photo.dateTimeOriginal,
+              photo.captureTimezoneOffset ?? DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+              copy.common.archive,
+            )}
           </span>
         </figcaption>
       </figure>

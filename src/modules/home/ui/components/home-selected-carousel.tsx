@@ -98,7 +98,6 @@ export const HomeSelectedCarousel = ({
               />
             </div>
             <figcaption className={styles.homeWorkMeta}>
-              <span>{String(photoIndex + 1).padStart(2, "0")}</span>
               <h3>{title}</h3>
             </figcaption>
           </figure>

@@ -1,4 +1,8 @@
 import BlurImage from "@/components/blur-image";
+import {
+  DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+  formatCaptureDate,
+} from "@/modules/photos/lib/camera-metadata";
 import { useMapStore } from "@/hooks/use-map-store";
 import type { DashboardTravelCitySet } from "./travel-types";
 import styles from "../studio.module.css";
@@ -44,13 +48,17 @@ export const TravelPhotos = ({ data }: TravelPhotosProps) => {
               {citySet.country}
               {", "}
               {citySet.coverPhoto.dateTimeOriginal &&
-                new Date(
-                  citySet.coverPhoto.dateTimeOriginal
-                ).toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
+                formatCaptureDate(
+                  citySet.coverPhoto.dateTimeOriginal,
+                  citySet.coverPhoto.captureTimezoneOffset ??
+                    DEFAULT_CAPTURE_TIMEZONE_OFFSET,
+                  locale === "zh-CN" ? "zh-CN" : "en-US",
+                  {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  },
+                )}
             </p>
             <span>{copy.overview.frames(citySet.photoCount)}</span>
           </div>
