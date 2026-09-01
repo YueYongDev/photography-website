@@ -323,7 +323,7 @@ Requirements:
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "glm-4v-plus-0111",
+            model: "glm-4.6v-flash",
             messages: [
               {
                 role: "user",
