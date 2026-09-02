@@ -1079,7 +1079,7 @@
 }
 
 .mapFrame {
-  height: 9.5rem;
+  height: clamp(15rem, 30svh, 21rem);
   margin-top: 0.65rem;
   overflow: hidden;
   border: 1px solid var(--studio-line);
