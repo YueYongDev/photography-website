@@ -7,10 +7,41 @@ const getZhipuApiKey = () => {
   if (!apiKey) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "AI service is not configured",
+      message: "未配置智谱 API Key（ZHIPU_AI_API_KEY）",
     });
   }
   return apiKey;
+};
+
+const getZhipuPhotoModel = () =>
+  process.env.ZHIPU_PHOTO_MODEL?.trim() || "glm-5.3-flash";
+
+const getZhipuPhotoError = (status: number) => {
+  if (status === 401 || status === 403) {
+    return new TRPCError({
+      code: status === 401 ? "UNAUTHORIZED" : "FORBIDDEN",
+      message: "智谱 API Key 无效，或当前账号无权使用该模型",
+    });
+  }
+
+  if (status === 429) {
+    return new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "智谱模型当前访问量过大，请稍后重试",
+    });
+  }
+
+  if (status >= 500) {
+    return new TRPCError({
+      code: "BAD_GATEWAY",
+      message: "智谱服务暂时不可用，请稍后重试",
+    });
+  }
+
+  return new TRPCError({
+    code: "BAD_REQUEST",
+    message: "智谱未接受本次图片请求，请检查模型权限后重试",
+  });
 };
 
 const photoCopySchema = z.object({
@@ -316,6 +347,7 @@ Requirements:
 
       try {
         const apiKey = getZhipuApiKey();
+        const model = getZhipuPhotoModel();
         const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
           method: "POST",
           headers: {
@@ -323,7 +355,7 @@ Requirements:
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "glm-4.6v-flash",
+            model,
             messages: [
               {
                 role: "user",
@@ -333,14 +365,21 @@ Requirements:
                 ],
               },
             ],
-            temperature: 0.45,
+            temperature: 1,
+            top_p: 0.95,
+            response_format: { type: "json_object" },
             stream: false,
           }),
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`Zhipu AI API error: ${response.status} ${errorText}`);
+          console.error("Zhipu photo copy request failed:", {
+            model,
+            status: response.status,
+            response: errorText.slice(0, 2_000),
+          });
+          throw getZhipuPhotoError(response.status);
         }
 
         const data = await response.json();
@@ -348,7 +387,19 @@ Requirements:
         if (typeof rawResponse !== "string" || !rawResponse.trim()) {
           throw new Error("The AI service returned an empty response");
         }
-        return parsePhotoCopy(rawResponse);
+        try {
+          return parsePhotoCopy(rawResponse);
+        } catch (error) {
+          console.error("Zhipu photo copy response was not valid JSON:", {
+            model,
+            response: rawResponse.slice(0, 2_000),
+            error,
+          });
+          throw new TRPCError({
+            code: "BAD_GATEWAY",
+            message: "智谱返回的文案格式不正确，请重试",
+          });
+        }
       } catch (error) {
         if (error instanceof TRPCError) throw error;
         console.error("Failed to generate photo copy from preview:", error);
