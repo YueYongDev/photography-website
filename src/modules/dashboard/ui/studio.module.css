@@ -1167,7 +1167,7 @@
 
 .librarySummary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0.65rem 0 0.45rem;
   overflow: hidden;
   border: 1px solid var(--studio-line);
@@ -2495,7 +2495,7 @@
   }
 
   .librarySummary {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .libraryMetric:nth-child(2) {
@@ -2503,7 +2503,7 @@
   }
 
   .libraryMetric:nth-child(-n + 2) {
-    border-bottom: 0;
+    border-bottom: 1px solid var(--studio-line);
   }
 
   .photoWorkspaceToolbar {

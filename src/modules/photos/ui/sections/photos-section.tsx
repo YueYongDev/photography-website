@@ -17,6 +17,7 @@ import {
   Clock3Icon,
   Grid2X2Icon,
   Grid3X3Icon,
+  ListFilterIcon,
   ListIcon,
   PencilIcon,
   SearchIcon,
@@ -38,7 +39,7 @@ import {
 } from "@/modules/photos/lib/camera-metadata";
 import { trpc } from "@/trpc/client";
 
-type SelectionFilter = "all" | "selected" | "unselected";
+type SelectionFilter = "all" | "selected" | "unselected" | "needsReview";
 type SortOrder = "newest" | "oldest";
 type PhotoViewMode = "list" | "comfortable" | "compact";
 
@@ -71,7 +72,7 @@ const readPhotoLibrarySession = (): PhotoLibrarySessionState => {
 
     return {
       search: typeof value.search === "string" ? value.search : "",
-      selection: ["all", "selected", "unselected"].includes(
+      selection: ["all", "selected", "unselected", "needsReview"].includes(
         value.selection ?? "",
       )
         ? (value.selection as SelectionFilter)
@@ -342,6 +343,10 @@ const PhotosSectionReady = () => {
           label={copy.photos.unselectedStat}
           value={stats?.unselected}
         />
+        <LibraryMetric
+          label={copy.photos.needsReviewStat}
+          value={stats?.needsReview}
+        />
       </div>
 
       <div className={styles.photoWorkspaceToolbar}>
@@ -367,7 +372,7 @@ const PhotosSectionReady = () => {
           </label>
 
           <label className={styles.photoSelectControl}>
-            <StarIcon size={14} aria-hidden="true" />
+            <ListFilterIcon size={14} aria-hidden="true" />
             <span className="sr-only">{copy.photos.selectionFilter}</span>
             <select
               value={selection}
@@ -378,6 +383,7 @@ const PhotosSectionReady = () => {
               <option value="all">{copy.photos.allSelections}</option>
               <option value="selected">{copy.photos.selectedOnly}</option>
               <option value="unselected">{copy.photos.unselectedOnly}</option>
+              <option value="needsReview">{copy.photos.needsReviewOnly}</option>
             </select>
           </label>
 

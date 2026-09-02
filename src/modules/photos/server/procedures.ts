@@ -79,6 +79,23 @@ const unselectedPhotoCondition = and(
   eq(photos.visibility, "private"),
 )!;
 
+const photoNeedsReviewCondition = sql<boolean>`(
+  nullif(trim(${photos.title}), '') is null
+  or nullif(trim(${photos.description}), '') is null
+  or ${photos.dateTimeOriginal} is null
+  or nullif(trim(${photos.country}), '') is null
+  or nullif(trim(${photos.countryCode}), '') is null
+  or case
+    when upper(trim(coalesce(${photos.countryCode}, ''))) in ('JP', 'TW')
+      then nullif(trim(${photos.region}), '')
+    else nullif(trim(${photos.city}), '')
+  end is null
+  or (
+    nullif(trim(${photos.make}), '') is null
+    and nullif(trim(${photos.model}), '') is null
+  )
+)`;
+
 const getCachedSelectedPhotos = unstable_cache(
   async () =>
     db
@@ -546,7 +563,9 @@ export const photosRouter = createTRPCRouter({
           .nullish(),
         limit: z.number().min(1).max(100).default(10),
         search: z.string().trim().max(120).optional(),
-        selection: z.enum(["all", "selected", "unselected"]).default("all"),
+        selection: z
+          .enum(["all", "selected", "unselected", "needsReview"])
+          .default("all"),
         sort: z.enum(["newest", "oldest"]).default("newest"),
       }),
     )
@@ -579,12 +598,16 @@ export const photosRouter = createTRPCRouter({
             like(photos.model, searchTerm),
           )
         : undefined;
-      const whereClause = and(
+      const selectionClause =
         selection === "selected"
           ? selectedPhotoCondition
           : selection === "unselected"
             ? unselectedPhotoCondition
-            : undefined,
+            : selection === "needsReview"
+              ? photoNeedsReviewCondition
+              : undefined;
+      const whereClause = and(
+        selectionClause,
         searchClause,
         cursorClause,
       );
@@ -636,10 +659,14 @@ export const photosRouter = createTRPCRouter({
         total: sql<number>`count(*)`.mapWith(Number),
         selected: sql<number>`coalesce(sum(case when ${photos.isFavorite} = true or ${photos.visibility} = 'public' then 1 else 0 end), 0)`.mapWith(Number),
         unselected: sql<number>`coalesce(sum(case when ${photos.isFavorite} = false and ${photos.visibility} = 'private' then 1 else 0 end), 0)`.mapWith(Number),
+        needsReview:
+          sql<number>`coalesce(sum(case when ${photoNeedsReviewCondition} then 1 else 0 end), 0)`.mapWith(
+            Number,
+          ),
       })
       .from(photos);
 
-    return stats ?? { total: 0, selected: 0, unselected: 0 };
+    return stats ?? { total: 0, selected: 0, unselected: 0, needsReview: 0 };
   }),
 
   bulkUpdate: protectedProcedure
