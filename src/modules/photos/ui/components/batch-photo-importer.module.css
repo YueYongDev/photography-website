@@ -208,6 +208,47 @@
 .locationHint { display: flex; align-items: center; gap: 0.38rem; margin-top: -0.28rem; color: var(--batch-muted); font-size: 0.49rem; line-height: 1.35; }
 .locationHint svg { flex: 0 0 auto; }
 .locationHint code { margin-left: auto; color: var(--batch-faint); font-size: 0.46rem; }
+.locationPicker { display: flex; flex-direction: column; gap: 0.72rem; padding: 0.8rem 0; border-top: 1px solid var(--batch-line); border-bottom: 1px solid var(--batch-line); }
+.locationSearch > span,
+.coordinateHeader > span { display: block; margin-bottom: 0.32rem; color: var(--batch-muted); font-size: 0.49rem; letter-spacing: 0.055em; }
+.locationSearchControl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.42rem; }
+.locationSearchInputWrap { position: relative; min-width: 0; }
+.locationSearchInputWrap > svg { position: absolute; z-index: 1; top: 50%; left: 0.65rem; color: var(--batch-muted); pointer-events: none; transform: translateY(-50%); }
+.locationSearchInputWrap input,
+.coordinateInput { box-sizing: border-box; width: 100%; min-height: 2.35rem; border: 1px solid var(--batch-line-strong); border-radius: 0.28rem; padding: 0.52rem 0.62rem; outline: 0; background: white; color: var(--batch-ink); font: inherit; font-size: 0.62rem; transition: border-color 140ms ease, box-shadow 140ms ease; }
+.locationSearchInputWrap input { padding-left: 2rem; }
+.locationSearchInputWrap input:focus,
+.coordinateInput:focus { border-color: var(--batch-ink); box-shadow: 0 0 0 2px rgba(32, 36, 33, 0.06); }
+.locationSearchInputWrap input:disabled,
+.coordinateInput:disabled { background: #f6f6f4; color: var(--batch-muted); }
+.locationSearchControl > button { display: inline-flex; min-width: 4.5rem; min-height: 2.35rem; align-items: center; justify-content: center; gap: 0.32rem; border: 1px solid var(--batch-ink); border-radius: 0.28rem; padding: 0 0.7rem; background: var(--batch-ink); color: white; cursor: pointer; font: inherit; font-size: 0.52rem; font-weight: 650; }
+.locationSearchControl > button:hover:not(:disabled) { background: #373c39; }
+.locationSearchControl > button:disabled { cursor: not-allowed; opacity: 0.42; }
+.locationResults { overflow-y: auto; max-height: 12rem; margin-top: 0.4rem; border: 1px solid var(--batch-line); border-radius: 0.3rem; background: white; }
+.locationResults > button { display: grid; width: 100%; grid-template-columns: 1.2rem minmax(0, 1fr); gap: 0.45rem; align-items: start; border: 0; border-bottom: 1px solid var(--batch-line); padding: 0.58rem 0.65rem; background: transparent; color: var(--batch-ink); cursor: pointer; text-align: left; }
+.locationResults > button:last-child { border-bottom: 0; }
+.locationResults > button:hover:not(:disabled),
+.locationResults > button:focus-visible { background: #f7f7f5; outline: none; }
+.locationResults > button > svg { margin-top: 0.08rem; color: var(--batch-muted); }
+.locationResults strong,
+.locationResults small { display: block; }
+.locationResults strong { overflow: hidden; font-size: 0.57rem; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.locationResults small { display: -webkit-box; overflow: hidden; margin-top: 0.12rem; color: var(--batch-muted); font-size: 0.47rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.locationAttribution { display: inline-block; margin-top: 0.32rem; color: var(--batch-faint); font-size: 0.43rem; text-decoration: none; }
+.locationAttribution:hover { color: var(--batch-ink); text-decoration: underline; }
+.locationMessage { margin: 0.38rem 0 0; color: #8d4037; font-size: 0.48rem; line-height: 1.4; }
+.locationSummary { display: grid; grid-template-columns: 1.3rem minmax(0, 1fr); gap: 0.4rem; align-items: center; color: var(--batch-muted); }
+.locationSummary > svg { color: var(--batch-ink); }
+.locationSummary > span,
+.locationSummary strong,
+.locationSummary small { display: block; min-width: 0; }
+.locationSummary strong { overflow: hidden; color: var(--batch-ink); font-size: 0.55rem; font-weight: 620; text-overflow: ellipsis; white-space: nowrap; }
+.locationSummary small { margin-top: 0.08rem; color: var(--batch-faint); font-family: "Iowan Old Style", Baskerville, serif; font-size: 0.5rem; }
+.coordinateHeader { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: -0.42rem; }
+.coordinateHeader > button { border: 0; padding: 0; background: transparent; color: var(--batch-ink); cursor: pointer; font: inherit; font-size: 0.49rem; font-weight: 620; }
+.coordinateHeader > button:disabled { cursor: not-allowed; opacity: 0.42; }
+.locationMap { height: clamp(15rem, 34svh, 22rem); overflow: hidden; border: 1px solid var(--batch-line); border-radius: 0.34rem; background: #f2f2f0; filter: saturate(0.65) contrast(0.95); }
+.locationMapSkeleton { width: 100%; height: 100%; min-height: 15rem; background: linear-gradient(90deg, #efefed 25%, #f7f7f5 50%, #efefed 75%); background-size: 200% 100%; animation: location-skeleton 1.4s ease-in-out infinite; }
 .cameraDetails { border-top: 1px solid var(--batch-line); border-bottom: 1px solid var(--batch-line); }
 .cameraDetails summary { display: flex; min-height: 2.8rem; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; list-style: none; }
 .cameraDetails summary::-webkit-details-marker { display: none; }
@@ -244,6 +285,7 @@
 .spin { animation: spin 1s linear infinite; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes location-skeleton { to { background-position: -200% 0; } }
 
 @media (max-width: 900px) {
   .reviewWorkspace,
@@ -275,6 +317,8 @@
   .inspectorPreview { height: min(52svh, 30rem); min-height: 20rem; }
   .fieldGrid { grid-template-columns: minmax(0, 1fr) 6rem; }
   .dateTimeGrid { grid-template-columns: 1fr; }
+  .locationSearchControl { grid-template-columns: 1fr; }
+  .locationSearchControl > button { width: 100%; }
   .exposureGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .importWarning { grid-template-columns: auto minmax(0, 1fr); }
   .importWarning button { grid-column: auto; }
@@ -287,5 +331,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .spin,
-  .preparingBar > svg { animation: none; }
+  .preparingBar > svg,
+  .locationMapSkeleton { animation: none; }
 }

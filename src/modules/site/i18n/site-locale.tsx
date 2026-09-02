@@ -130,8 +130,8 @@ const english = {
   country: {
     all: "All countries",
     cityFrames: (year: string, count: number) => `${year} · ${count} frames`,
-    openGallery: (city: string, count: number) =>
-      `Open ${city}, ${count} photographs`,
+    openPhoto: (title: string, city: string, index: number, count: number) =>
+      `Open ${title}, photograph ${index} of ${count} from ${city}`,
     mapLink: "Map",
   },
   city: {
@@ -332,8 +332,8 @@ const chinese = {
   country: {
     all: "全部地点",
     cityFrames: (year: string, count: number) => `${year} · ${count} 张`,
-    openGallery: (city: string, count: number) =>
-      `打开${city}，查看 ${count} 张照片`,
+    openPhoto: (title: string, city: string, index: number, count: number) =>
+      `打开${title}，${city}第 ${index} 张，共 ${count} 张`,
     mapLink: "地图",
   },
   city: {

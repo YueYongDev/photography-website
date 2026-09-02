@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import imageCompression from "browser-image-compression";
 import {
   AlertCircleIcon,
@@ -15,6 +16,7 @@ import {
   LoaderCircleIcon,
   MapPinIcon,
   RotateCcwIcon,
+  SearchIcon,
   ShieldCheckIcon,
   SparklesIcon,
   Trash2Icon,
@@ -38,8 +40,10 @@ import { IMAGE_SIZE_LIMIT } from "@/constants";
 import { uploadPhoto } from "@/lib/photo-upload";
 import {
   convertExifToFormData,
+  formatGPSCoordinates,
   getImageInfo,
   getPhotoExif,
+  parseLatLngText,
   type TExifFormData,
   type TImageInfo,
 } from "@/lib/utils";
@@ -65,6 +69,11 @@ const ACCEPTED_IMAGE_TYPES = new Set([
   "image/png",
   "image/webp",
 ]);
+
+const MapComponent = dynamic(() => import("@/components/map"), {
+  ssr: false,
+  loading: () => <div className={styles.locationMapSkeleton} />,
+});
 
 type QueueStatus =
   | "preparing"
@@ -131,6 +140,21 @@ type ReverseGeocodingLocation = {
   placeFormatted: string | null;
 };
 
+type AddressSearchResult = {
+  id: string;
+  name: string;
+  displayName: string;
+  latitude: number;
+  longitude: number;
+  country: string | null;
+  countryCode: string | null;
+  region: string | null;
+  city: string | null;
+  district: string | null;
+  fullAddress: string;
+  placeFormatted: string;
+};
+
 async function runWithConcurrency<T>(
   items: T[],
   concurrency: number,
@@ -166,7 +190,7 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
   locale === "zh-CN"
     ? {
         steps: ["选择", "校对", "导入"],
-        dropEyebrow: "批量照片整理",
+        dropEyebrow: "照片导入",
         dropTitle: "把一组照片放进来",
         dropDescription:
           "先在本地读取尺寸、拍摄时间与相机信息；确认文案和地点后才会上传。",
@@ -202,6 +226,22 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         cityPlaceholder: "如 Hangzhou",
         country: "国家代码",
         countryPlaceholder: "如 CN",
+        addressSearch: "搜索地址",
+        addressSearchPlaceholder: "输入城市、景点或完整地址",
+        addressSearchAction: "搜索",
+        addressSearching: "搜索中",
+        addressSearchMinimum: "请至少输入两个字符",
+        addressSearchEmpty: "没有找到匹配的地址",
+        addressSearchError: "地址搜索暂时不可用，请稍后重试",
+        addressSelected: "已选择地点",
+        addressSearchHint: "地址结果由 OpenStreetMap 提供",
+        coordinates: "GPS 坐标",
+        pasteCoordinates: "粘贴坐标",
+        coordinatesPasted: "已粘贴坐标并开始识别地址",
+        coordinatesInvalid: "剪贴板中没有有效的经纬度",
+        coordinatesPasteError: "无法读取剪贴板，请手动输入坐标",
+        noCoordinates: "尚未设置 GPS 坐标",
+        locationResolveError: "坐标已保存，但地址识别失败，可继续手动填写",
         applyLocation: "应用地点",
         timeZone: "拍摄时区",
         applyTimeZone: "应用时区",
@@ -289,7 +329,7 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
       }
     : {
         steps: ["Select", "Review", "Import"],
-        dropEyebrow: "Batch photo intake",
+        dropEyebrow: "Photo import",
         dropTitle: "Bring in a complete shoot",
         dropDescription:
           "Dimensions, capture time and camera data are read locally. Nothing uploads until the captions and places are reviewed.",
@@ -325,6 +365,22 @@ const getImportCopy = (locale: "en" | "zh-CN") =>
         cityPlaceholder: "e.g. Hangzhou",
         country: "Country code",
         countryPlaceholder: "e.g. CN",
+        addressSearch: "Search address",
+        addressSearchPlaceholder: "Enter a city, landmark, or full address",
+        addressSearchAction: "Search",
+        addressSearching: "Searching",
+        addressSearchMinimum: "Enter at least two characters",
+        addressSearchEmpty: "No matching addresses found",
+        addressSearchError: "Address search is temporarily unavailable",
+        addressSelected: "Place selected",
+        addressSearchHint: "Address results provided by OpenStreetMap",
+        coordinates: "GPS coordinates",
+        pasteCoordinates: "Paste coordinates",
+        coordinatesPasted: "Coordinates pasted; identifying the address",
+        coordinatesInvalid: "The clipboard does not contain valid coordinates",
+        coordinatesPasteError: "The clipboard could not be read; enter coordinates manually",
+        noCoordinates: "No GPS coordinates set",
+        locationResolveError: "Coordinates were saved, but the address could not be identified",
         applyLocation: "Apply place",
         timeZone: "Capture time zone",
         applyTimeZone: "Apply time zone",
@@ -1455,6 +1511,7 @@ export function BatchPhotoImporter({
           <PhotoInspector
             photo={activePhoto}
             copy={copy}
+            locale={locale}
             timeZoneOptions={timeZoneOptions}
             disabled={isImporting || isGeneratingCaptions || activePhoto.status === "complete"}
             onChange={(changes) => updatePhoto(activePhoto.id, changes)}
@@ -1535,9 +1592,366 @@ function Field({ label, children, className }: { label: string; children: ReactN
   return <label className={`${styles.field} ${className ?? ""}`}><span>{label}</span>{children}</label>;
 }
 
+function PhotoLocationPicker({
+  photo,
+  copy,
+  locale,
+  disabled,
+  onChange,
+}: {
+  photo: ImportPhoto;
+  copy: ImportCopy;
+  locale: "en" | "zh-CN";
+  disabled: boolean;
+  onChange: (changes: Partial<ImportPhoto>) => void;
+}) {
+  const hasCoordinates =
+    Number.isFinite(photo.latitude) && Number.isFinite(photo.longitude);
+  const [addressQuery, setAddressQuery] = useState(
+    photo.placeFormatted || photo.fullAddress || "",
+  );
+  const [addressResults, setAddressResults] = useState<AddressSearchResult[]>([]);
+  const [addressSearchMessage, setAddressSearchMessage] = useState<string | null>(null);
+  const [isAddressSearching, setIsAddressSearching] = useState(false);
+  const [coordinateText, setCoordinateText] = useState(() =>
+    hasCoordinates ? `${photo.latitude}, ${photo.longitude}` : "",
+  );
+  const [mapRevision, setMapRevision] = useState(0);
+  const locationRequestRef = useRef(0);
+  const onChangeRef = useRef(onChange);
+  const resolvedLocationKeyRef = useRef<string | null>(
+    hasCoordinates ? `${photo.latitude},${photo.longitude},${locale}` : null,
+  );
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (!hasCoordinates) return;
+    setCoordinateText(`${photo.latitude}, ${photo.longitude}`);
+  }, [hasCoordinates, photo.latitude, photo.longitude]);
+
+  useEffect(() => {
+    if (!hasCoordinates) return;
+
+    const locationKey = `${photo.latitude},${photo.longitude},${locale}`;
+    if (resolvedLocationKeyRef.current === locationKey) return;
+
+    const requestId = ++locationRequestRef.current;
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      onChangeRef.current({ locationStatus: "resolving" });
+
+      try {
+        const response = await fetch(
+          `/api/geocoding/reverse?lat=${encodeURIComponent(photo.latitude!)}&lon=${encodeURIComponent(photo.longitude!)}&lang=${locale}`,
+          { signal: controller.signal },
+        );
+        const payload = (await response.json()) as {
+          location?: ReverseGeocodingLocation | null;
+        };
+
+        if (!response.ok || !payload.location) {
+          throw new Error("Location lookup failed");
+        }
+        if (locationRequestRef.current !== requestId) return;
+
+        const location = payload.location;
+        onChangeRef.current({
+          country: location.country ?? "",
+          countryCode: location.countryCode ?? "",
+          region: location.region ?? "",
+          city: location.city ?? "",
+          district: location.district ?? "",
+          fullAddress: location.fullAddress ?? "",
+          placeFormatted: location.placeFormatted ?? "",
+          locationStatus: location.city ? "resolved" : "error",
+        });
+        resolvedLocationKeyRef.current = locationKey;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        if (locationRequestRef.current === requestId) {
+          onChangeRef.current({ locationStatus: "error" });
+        }
+      }
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [hasCoordinates, locale, photo.latitude, photo.longitude]);
+
+  const searchAddress = async () => {
+    if (isAddressSearching || disabled) return;
+
+    const query = addressQuery.trim();
+    if (query.length < 2) {
+      setAddressResults([]);
+      setAddressSearchMessage(copy.addressSearchMinimum);
+      return;
+    }
+
+    setIsAddressSearching(true);
+    setAddressSearchMessage(null);
+
+    try {
+      const response = await fetch(
+        `/api/geocoding/search?q=${encodeURIComponent(query)}&lang=${locale}`,
+      );
+      const payload = (await response.json()) as {
+        results?: AddressSearchResult[];
+      };
+
+      if (!response.ok) throw new Error("Address search failed");
+
+      const results = payload.results ?? [];
+      setAddressResults(results);
+      setAddressSearchMessage(
+        results.length === 0 ? copy.addressSearchEmpty : null,
+      );
+    } catch {
+      setAddressResults([]);
+      setAddressSearchMessage(copy.addressSearchError);
+    } finally {
+      setIsAddressSearching(false);
+    }
+  };
+
+  const selectAddress = (result: AddressSearchResult) => {
+    const locationKey = `${result.latitude},${result.longitude},${locale}`;
+    resolvedLocationKeyRef.current = locationKey;
+    setCoordinateText(`${result.latitude}, ${result.longitude}`);
+    setAddressQuery(result.displayName);
+    setAddressResults([]);
+    setAddressSearchMessage(null);
+    setMapRevision((revision) => revision + 1);
+    onChange({
+      latitude: result.latitude,
+      longitude: result.longitude,
+      country: result.country ?? "",
+      countryCode: result.countryCode ?? "",
+      region: result.region ?? "",
+      city: result.city ?? "",
+      district: result.district ?? "",
+      fullAddress: result.fullAddress,
+      placeFormatted: result.placeFormatted,
+      locationStatus: result.city ? "resolved" : "error",
+    });
+    toast.success(copy.addressSelected);
+  };
+
+  const updateCoordinates = (latitude: number, longitude: number) => {
+    setCoordinateText(`${latitude}, ${longitude}`);
+    onChange({ latitude, longitude, locationStatus: "resolving" });
+  };
+
+  const onCoordinateChange = (value: string) => {
+    setCoordinateText(value);
+    const coordinates = parseLatLngText(value);
+    if (!coordinates) return;
+    onChange({
+      latitude: coordinates.lat,
+      longitude: coordinates.lng,
+      locationStatus: "resolving",
+    });
+  };
+
+  const onPasteCoordinates = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const coordinates = parseLatLngText(clipboardText);
+
+      if (!coordinates) {
+        toast.error(copy.coordinatesInvalid);
+        return;
+      }
+
+      updateCoordinates(coordinates.lat, coordinates.lng);
+      setMapRevision((revision) => revision + 1);
+      toast.success(copy.coordinatesPasted);
+    } catch {
+      toast.error(copy.coordinatesPasteError);
+    }
+  };
+
+  const locationLabel =
+    photo.placeFormatted ||
+    photo.fullAddress ||
+    [photo.city || photo.region, photo.country].filter(Boolean).join(", ");
+
+  return (
+    <section className={styles.locationPicker}>
+      <div className={styles.locationSearch}>
+        <span>{copy.addressSearch}</span>
+        <div className={styles.locationSearchControl}>
+          <div className={styles.locationSearchInputWrap}>
+            <SearchIcon size={14} aria-hidden="true" />
+            <input
+              value={addressQuery}
+              disabled={disabled}
+              placeholder={copy.addressSearchPlaceholder}
+              autoComplete="off"
+              onChange={(event) => {
+                setAddressQuery(event.target.value);
+                if (addressSearchMessage) setAddressSearchMessage(null);
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                void searchAddress();
+              }}
+            />
+          </div>
+          <button
+            type="button"
+            disabled={disabled || isAddressSearching || addressQuery.trim().length < 2}
+            onClick={() => void searchAddress()}
+          >
+            {isAddressSearching ? (
+              <LoaderCircleIcon className={styles.spin} size={13} />
+            ) : (
+              <SearchIcon size={13} />
+            )}
+            {isAddressSearching ? copy.addressSearching : copy.addressSearchAction}
+          </button>
+        </div>
+        {addressResults.length > 0 ? (
+          <div className={styles.locationResults} aria-live="polite">
+            {addressResults.map((result) => (
+              <button
+                key={result.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => selectAddress(result)}
+              >
+                <MapPinIcon size={14} aria-hidden="true" />
+                <span>
+                  <strong>{result.name}</strong>
+                  <small>{result.displayName}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {addressSearchMessage ? (
+          <p className={styles.locationMessage} role="status">
+            {addressSearchMessage}
+          </p>
+        ) : null}
+        <a
+          className={styles.locationAttribution}
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
+        >
+          {copy.addressSearchHint}
+        </a>
+      </div>
+
+      <div className={styles.fieldGrid}>
+        <Field label={copy.city}>
+          <input
+            value={photo.city}
+            disabled={disabled}
+            placeholder={copy.cityPlaceholder}
+            onChange={(event) =>
+              onChange({ city: event.target.value, locationStatus: "resolved" })
+            }
+          />
+        </Field>
+        <Field label={copy.country}>
+          <input
+            value={photo.countryCode}
+            disabled={disabled}
+            maxLength={2}
+            placeholder={copy.countryPlaceholder}
+            onChange={(event) =>
+              onChange({
+                countryCode: event.target.value.toUpperCase(),
+                locationStatus: "resolved",
+              })
+            }
+          />
+        </Field>
+      </div>
+
+      <div className={styles.locationSummary}>
+        {photo.locationStatus === "resolving" ? (
+          <LoaderCircleIcon size={14} className={styles.spin} />
+        ) : (
+          <MapPinIcon size={14} />
+        )}
+        <span>
+          <strong>
+            {photo.locationStatus === "resolving"
+              ? copy.gpsResolving
+              : locationLabel || copy.noGps}
+          </strong>
+          <small>
+            {hasCoordinates
+              ? formatGPSCoordinates(photo.latitude!, photo.longitude!)
+              : copy.noCoordinates}
+          </small>
+        </span>
+      </div>
+      {photo.locationStatus === "error" && hasCoordinates ? (
+        <p className={styles.locationMessage} role="status">
+          {copy.locationResolveError}
+        </p>
+      ) : null}
+
+      <div className={styles.coordinateHeader}>
+        <span>{copy.coordinates}</span>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => void onPasteCoordinates()}
+        >
+          {copy.pasteCoordinates}
+        </button>
+      </div>
+      <input
+        className={styles.coordinateInput}
+        value={coordinateText}
+        disabled={disabled}
+        placeholder="34.6875, 135.5259"
+        onChange={(event) => onCoordinateChange(event.target.value)}
+      />
+
+      <div className={styles.locationMap}>
+        <MapComponent
+          key={mapRevision}
+          id={`batch-photo-location-${photo.id}`}
+          draggableMarker={!disabled}
+          markers={
+            hasCoordinates
+              ? [
+                  {
+                    id: "location",
+                    longitude: photo.longitude!,
+                    latitude: photo.latitude!,
+                  },
+                ]
+              : []
+          }
+          initialViewState={{
+            longitude: hasCoordinates ? photo.longitude! : 0,
+            latitude: hasCoordinates ? photo.latitude! : 20,
+            zoom: hasCoordinates ? 10 : 1,
+          }}
+          onMarkerDragEnd={({ lat, lng }) => updateCoordinates(lat, lng)}
+        />
+      </div>
+    </section>
+  );
+}
+
 function PhotoInspector({
   photo,
   copy,
+  locale,
   timeZoneOptions,
   disabled,
   onChange,
@@ -1548,6 +1962,7 @@ function PhotoInspector({
 }: {
   photo: ImportPhoto;
   copy: ImportCopy;
+  locale: "en" | "zh-CN";
   timeZoneOptions: ReturnType<typeof getCaptureTimeZoneOptions>;
   disabled: boolean;
   onChange: (changes: Partial<ImportPhoto>) => void;
@@ -1576,25 +1991,14 @@ function PhotoInspector({
         <div className={styles.inspectorFields}>
           <Field label={copy.title}><input value={photo.title} disabled={disabled} placeholder={copy.titlePlaceholder} onChange={(event) => onChange({ title: event.target.value, generatedTitle: false })} /></Field>
           <Field label={copy.description}><textarea rows={4} value={photo.description} disabled={disabled} placeholder={copy.descriptionPlaceholder} onChange={(event) => onChange({ description: event.target.value, generatedDescription: false })} /></Field>
-          <div className={styles.fieldGrid}>
-            <Field label={copy.city}><input value={photo.city} disabled={disabled} placeholder={copy.cityPlaceholder} onChange={(event) => onChange({ city: event.target.value })} /></Field>
-            <Field label={copy.country}><input value={photo.countryCode} disabled={disabled} maxLength={2} placeholder={copy.countryPlaceholder} onChange={(event) => onChange({ countryCode: event.target.value.toUpperCase() })} /></Field>
-          </div>
-          <div className={styles.locationHint}>
-            {photo.locationStatus === "resolving" ? <LoaderCircleIcon size={13} className="animate-spin" /> : <MapPinIcon size={13} />}
-            <span>
-              {photo.latitude === undefined
-                ? copy.noGps
-                : photo.locationStatus === "resolving"
-                  ? copy.gpsResolving
-                  : photo.locationStatus === "resolved"
-                    ? copy.gpsResolved
-                    : photo.locationStatus === "error"
-                      ? copy.gpsUnresolved
-                      : copy.gpsRecorded}
-            </span>
-            {photo.latitude !== undefined ? <code>{photo.latitude.toFixed(5)}, {photo.longitude?.toFixed(5)}</code> : null}
-          </div>
+          <PhotoLocationPicker
+            key={photo.id}
+            photo={photo}
+            copy={copy}
+            locale={locale}
+            disabled={disabled}
+            onChange={onChange}
+          />
           <div className={styles.dateTimeGrid}>
             <Field label={copy.date}><input type="datetime-local" step="1" value={photo.dateTimeOriginal} disabled={disabled} onChange={(event) => onChange({ dateTimeOriginal: event.target.value })} /></Field>
             <Field label={copy.timeZone}>

@@ -66,53 +66,80 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
         <p>{copy.common.frames}</p>
       </div>
 
-      <div className={styles.countryGalleryGrid}>
-        {country.cities.map((city, index) => {
+      <div className={styles.countryCityGroups}>
+        {country.cities.map((city, cityIndex) => {
           const cityName = localizePlaceName(city.city, locale);
-          const coverPhoto = city.photos?.[0] ?? {
-            id: `cover-${city.id}`,
-            ...city.image,
-            title: city.city,
-          };
+          const cityPhotos = city.photos?.length
+            ? city.photos
+            : [
+                {
+                  id: `cover-${city.id}`,
+                  ...city.image,
+                  title: city.city,
+                  description: "",
+                  blurData: "",
+                },
+              ];
 
           return (
-            <button
-              type="button"
-              className={styles.countryGalleryCard}
-              data-motion-image
-              data-motion-parallax
-              data-motion-hover
-              onClick={() =>
-                setSelection({ city, photoId: coverPhoto.id })
-              }
-              aria-label={copy.country.openGallery(cityName, city.photoCount)}
-              key={city.id}
-            >
-              <div className={styles.countryGalleryImage}>
-                <Image
-                  src={coverPhoto.url}
-                  alt={coverPhoto.title || cityName}
-                  fill
-                  loader={getArchiveImageLoader(coverPhoto.url)}
-                  priority={index < 3}
-                  sizes="(max-width: 600px) 92vw, (max-width: 900px) 46vw, 31vw"
-                  className={styles.imageCover}
-                />
-                <div className={styles.countryGalleryShade} />
-              </div>
-              <span className={styles.countryGalleryNumber}>
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div className={styles.countryGalleryCopy}>
-                <p>{copy.country.cityFrames(city.year, city.photoCount)}</p>
+            <section className={styles.countryCityGroup} key={city.id}>
+              <header className={styles.countryCityGroupHeader}>
+                <span>{String(cityIndex + 1).padStart(2, "0")}</span>
                 <h2>{cityName}</h2>
+                <p>{copy.country.cityFrames(city.year, city.photoCount)}</p>
+              </header>
+
+              <div className={styles.countryGalleryGrid}>
+                {cityPhotos.map((photo, photoIndex) => {
+                  const photoTitle = photo.title || copy.common.untitled;
+
+                  return (
+                    <button
+                      type="button"
+                      className={styles.countryGalleryCard}
+                      data-motion-image
+                      data-motion-parallax
+                      data-motion-hover
+                      onClick={() =>
+                        setSelection({ city, photoId: photo.id })
+                      }
+                      aria-label={copy.country.openPhoto(
+                        photoTitle,
+                        cityName,
+                        photoIndex + 1,
+                        cityPhotos.length,
+                      )}
+                      key={photo.id}
+                    >
+                      <div className={styles.countryGalleryImage}>
+                        <Image
+                          src={photo.url}
+                          alt={photoTitle}
+                          fill
+                          loader={getArchiveImageLoader(photo.url)}
+                          priority={cityIndex === 0 && photoIndex < 3}
+                          sizes="(max-width: 600px) 92vw, (max-width: 900px) 46vw, 31vw"
+                          className={styles.imageCover}
+                        />
+                        <div className={styles.countryGalleryShade} />
+                      </div>
+                      <span className={styles.countryGalleryNumber}>
+                        {String(photoIndex + 1).padStart(2, "0")}
+                      </span>
+                      <div className={styles.countryPhotoCopy}>
+                        <p>{city.year}</p>
+                        <h3>{photoTitle}</h3>
+                      </div>
+                      <ArrowUpRight
+                        className={styles.countryGalleryArrow}
+                        size={17}
+                        strokeWidth={1.3}
+                      />
+                    </button>
+                  );
+                })}
               </div>
-              <ArrowUpRight
-                className={styles.countryGalleryArrow}
-                size={17}
-                strokeWidth={1.3}
-              />
-            </button>
+            </section>
           );
         })}
       </div>

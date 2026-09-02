@@ -2748,11 +2748,52 @@
   color: var(--site-ink);
 }
 
+.countryCityGroups {
+  display: grid;
+  gap: clamp(4.5rem, 8vw, 8rem);
+  margin-top: clamp(2.5rem, 4vw, 4rem);
+}
+
+.countryCityGroup {
+  min-width: 0;
+}
+
+.countryCityGroupHeader {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  gap: clamp(1rem, 2vw, 2rem);
+  align-items: end;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--site-line);
+}
+
+.countryCityGroupHeader > span,
+.countryCityGroupHeader > p {
+  margin: 0 0 0.22rem;
+  color: var(--site-muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.countryCityGroupHeader h2 {
+  margin: 0;
+  font-family: var(--site-serif);
+  font-size: clamp(2rem, 3.6vw, 3.8rem);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+}
+
+.countryCityGroupHeader > p {
+  text-align: right;
+}
+
 .countryGalleryGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(1rem, 2vw, 1.8rem);
-  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: clamp(1.25rem, 2vw, 2rem);
 }
 
 .countryGalleryCard {
@@ -2798,6 +2839,7 @@
 
 .countryGalleryNumber,
 .countryGalleryCopy,
+.countryPhotoCopy,
 .countryGalleryArrow {
   position: absolute;
   z-index: 2;
@@ -2814,6 +2856,33 @@
   right: 1.15rem;
   bottom: 1.15rem;
   left: 1.15rem;
+}
+
+.countryPhotoCopy {
+  right: 1.15rem;
+  bottom: 1.15rem;
+  left: 1.15rem;
+}
+
+.countryPhotoCopy p {
+  margin: 0 0 0.45rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.62rem;
+  letter-spacing: 0.11em;
+}
+
+.countryPhotoCopy h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  max-width: 18ch;
+  margin: 0;
+  font-family: var(--site-serif);
+  font-size: clamp(1.35rem, 2vw, 2.25rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .countryGalleryCopy p {
@@ -4233,6 +4302,21 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 0.45rem;
+  }
+
+  .countryCityGroups {
+    gap: 4.5rem;
+  }
+
+  .countryCityGroupHeader {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.8rem;
+  }
+
+  .countryCityGroupHeader > p {
+    grid-column: 2;
+    margin-top: 0.2rem;
+    text-align: left;
   }
 
   .countryGalleryGrid {
