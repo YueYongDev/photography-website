@@ -1079,7 +1079,7 @@
 }
 
 .mapFrame {
-  height: clamp(15rem, 30svh, 21rem);
+  height: clamp(18rem, 42svh, 28rem);
   margin-top: 0.65rem;
   overflow: hidden;
   border: 1px solid var(--studio-line);
@@ -1091,13 +1091,6 @@
 .mapSkeleton {
   width: 100%;
   height: 100%;
-}
-
-.coordinateDescription {
-  margin: 0.55rem 0 0;
-  color: var(--studio-muted);
-  font-size: 0.48rem;
-  line-height: 1.5;
 }
 
 .technicalStorageNote {

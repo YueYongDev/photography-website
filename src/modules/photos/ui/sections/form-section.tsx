@@ -991,7 +991,6 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                   value={coordinateText}
                   placeholder="34.6875, 135.5259"
                   onChange={(event) => onCoordinateChange(event.target.value)}
-                  aria-describedby="photo-coordinate-description"
                 />
                 <div className={styles.mapFrame}>
                   <Suspense
@@ -1012,9 +1011,6 @@ const FormSectionSuspense = ({ photoId }: { photoId: string }) => {
                     />
                   </Suspense>
                 </div>
-                <p className={styles.coordinateDescription} id="photo-coordinate-description">
-                  {copy.editor.publicPhotoNote}
-                </p>
                 </section>
               )}
 

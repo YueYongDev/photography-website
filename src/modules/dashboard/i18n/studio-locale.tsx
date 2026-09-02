@@ -226,8 +226,6 @@ const english = {
     aiSuccess: "AI description generated",
     aiError: "The AI description could not be generated",
     publicPhoto: "Public photograph",
-    publicPhotoNote:
-      "This photograph remains public. These controls only decide where it is featured on the site.",
     copyLink: "Copy photograph link",
     dimensions: "Dimensions",
     camera: "Camera",
@@ -530,8 +528,6 @@ const chinese: typeof english = {
     aiSuccess: "AI 简介已生成",
     aiError: "暂时无法生成 AI 简介",
     publicPhoto: "公开照片",
-    publicPhotoNote:
-      "这张照片始终公开；上面的开关只决定它会被重点展示在哪些页面。",
     copyLink: "复制照片链接",
     dimensions: "尺寸",
     camera: "相机",
