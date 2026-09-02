@@ -14,7 +14,6 @@ import {
 import {
   type TravelCityEntry,
   type TravelCountryGroup,
-  type TravelPhotoEntry,
 } from "@/modules/travel/lib/country-groups";
 import { CountryGalleryViewer } from "@/modules/travel/ui/components/country-gallery-viewer";
 import styles from "@/modules/site/ui/public-site.module.css";
@@ -26,21 +25,6 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
     photoId: string;
   } | null>(null);
   const countryName = localizeCountryName(country.name, country.code, locale);
-  const galleryItems = country.cities.flatMap((city) => {
-    const photos: TravelPhotoEntry[] = city.photos?.length
-      ? city.photos
-      : [
-          {
-            id: `cover-${city.id}`,
-            ...city.image,
-            title: city.city,
-            description: "",
-            blurData: "",
-          },
-        ];
-
-    return photos.map((photo) => ({ city, photo }));
-  });
   const fallbackHref =
     country.code === "NZ"
       ? "/journeys/newzealand-2026"
@@ -83,8 +67,13 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
       </div>
 
       <div className={styles.countryGalleryGrid}>
-        {galleryItems.map(({ city, photo }, index) => {
+        {country.cities.map((city, index) => {
           const cityName = localizePlaceName(city.city, locale);
+          const coverPhoto = city.photos?.[0] ?? {
+            id: `cover-${city.id}`,
+            ...city.image,
+            title: city.city,
+          };
 
           return (
             <button
@@ -93,16 +82,18 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
               data-motion-image
               data-motion-parallax
               data-motion-hover
-              onClick={() => setSelection({ city, photoId: photo.id })}
+              onClick={() =>
+                setSelection({ city, photoId: coverPhoto.id })
+              }
               aria-label={copy.country.openGallery(cityName, city.photoCount)}
-              key={`${city.id}-${photo.id}`}
+              key={city.id}
             >
               <div className={styles.countryGalleryImage}>
                 <Image
-                  src={photo.url}
-                  alt={photo.title || cityName}
+                  src={coverPhoto.url}
+                  alt={coverPhoto.title || cityName}
                   fill
-                  loader={getArchiveImageLoader(photo.url)}
+                  loader={getArchiveImageLoader(coverPhoto.url)}
                   priority={index < 3}
                   sizes="(max-width: 600px) 92vw, (max-width: 900px) 46vw, 31vw"
                   className={styles.imageCover}
@@ -113,10 +104,7 @@ export const CountryView = ({ country }: { country: TravelCountryGroup }) => {
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div className={styles.countryGalleryCopy}>
-                <p>
-                  {city.year}
-                  {photo.title ? ` · ${photo.title}` : ""}
-                </p>
+                <p>{copy.country.cityFrames(city.year, city.photoCount)}</p>
                 <h2>{cityName}</h2>
               </div>
               <ArrowUpRight

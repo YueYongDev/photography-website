@@ -80,9 +80,7 @@ const unselectedPhotoCondition = and(
 )!;
 
 const photoNeedsReviewCondition = sql<boolean>`(
-  nullif(trim(${photos.title}), '') is null
-  or nullif(trim(${photos.description}), '') is null
-  or ${photos.dateTimeOriginal} is null
+  ${photos.dateTimeOriginal} is null
   or nullif(trim(${photos.country}), '') is null
   or nullif(trim(${photos.countryCode}), '') is null
   or case
@@ -90,10 +88,6 @@ const photoNeedsReviewCondition = sql<boolean>`(
       then nullif(trim(${photos.region}), '')
     else nullif(trim(${photos.city}), '')
   end is null
-  or (
-    nullif(trim(${photos.make}), '') is null
-    and nullif(trim(${photos.model}), '') is null
-  )
 )`;
 
 const getCachedSelectedPhotos = unstable_cache(
