@@ -5,10 +5,11 @@ import {
 } from "@/trpc/init";
 import { db } from "@/db/drizzle";
 import { and, desc, eq, lt, or } from "drizzle-orm";
-import { citySets } from "@/db/schema/photos";
+import { citySets, photos } from "@/db/schema/photos";
 import { z } from "zod";
 import { unstable_cache } from "next/cache";
 import { PUBLIC_PHOTOS_CACHE_TAG } from "@/lib/cache-tags";
+import { mergeCityAlbums } from "@/modules/travel/lib/city-albums";
 
 const getCachedTravelArchive = unstable_cache(
   async (limit: number) => {
@@ -24,6 +25,17 @@ const getCachedTravelArchive = unstable_cache(
         updatedAt: true,
       },
       with: {
+        photos: {
+          columns: {
+            id: true,
+            url: true,
+            width: true,
+            height: true,
+            aspectRatio: true,
+          },
+          orderBy: [desc(photos.updatedAt), desc(photos.id)],
+          limit: 3,
+        },
         coverPhoto: {
           columns: {
             id: true,
@@ -42,9 +54,9 @@ const getCachedTravelArchive = unstable_cache(
       limit,
     });
 
-    return { items };
+    return { items: mergeCityAlbums(items) };
   },
-  ["travel-archive-v3"],
+  ["travel-archive-v4-city-albums"],
   { revalidate: 300, tags: [PUBLIC_PHOTOS_CACHE_TAG] }
 );
 

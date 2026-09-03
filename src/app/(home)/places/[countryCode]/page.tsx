@@ -40,41 +40,7 @@ const CountryPage = async ({ params }: { params: Params }) => {
 
   if (!country) notFound();
 
-  const cities = await Promise.all(
-    country.cities.map(async (city) => {
-      try {
-        const citySet = await trpc.photos.getCitySetByCity({
-          city: city.city,
-          countryCode: country.code,
-        });
-        const seen = new Set<string>();
-        const photos = [citySet?.coverPhoto, ...(citySet?.photos ?? [])].flatMap(
-          (photo) => {
-            if (!photo || seen.has(photo.id)) return [];
-            seen.add(photo.id);
-            return [
-              {
-                id: photo.id,
-                url: photo.url,
-                title: photo.title,
-                description: photo.description,
-                blurData: photo.blurData,
-                width: photo.width,
-                height: photo.height,
-                aspectRatio: photo.aspectRatio,
-              },
-            ];
-          },
-        );
-
-        return photos.length > 0 ? { ...city, photos } : city;
-      } catch {
-        return city;
-      }
-    }),
-  );
-
-  return <CountryView country={{ ...country, cities }} />;
+  return <CountryView country={country} />;
 };
 
 export default CountryPage;

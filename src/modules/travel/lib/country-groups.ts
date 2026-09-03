@@ -26,6 +26,7 @@ export type TravelCityEntry = {
   photoCount: number;
   year: string;
   image: TravelImage;
+  fallbackImages?: TravelImage[];
   photos?: TravelPhotoEntry[];
 };
 
@@ -156,6 +157,9 @@ export const getTravelEntries = (archive: TravelArchive): TravelCityEntry[] => {
         height: item.coverPhoto!.height,
         aspectRatio: item.coverPhoto!.aspectRatio,
       },
+      fallbackImages: item.photos.filter(
+        (photo) => photo.url !== item.coverPhoto!.url,
+      ),
     }));
 
   return remoteEntries.length > 0 ? remoteEntries : fallbackEntries;

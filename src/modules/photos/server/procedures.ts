@@ -29,6 +29,7 @@ import { deletePhotoObjectByUrl } from "@/lib/qiniu-storage";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { PUBLIC_PHOTOS_CACHE_TAG } from "@/lib/cache-tags";
 import { measureServerStep } from "@/lib/server-performance";
+import { getCityAliases, mergeCityAlbums } from "@/modules/travel/lib/city-albums";
 
 type CitySetsCursor =
   | {
@@ -765,14 +766,22 @@ export const photosRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
+      if (input.countryCode) {
+        const matches = await db.query.citySets.findMany({
+          where: and(
+            inArray(citySets.city, getCityAliases(input.city, input.countryCode)),
+            eq(citySets.countryCode, input.countryCode.toUpperCase()),
+          ),
+          with: { coverPhoto: true, photos: true },
+          orderBy: [desc(citySets.photoCount), desc(citySets.updatedAt)],
+        });
+        const album = mergeCityAlbums(matches)[0];
+        return album ? { ...album, photoCount: album.photos.length } : null;
+      }
+
       return (
         (await db.query.citySets.findFirst({
-          where: input.countryCode
-            ? and(
-                eq(citySets.city, input.city),
-                eq(citySets.countryCode, input.countryCode.toUpperCase()),
-              )
-            : eq(citySets.city, input.city),
+          where: eq(citySets.city, input.city),
           with: {
             coverPhoto: true,
             photos: true,

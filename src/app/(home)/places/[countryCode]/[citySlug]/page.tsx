@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { getCountryGroups, toPlaceSlug } from "@/modules/travel/lib/country-groups";
+import { getCityAliases } from "@/modules/travel/lib/city-albums";
 import { CityView } from "@/modules/travel/ui/views/city-view";
 import type { TravelArchive } from "@/modules/travel/ui/views/travel-view";
 import { HydrateClient, trpc } from "@/trpc/server";
@@ -21,7 +22,9 @@ const findCity = cache(async (countryCode: string, citySlug: string) => {
     (group) => group.code.toLowerCase() === countryCode.toLowerCase(),
   );
   const city = country?.cities.find(
-    (entry) => toPlaceSlug(entry.city) === decodedCitySlug,
+    (entry) => getCityAliases(entry.city, country.code).some(
+      (alias) => toPlaceSlug(alias) === decodedCitySlug,
+    ),
   );
   return { country, city };
 });
