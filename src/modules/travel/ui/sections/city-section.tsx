@@ -16,6 +16,7 @@ import {
   useSiteLocale,
 } from "@/modules/site/i18n/site-locale";
 import { PhotoViewer } from "@/modules/site/ui/photo-viewer";
+import { getPlacesCountryCode, getPlacesCountryName } from "@/modules/travel/lib/places-country";
 import styles from "@/modules/site/ui/public-site.module.css";
 import { trpc } from "@/trpc/client";
 
@@ -67,9 +68,10 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
 
   const decodedCityName = decodeURIComponent(city);
   const displayCity = localizePlaceName(decodedCityName, locale);
+  const placesCountryCode = getPlacesCountryCode(cityData.countryCode);
   const displayCountry = localizeCountryName(
-    cityData.country,
-    cityData.countryCode,
+    getPlacesCountryName(cityData.country, cityData.countryCode),
+    placesCountryCode,
     locale
   );
   const cityPhotos = cityData.photos?.filter(
@@ -122,7 +124,7 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
       <div className={styles.cityHero}>
         <div>
           <p className={styles.eyebrow}>
-            <Link href="/places">{copy.navigation.travel}</Link> / <Link href={`/places/${cityData.countryCode.toLowerCase()}`}>{displayCountry}</Link>
+            <Link href="/places">{copy.navigation.travel}</Link> / <Link href={`/places/${placesCountryCode.toLowerCase()}`}>{displayCountry}</Link>
           </p>
           <h1 className={styles.displayTitle}>{displayCity}</h1>
         </div>
@@ -193,7 +195,7 @@ const CitySectionSuspense = ({ city, countryCode }: Props) => {
         <PhotoViewer
           activeIndex={activeIndex}
           context="place"
-          contextLabel={`${displayCountry} / ${cityData.countryCode} · ${displayCity}`}
+          contextLabel={`${displayCountry} / ${placesCountryCode} · ${displayCity}`}
           photos={viewerPhotos}
           onClose={() => setActiveIndex(null)}
           onSelect={setActiveIndex}

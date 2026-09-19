@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 
 import { getCountryGroups, toPlaceSlug } from "@/modules/travel/lib/country-groups";
 import { getCityAliases } from "@/modules/travel/lib/city-albums";
+import { getPlacesCountryCode } from "@/modules/travel/lib/places-country";
 import { CityView } from "@/modules/travel/ui/views/city-view";
 import type { TravelArchive } from "@/modules/travel/ui/views/travel-view";
 import { HydrateClient, trpc } from "@/trpc/server";
@@ -19,10 +20,10 @@ const findCity = cache(async (countryCode: string, citySlug: string) => {
     // A missing remote archive is handled as a not-found place below.
   }
   const country = getCountryGroups(archive).find(
-    (group) => group.code.toLowerCase() === countryCode.toLowerCase(),
+    (group) => group.code === getPlacesCountryCode(countryCode),
   );
   const city = country?.cities.find(
-    (entry) => getCityAliases(entry.city, country.code).some(
+    (entry) => getCityAliases(entry.city, entry.countryCode).some(
       (alias) => toPlaceSlug(alias) === decodedCitySlug,
     ),
   );
@@ -50,14 +51,18 @@ const CityPage = async ({ params }: { params: Params }) => {
 
   if (!country || !city || city.id.startsWith("fallback-")) notFound();
 
+  if (countryCode.toUpperCase() === "HK") {
+    permanentRedirect(`/places/cn/${toPlaceSlug(city.city)}`);
+  }
+
   void trpc.photos.getCitySetByCity.prefetch({
     city: city.city,
-    countryCode: country.code,
+    countryCode: city.countryCode,
   });
 
   return (
     <HydrateClient>
-      <CityView city={city.city} countryCode={country.code} />
+      <CityView city={city.city} countryCode={city.countryCode} />
     </HydrateClient>
   );
 };

@@ -30,10 +30,32 @@ export type JourneyMeta = {
   chapters: JourneyChapter[];
   frames: JourneyFrame[];
   closing: string;
+  roadbookUrl?: string;
   draft?: boolean;
 };
 
 export const journeys: JourneyMeta[] = [
+  {
+    slug: "georgia-2026",
+    title: "Georgia, 2026",
+    subtitle: "A journey waiting to be photographed",
+    description:
+      "A place held open for photographs and field notes from an upcoming road journey through Georgia.",
+    country: "Georgia",
+    countryCode: "GE",
+    dates: "26 September — 04 October 2026",
+    year: "2026",
+    route: ["Tbilisi", "Kazbegi", "Telavi", "Sighnaghi"],
+    coverImage: null,
+    coverAlt: "Cover photograph to be added after the Georgia journey",
+    intro:
+      "The route is ready; the photographs and words are not. This page will become the complete journey after returning from Georgia. Until then, the standalone roadbook remains available as a local reference.",
+    chapters: [],
+    frames: [],
+    closing: "To be continued on the road.",
+    roadbookUrl: "/local-roadbook/georgia/#day-3",
+    draft: true,
+  },
   {
     slug: "newzealand-2026",
     title: "New Zealand, 2026",

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 
 import { getCountryGroups } from "@/modules/travel/lib/country-groups";
+import { getPlacesCountryCode } from "@/modules/travel/lib/places-country";
 import { CountryView } from "@/modules/travel/ui/views/country-view";
 import type { TravelArchive } from "@/modules/travel/ui/views/travel-view";
 import { trpc } from "@/trpc/server";
@@ -24,7 +25,7 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { countryCode } = await params;
   const country = getCountryGroups(await getArchive()).find(
-    (group) => group.code.toLowerCase() === countryCode.toLowerCase(),
+    (group) => group.code === getPlacesCountryCode(countryCode),
   );
   return {
     title: country ? `${country.name} · Places` : "Country · Places",
@@ -34,6 +35,7 @@ export const generateMetadata = async ({
 
 const CountryPage = async ({ params }: { params: Params }) => {
   const { countryCode } = await params;
+  if (countryCode.toUpperCase() === "HK") permanentRedirect("/places/cn");
   const country = getCountryGroups(await getArchive()).find(
     (group) => group.code.toLowerCase() === countryCode.toLowerCase(),
   );

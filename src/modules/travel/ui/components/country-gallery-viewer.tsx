@@ -39,7 +39,7 @@ export const CountryGalleryViewer = ({
     cities.find((entry) => entry.id === initialCityId) ?? cities[0];
   const cityName = city ? localizePlaceName(city.city, locale) : countryName;
   const query = trpc.photos.getCitySetByCity.useQuery(
-    { city: city?.city ?? "", countryCode },
+    { city: city?.city ?? "", countryCode: city?.countryCode ?? countryCode },
     { enabled: Boolean(city) && !city?.photos?.length },
   );
 

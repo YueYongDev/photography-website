@@ -115,6 +115,11 @@ const english = {
     all: "All journeys",
     route: "Route",
     prologue: "Notes",
+    roadbook: "Roadbook",
+    roadbookTitle: "The plan before the photographs",
+    roadbookDescription:
+      "A standalone local HTML roadbook for the upcoming journey. It opens separately from its original file and remains outside the public website bundle.",
+    openRoadbook: "Open local roadbook",
     contactSheet: "Photographs",
     coda: "Afterword",
     browseByPlace: (country: string) => `View ${country}`,
@@ -321,6 +326,11 @@ const chinese = {
     all: "全部旅程",
     route: "路线",
     prologue: "记录",
+    roadbook: "路书",
+    roadbookTitle: "照片之前，先把路线放在这里",
+    roadbookDescription:
+      "这是本次出发前准备的独立本机 HTML 路书。它会从原文件读取并在新窗口打开，不会复制进公开网站。",
+    openRoadbook: "打开本机路书",
     contactSheet: "照片",
     coda: "后记",
     browseByPlace: (country: string) => `查看${country}`,
@@ -505,6 +515,7 @@ const countryNames: Record<string, string> = {
   DE: "德国",
   ES: "西班牙",
   FR: "法国",
+  GE: "格鲁吉亚",
   GB: "英国",
   HK: "中国香港",
   IS: "冰岛",
@@ -618,6 +629,20 @@ type JourneyCopyTranslation = Pick<
 };
 
 const completedJourneyTranslations: Record<string, JourneyCopyTranslation> = {
+  "georgia-2026": {
+    title: "格鲁吉亚，2026",
+    subtitle: "一段尚未被拍下的旅程",
+    description: "为即将启程的格鲁吉亚自驾预留。照片和路上笔记，回来以后再慢慢补上。",
+    country: "格鲁吉亚",
+    dates: "2026 年 9 月 26 日至 10 月 4 日",
+    route: ["第比利斯", "卡兹别克", "特拉维", "锡格那吉"],
+    coverAlt: "格鲁吉亚旅程封面将在返程后补充",
+    intro:
+      "路线已经准备好，照片和文字还在路上。等从格鲁吉亚回来，这里会变成一篇完整的旅程记录；现在先留出位置，并把独立路书放在旁边。",
+    chapters: [],
+    frames: [],
+    closing: "未完待续，先去路上。",
+  },
   "newzealand-2026": {
     title: "新西兰，2026",
     subtitle: "南岛七站",

@@ -2089,6 +2089,34 @@
   line-height: 1.08;
 }
 
+.journeyRoadbook {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
+  gap: clamp(3rem, 8vw, 9rem);
+  padding: clamp(4rem, 7vw, 7rem) clamp(1.5rem, 5vw, 5.5rem);
+  border-top: 1px solid var(--site-line);
+  background: var(--site-white);
+}
+
+.journeyRoadbook h2 {
+  max-width: 16ch;
+  margin: 0;
+  font-family: var(--site-serif);
+  font-size: clamp(2.2rem, 4vw, 4rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+}
+
+.journeyRoadbook div > p {
+  max-width: 40rem;
+  margin: 1.5rem 0 2rem;
+  color: var(--site-muted);
+  font-family: var(--site-serif);
+  font-size: 1rem;
+  line-height: 1.72;
+}
+
 .journeyReadingLayout {
   display: grid;
   grid-template-columns: minmax(10rem, 0.22fr) minmax(0, 1fr);
@@ -4257,7 +4285,8 @@
     gap: 0.45rem;
   }
 
-  .journeyPrologue {
+  .journeyPrologue,
+  .journeyRoadbook {
     grid-template-columns: 1fr;
     gap: 1rem;
   }

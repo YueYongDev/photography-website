@@ -110,78 +110,101 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
         <p>{content.intro}</p>
       </section>
 
-      <div className={styles.journeyReadingLayout}>
-        <nav
-          className={styles.journeyRouteRail}
-          aria-label={copy.journey.route}
-        >
-          <span>{copy.journey.route}</span>
-          {content.chapters.map((chapter, index) => (
-            <button
-              type="button"
-              className={
-                index === activeChapter ? styles.journeyRouteActive : ""
-              }
-              aria-current={index === activeChapter ? "location" : undefined}
-              onClick={() => openChapter(index)}
-              key={chapter.number}
+      {content.roadbookUrl && (
+        <section className={styles.journeyRoadbook} data-motion-reveal>
+          <p className={styles.eyebrow}>{copy.journey.roadbook}</p>
+          <div>
+            <h2>{copy.journey.roadbookTitle}</h2>
+            <p>{copy.journey.roadbookDescription}</p>
+            <a
+              href={content.roadbookUrl}
+              className={styles.textLink}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <small>{chapter.number}</small>
-              <strong>{chapter.place}</strong>
-            </button>
-          ))}
-        </nav>
+              {copy.journey.openRoadbook}{" "}
+              <ArrowUpRight size={15} strokeWidth={1.4} />
+            </a>
+          </div>
+        </section>
+      )}
 
-        <div className={styles.journeyChapters}>
-          {content.chapters.map((chapter, index) => (
-            <section
-              id={`journey-chapter-${index}`}
-              className={styles.journeyChapter}
-              data-chapter-index={index}
-              key={chapter.number}
-            >
-              <div className={styles.journeyChapterText} data-motion-reveal>
-                <p className={styles.eyebrow}>
-                  {chapter.number} / {chapter.place}
-                </p>
-                <h2>{chapter.title}</h2>
-                {chapter.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-              {chapter.frame && (
-                <figure
-                  className={`${styles.journeyChapterFrame} ${
-                    chapter.frame.format === "portrait"
-                      ? styles.journeyChapterFramePortrait
-                      : ""
-                  }`}
-                  data-motion-image
-                  data-motion-parallax
-                >
-                  <div>
-                    <Image
-                      src={chapter.frame.src}
-                      alt={chapter.frame.alt}
-                      fill
-                      loader={getArchiveImageLoader(chapter.frame.src)}
-                      sizes="(min-width: 900px) 54vw, 92vw"
-                      className={styles.imageCover}
-                    />
-                  </div>
-                  <figcaption>
-                    <span>
-                      {String(index + 1).padStart(2, "0")} /{" "}
-                      {chapter.frame.location}
-                    </span>
-                    <span>{chapter.frame.caption}</span>
-                  </figcaption>
-                </figure>
-              )}
-            </section>
-          ))}
+      {content.chapters.length > 0 && (
+        <div className={styles.journeyReadingLayout}>
+          <nav
+            className={styles.journeyRouteRail}
+            aria-label={copy.journey.route}
+          >
+            <span>{copy.journey.route}</span>
+            {content.chapters.map((chapter, index) => (
+              <button
+                type="button"
+                className={
+                  index === activeChapter ? styles.journeyRouteActive : ""
+                }
+                aria-current={
+                  index === activeChapter ? "location" : undefined
+                }
+                onClick={() => openChapter(index)}
+                key={chapter.number}
+              >
+                <small>{chapter.number}</small>
+                <strong>{chapter.place}</strong>
+              </button>
+            ))}
+          </nav>
+
+          <div className={styles.journeyChapters}>
+            {content.chapters.map((chapter, index) => (
+              <section
+                id={`journey-chapter-${index}`}
+                className={styles.journeyChapter}
+                data-chapter-index={index}
+                key={chapter.number}
+              >
+                <div className={styles.journeyChapterText} data-motion-reveal>
+                  <p className={styles.eyebrow}>
+                    {chapter.number} / {chapter.place}
+                  </p>
+                  <h2>{chapter.title}</h2>
+                  {chapter.paragraphs.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+                {chapter.frame && (
+                  <figure
+                    className={`${styles.journeyChapterFrame} ${
+                      chapter.frame.format === "portrait"
+                        ? styles.journeyChapterFramePortrait
+                        : ""
+                    }`}
+                    data-motion-image
+                    data-motion-parallax
+                  >
+                    <div>
+                      <Image
+                        src={chapter.frame.src}
+                        alt={chapter.frame.alt}
+                        fill
+                        loader={getArchiveImageLoader(chapter.frame.src)}
+                        sizes="(min-width: 900px) 54vw, 92vw"
+                        className={styles.imageCover}
+                      />
+                    </div>
+                    <figcaption>
+                      <span>
+                        {String(index + 1).padStart(2, "0")} /{" "}
+                        {chapter.frame.location}
+                      </span>
+                      <span>{chapter.frame.caption}</span>
+                    </figcaption>
+                  </figure>
+                )}
+              </section>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {content.frames.length > 0 && (
         <section className={styles.journeyContactSheet}>
@@ -230,13 +253,15 @@ export const JourneyDetailView = ({ journey }: { journey: JourneyMeta }) => {
       <footer className={styles.journeyCoda} data-motion-reveal>
         <p className={styles.eyebrow}>{copy.journey.coda}</p>
         <blockquote>{content.closing}</blockquote>
-        <Link
-          href={`/places/${content.countryCode.toLowerCase()}`}
-          className={styles.textLink}
-        >
-          {copy.journey.browseByPlace(content.country)}{" "}
-          <ArrowUpRight size={15} strokeWidth={1.4} />
-        </Link>
+        {!content.draft && (
+          <Link
+            href={`/places/${content.countryCode.toLowerCase()}`}
+            className={styles.textLink}
+          >
+            {copy.journey.browseByPlace(content.country)}{" "}
+            <ArrowUpRight size={15} strokeWidth={1.4} />
+          </Link>
+        )}
       </footer>
     </article>
   );

@@ -1,4 +1,5 @@
 import type { TravelArchive } from "@/modules/travel/ui/views/travel-view";
+import { getPlacesCountryCode, getPlacesCountryName } from "./places-country";
 import {
   DEFAULT_CAPTURE_TIMEZONE_OFFSET,
   getCaptureYear,
@@ -169,10 +170,10 @@ export const getCountryGroups = (archive: TravelArchive): TravelCountryGroup[] =
   const groups = new Map<string, TravelCountryGroup>();
 
   getTravelEntries(archive).forEach((entry) => {
-    const key = entry.countryCode.toUpperCase();
+    const key = getPlacesCountryCode(entry.countryCode);
     const current = groups.get(key) ?? {
       code: key,
-      name: entry.country,
+      name: getPlacesCountryName(entry.country, entry.countryCode),
       cities: [],
       frames: 0,
       years: [],
