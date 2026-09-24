@@ -118,8 +118,8 @@ const english = {
     roadbook: "Roadbook",
     roadbookTitle: "The plan before the photographs",
     roadbookDescription:
-      "A standalone local HTML roadbook for the upcoming journey. It opens separately from its original file and remains outside the public website bundle.",
-    openRoadbook: "Open local roadbook",
+      "A standalone HTML roadbook for the upcoming journey. It opens in a new tab and remains separate from the journey page.",
+    openRoadbook: "Open the full roadbook",
     contactSheet: "Photographs",
     coda: "Afterword",
     browseByPlace: (country: string) => `View ${country}`,
@@ -329,8 +329,8 @@ const chinese = {
     roadbook: "路书",
     roadbookTitle: "照片之前，先把路线放在这里",
     roadbookDescription:
-      "这是本次出发前准备的独立本机 HTML 路书。它会从原文件读取并在新窗口打开，不会复制进公开网站。",
-    openRoadbook: "打开本机路书",
+      "这是本次出发前准备的独立 HTML 路书。它会在新窗口打开，与旅程页面保持独立。",
+    openRoadbook: "打开完整路书",
     contactSheet: "照片",
     coda: "后记",
     browseByPlace: (country: string) => `查看${country}`,

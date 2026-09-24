@@ -53,7 +53,7 @@ export const journeys: JourneyMeta[] = [
     chapters: [],
     frames: [],
     closing: "To be continued on the road.",
-    roadbookUrl: "/local-roadbook/georgia/#day-3",
+    roadbookUrl: "/roadbooks/georgia-2026/index.html#day-3",
     draft: true,
   },
   {
