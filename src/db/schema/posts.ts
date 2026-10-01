@@ -1,27 +1,26 @@
 import { InferSelectModel, sql } from "drizzle-orm";
 import {
-  datetime,
+  timestamp,
   index,
-  int,
-  json,
-  mysqlEnum,
-  mysqlTable,
+  integer,
+  jsonb,
+  pgTable,
   text,
   uniqueIndex,
   varchar,
-} from "drizzle-orm/mysql-core";
+} from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 export const timestamps = {
-  createdAt: datetime("created_at", { mode: "date", fsp: 3 })
+  createdAt: timestamp("created_at", { mode: "date", precision: 3 })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP(3)`),
-  updatedAt: datetime("updated_at", { mode: "date", fsp: 3 })
+    .default(sql`timezone('UTC', CURRENT_TIMESTAMP(3))`),
+  updatedAt: timestamp("updated_at", { mode: "date", precision: 3 })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP(3)`),
+    .default(sql`timezone('UTC', CURRENT_TIMESTAMP(3))`),
 };
 
-export const categories = mysqlTable("photo_site_categories", {
+export const categories = pgTable("photo_site_categories", {
   id: varchar("id", { length: 36 })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -29,7 +28,7 @@ export const categories = mysqlTable("photo_site_categories", {
   openId: varchar("_openid", { length: 64 }).notNull().default(""),
 });
 
-export const posts = mysqlTable(
+export const posts = pgTable(
   "photo_site_posts",
   {
     id: varchar("id", { length: 36 })
@@ -40,14 +39,14 @@ export const posts = mysqlTable(
     categoryId: varchar("category_id", { length: 36 }).references(
       () => categories.id
     ),
-    visibility: mysqlEnum("visibility", ["public", "private"])
+    visibility: text("visibility", { enum: ["public", "private"] })
       .default("private")
       .notNull(),
-    tags: json("tags").$type<string[] | null>(),
+    tags: jsonb("tags").$type<string[] | null>(),
     coverImage: text("cover_image"),
     description: text("description"),
     content: text("content"),
-    readingTimeMinutes: int("reading_time_minutes"),
+    readingTimeMinutes: integer("reading_time_minutes"),
     ...timestamps,
     openId: varchar("_openid", { length: 64 }).notNull().default(""),
   },

@@ -8,9 +8,9 @@ Browser
   v
 Vercel: Next.js public site, dashboard, Better Auth, tRPC
   |                                      |
-  | server-side MySQL                    | short-lived upload token
+  | server-side HTTPS SQL                    | short-lived upload token
   v                                      v
-CloudBase MySQL                      Qiniu Kodo
+CloudBase PostgreSQL                      Qiniu Kodo
   |                                      |
   `-- photo URLs and metadata             `-- web-ready photographs
 ```
@@ -22,9 +22,18 @@ application or photograph objects. Qiniu serves photographs through
 ## Database boundaries
 
 - Photography tables keep the `photo_site_` prefix.
-- Drizzle uses the MySQL driver and a bounded connection pool.
-- `DATABASE_URL` is server-only and must be reachable from the Vercel runtime.
-- Better Auth sessions and credentials remain in CloudBase MySQL.
+- Drizzle uses `pg-proxy` and CloudBase `/v1/rdb/exec-pgsql`.
+- `CLOUDBASE_ENV_ID` and `CLOUDBASE_API_KEY` are server-only; the free shared
+  cluster has no TCP endpoint.
+- RLS and revoked browser-role grants block direct access to business and
+  Better Auth tables; existing protected Next.js procedures enforce app access.
+- JSON arrays built inside PostgreSQL retain SELECT column order over HTTPS.
+- Photo writes trigger atomic album reconciliation. Cover foreign keys are
+  checked at commit, after cover replacement. UTC defaults compensate for the
+  gateway session timezone (PRC).
+- Interactive client-side transactions are unsupported; multi-table changes
+  use database functions/triggers within one SQL call.
+- Better Auth sessions and credentials remain in CloudBase PostgreSQL.
 - Photograph rows store public URLs, dimensions, blur data, EXIF, location,
   visibility, and editorial copy. They never contain image binaries.
 
@@ -39,6 +48,8 @@ application or photograph objects. Qiniu serves photographs through
 
 ## Migration tooling retained
 
-`scripts/cloudbase/` retains only the database export, schema, and import tools.
+`scripts/cloudbase/` retains the historical migration tools plus MySQL export,
+atomic PostgreSQL import generation, field-by-field verification, and runtime
+regression checks. Versioned PG schema changes live in `cloudbase/migrations/`.
 The abandoned CloudBase application-hosting, static-hosting, media-gateway,
 and photo-URL migration artifacts have been removed.

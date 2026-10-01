@@ -1,28 +1,27 @@
 import { InferSelectModel, relations, sql } from "drizzle-orm";
 import {
   boolean,
-  datetime,
-  double,
+  timestamp,
+  doublePrecision,
   index,
-  int,
-  mysqlEnum,
-  mysqlTable,
+  integer,
+  pgTable,
   text,
   uniqueIndex,
   varchar,
-} from "drizzle-orm/mysql-core";
+} from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 export const timestamps = {
-  createdAt: datetime("created_at", { mode: "date", fsp: 3 })
+  createdAt: timestamp("created_at", { mode: "date", precision: 3 })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP(3)`),
-  updatedAt: datetime("updated_at", { mode: "date", fsp: 3 })
+    .default(sql`timezone('UTC', CURRENT_TIMESTAMP(3))`),
+  updatedAt: timestamp("updated_at", { mode: "date", precision: 3 })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP(3)`),
+    .default(sql`timezone('UTC', CURRENT_TIMESTAMP(3))`),
 };
 
-export const photos = mysqlTable(
+export const photos = pgTable(
   "photo_site_photos",
   {
     id: varchar("id", { length: 36 })
@@ -32,12 +31,12 @@ export const photos = mysqlTable(
     title: text("title").notNull(),
     description: text("description").notNull(),
     isFavorite: boolean("is_favorite").default(false).notNull(),
-    visibility: mysqlEnum("visibility", ["public", "private"])
+    visibility: text("visibility", { enum: ["public", "private"] })
       .default("private")
       .notNull(),
-    aspectRatio: double("aspect_ratio").notNull(),
-    width: double("width").notNull(),
-    height: double("height").notNull(),
+    aspectRatio: doublePrecision("aspect_ratio").notNull(),
+    width: doublePrecision("width").notNull(),
+    height: doublePrecision("height").notNull(),
     blurData: text("blur_data").notNull(),
 
     country: varchar("country", { length: 128 }),
@@ -52,20 +51,20 @@ export const photos = mysqlTable(
     make: varchar("make", { length: 255 }),
     model: varchar("model", { length: 255 }),
     lensModel: varchar("lens_model", { length: 255 }),
-    focalLength: double("focal_length"),
-    focalLength35mm: double("focal_length_35mm"),
-    fNumber: double("f_number"),
-    iso: int("iso"),
-    exposureTime: double("exposure_time"),
-    exposureCompensation: double("exposure_compensation"),
-    latitude: double("latitude"),
-    longitude: double("longitude"),
-    gpsAltitude: double("gps_altitude"),
-    dateTimeOriginal: datetime("datetime_original", {
+    focalLength: doublePrecision("focal_length"),
+    focalLength35mm: doublePrecision("focal_length_35mm"),
+    fNumber: doublePrecision("f_number"),
+    iso: integer("iso"),
+    exposureTime: doublePrecision("exposure_time"),
+    exposureCompensation: doublePrecision("exposure_compensation"),
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
+    gpsAltitude: doublePrecision("gps_altitude"),
+    dateTimeOriginal: timestamp("datetime_original", {
       mode: "date",
-      fsp: 3,
+      precision: 3,
     }),
-    captureTimezoneOffset: int("capture_timezone_offset")
+    captureTimezoneOffset: integer("capture_timezone_offset")
       .notNull()
       .default(480),
 
@@ -79,7 +78,7 @@ export const photos = mysqlTable(
   ]
 );
 
-export const citySets = mysqlTable(
+export const citySets = pgTable(
   "photo_site_city_sets",
   {
     id: varchar("id", { length: 36 })
@@ -92,7 +91,7 @@ export const citySets = mysqlTable(
     coverPhotoId: varchar("cover_photo_id", { length: 36 })
       .references(() => photos.id)
       .notNull(),
-    photoCount: int("photo_count").default(0).notNull(),
+    photoCount: integer("photo_count").default(0).notNull(),
     ...timestamps,
     openId: varchar("_openid", { length: 64 }).notNull().default(""),
   },

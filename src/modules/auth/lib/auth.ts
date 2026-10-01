@@ -12,6 +12,7 @@ const developmentTrustedOrigins =
 
 const trustedOrigins = [
   process.env.NEXT_PUBLIC_APP_URL,
+  ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
   ...developmentTrustedOrigins,
   "https://p.yueyong.fun",
 ].filter((origin): origin is string => Boolean(origin));
@@ -20,7 +21,7 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   trustedOrigins,
   database: drizzleAdapter(db, {
-    provider: "mysql",
+    provider: "pg",
   }),
   emailAndPassword: {
     enabled: true,

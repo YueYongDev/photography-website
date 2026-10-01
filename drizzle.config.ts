@@ -5,11 +5,10 @@ config({ path: ".env.local" });
 
 export default defineConfig({
   schema: "./src/db/schema",
-  out: "./src/db/migrations",
-  dialect: "mysql",
-  dbCredentials: {
-    url: process.env.DATABASE_URL!,
-  },
+  out: "./src/db/pg-migrations",
+  dialect: "postgresql",
+  // Schema generation only. The shared PG cluster has no TCP endpoint;
+  // reviewed SQL is applied through CloudBase's versioned migrations.
   verbose: true,
   strict: true,
 });

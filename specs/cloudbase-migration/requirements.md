@@ -3,7 +3,7 @@
 ## Responsibilities
 
 - Vercel shall host the public site, dashboard, authentication, and API routes.
-- CloudBase shall provide MySQL only.
+- CloudBase shall provide PostgreSQL only.
 - Qiniu Kodo shall store and deliver web-ready photographs.
 - CloudBase Static Hosting and CloudBase Run shall not be part of the active
   web or media delivery path.
@@ -28,7 +28,7 @@
 
 ## Operations
 
-- Vercel must receive `DATABASE_URL`, Better Auth variables, and `QINIU_*`
+- Vercel must receive `CLOUDBASE_ENV_ID`, `CLOUDBASE_API_KEY`, Better Auth variables, and `QINIU_*`
   variables in the intended Preview and Production environments.
 - `p.yueyong.fun` points to Vercel; `cdn.ytools.xyz` points to Qiniu.
 - Health endpoints report database and Qiniu reachability independently.

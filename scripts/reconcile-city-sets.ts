@@ -40,7 +40,7 @@ const main = async () => {
     import("drizzle-orm"),
   ]);
   const { citySets, photos } = schema;
-  const { desc, eq } = drizzle;
+  const { desc } = drizzle;
 
   const [photoRows, existingCitySets] = await Promise.all([
     db
@@ -120,37 +120,9 @@ const main = async () => {
     process.exit(0);
   }
 
-  await db.transaction(async (tx) => {
-    for (const [key, desired] of desiredByKey) {
-      const existing = existingByKey.get(key);
-      const coverPhotoId =
-        existing && desired.photoIds.includes(existing.coverPhotoId)
-          ? existing.coverPhotoId
-          : desired.photoIds[0];
-
-      await tx
-        .insert(citySets)
-        .values({
-          country: desired.country,
-          countryCode: desired.countryCode,
-          city: desired.city,
-          coverPhotoId,
-          photoCount: desired.photoIds.length,
-        })
-        .onDuplicateKeyUpdate({
-          set: {
-            countryCode: desired.countryCode,
-            coverPhotoId,
-            photoCount: desired.photoIds.length,
-            updatedAt: new Date(),
-          },
-        });
-    }
-
-    for (const citySet of stale) {
-      await tx.delete(citySets).where(eq(citySets.id, citySet.id));
-    }
-  });
+  // One SQL call keeps the complete reconciliation in one database transaction.
+  const { executePgSql } = await import("../src/db/cloudbase-pg");
+  await executePgSql("SELECT public.photo_site_reconcile_all_albums()");
 
   console.log("City sets reconciled successfully.");
   process.exit(0);

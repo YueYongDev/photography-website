@@ -8,7 +8,7 @@ export const summaryRouter = createTRPCRouter({
   getSummary: protectedProcedure.query(async () => {
     const currentYear = new Date().getFullYear();
     const startYear = currentYear - 4;
-    const captureYear = sql<number>`YEAR(DATE_ADD(${photos.dateTimeOriginal}, INTERVAL ${photos.captureTimezoneOffset} MINUTE))`;
+    const captureYear = sql<number>`EXTRACT(YEAR FROM (${photos.dateTimeOriginal} + ${photos.captureTimezoneOffset} * INTERVAL '1 minute'))::integer`;
 
     const [
       photoCountRows,

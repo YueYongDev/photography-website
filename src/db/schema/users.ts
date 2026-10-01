@@ -1,16 +1,16 @@
 import {
   boolean,
-  datetime,
-  mysqlTable,
+  timestamp,
+  pgTable,
   text,
   varchar,
-} from "drizzle-orm/mysql-core";
+} from "drizzle-orm/pg-core";
 
 const authId = (name: string) => varchar(name, { length: 64 });
 const authTimestamp = (name: string) =>
-  datetime(name, { mode: "date", fsp: 3 });
+  timestamp(name, { mode: "date", precision: 3 });
 
-export const user = mysqlTable("photo_site_user", {
+export const user = pgTable("photo_site_user", {
   id: authId("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 320 }).notNull().unique(),
@@ -21,7 +21,7 @@ export const user = mysqlTable("photo_site_user", {
   openId: varchar("_openid", { length: 64 }).notNull().default(""),
 });
 
-export const session = mysqlTable("photo_site_session", {
+export const session = pgTable("photo_site_session", {
   id: authId("id").primaryKey(),
   expiresAt: authTimestamp("expires_at").notNull(),
   token: varchar("token", { length: 255 }).notNull().unique(),
@@ -35,7 +35,7 @@ export const session = mysqlTable("photo_site_session", {
   openId: varchar("_openid", { length: 64 }).notNull().default(""),
 });
 
-export const account = mysqlTable("photo_site_account", {
+export const account = pgTable("photo_site_account", {
   id: authId("id").primaryKey(),
   issuer: varchar("issuer", { length: 255 }).notNull(),
   accountId: varchar("account_id", { length: 255 }).notNull(),
@@ -55,7 +55,7 @@ export const account = mysqlTable("photo_site_account", {
   openId: varchar("_openid", { length: 64 }).notNull().default(""),
 });
 
-export const verification = mysqlTable("photo_site_verification", {
+export const verification = pgTable("photo_site_verification", {
   id: authId("id").primaryKey(),
   identifier: varchar("identifier", { length: 320 }).notNull(),
   value: text("value").notNull(),

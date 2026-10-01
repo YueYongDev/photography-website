@@ -8,11 +8,9 @@
     "start": "node --env-file-if-exists=.env.local .next/standalone/server.js",
     "lint": "next lint",
     "db:generate": "bunx drizzle-kit generate",
-    "db:migrate": "bunx drizzle-kit migrate",
-    "db:studio": "bunx drizzle-kit studio",
-    "db:push": "bunx drizzle-kit push",
-    "db:audit-travel": "tsx scripts/audit-travel-archive.ts",
-    "db:reconcile-cities": "tsx scripts/reconcile-city-sets.ts"
+    "db:audit-travel": "node --conditions=react-server --import tsx scripts/audit-travel-archive.ts",
+    "db:reconcile-cities": "node --conditions=react-server --import tsx scripts/reconcile-city-sets.ts",
+    "db:verify": "node --conditions=react-server --import tsx scripts/cloudbase/verify-pg.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

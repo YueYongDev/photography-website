@@ -34,7 +34,7 @@ A modern, open-source photography blog platform built with the latest web techno
 ## 🛠️ Tech Stack
 
 - **Framework:** [Next.js 16](https://nextjs.org/)
-- **Database:** CloudBase MySQL 8.0
+- **Database:** CloudBase PostgreSQL 17 (shared cluster, HTTPS SQL)
 - **ORM:** [Drizzle](https://orm.drizzle.team/)
 - **Authentication:** [Better Auth](https://better-auth.com/)
 - **UI Components:** [Shadcn/ui](https://ui.shadcn.com/)
@@ -48,7 +48,7 @@ A modern, open-source photography blog platform built with the latest web techno
 
 - Node.js 20+
 - bun (recommended) or npm
-- A CloudBase MySQL database reachable from Vercel
+- A CloudBase PostgreSQL environment and a server-only API key
 - A Qiniu Kodo bucket and CDN domain
 - [Mapbox Account](https://console.mapbox.com/)
 
@@ -57,12 +57,9 @@ A modern, open-source photography blog platform built with the latest web techno
 Create a `.env.local` file in the root directory:
 
 ```bash
-# CloudBase MySQL connection URL reachable from Vercel
-DATABASE_URL=mysql://photo_site_app:password@database-host:3306/database
-DATABASE_POOL_SIZE=4
-
-# Optional database migration tooling
-CLOUDBASE_ENV_ID=ytools-d8gboj3ce7caccb14
+# CloudBase PostgreSQL HTTPS SQL; never expose the key to the browser
+CLOUDBASE_ENV_ID=yueyong-photo-d6gm6308c8838e9e7
+CLOUDBASE_API_KEY=
 CLOUDBASE_REGION=ap-shanghai
 
 # Qiniu Kodo photo storage
@@ -86,10 +83,23 @@ NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=
 ### Production architecture
 
 The Next.js application, dashboard, authentication routes, and tRPC API run on
-Vercel. CloudBase is used only for MySQL. Browser uploads are compressed before
+Vercel. CloudBase is used only for PostgreSQL through its HTTPS SQL API. Browser uploads are compressed before
 the server boundary, receive a short-lived upload token from Vercel, and go
 directly to Qiniu Kodo. The database stores the resulting public URL and photo
 metadata; it never stores image binaries.
+
+The free shared cluster does not expose a TCP database endpoint. `DATABASE_URL`
+and `DATABASE_POOL_SIZE` are no longer runtime settings. Drizzle uses a
+server-only PostgreSQL HTTP adapter, and photo/album changes are atomic through
+database triggers. SQL migrations live in `cloudbase/migrations/` and must be
+applied with CloudBase versioned migration tools; do not use `drizzle-kit push`
+or the old Supabase migration history against this database.
+
+Run `npm run db:verify` for read checks. The explicit
+`npm run db:verify -- --write-test` mode creates and cleans isolated temporary
+photo records in the selected migration environment. See
+[`specs/cloudbase-migration/postgres-cutover.md`](specs/cloudbase-migration/postgres-cutover.md)
+for data verification, credentials, and rollback procedures.
 
 ### Installation
 

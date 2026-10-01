@@ -1,23 +1,17 @@
-# CloudBase database migration task plan
+# CloudBase PostgreSQL migration — 2026-10-01
 
-## Completed
+- [x] Verify the new `yueyong-photo` environment and shared-cluster restrictions.
+- [x] Back up the source MySQL data and production configuration privately.
+- [x] Apply versioned PostgreSQL schema, security and album-maintenance migrations.
+- [x] Import all eight tables and compare every field against a fresh source export.
+- [x] Preserve Better Auth accounts, password hashes, session IDs and signing secret.
+- [x] Replace MySQL runtime access with the server-only CloudBase HTTPS SQL adapter.
+- [x] Preserve Qiniu image URLs, direct uploads and object deletion.
+- [x] Verify dates, search, dashboard SQL, row mapping and atomic album writes.
+- [x] Pass TypeScript checks, production build and lint of changed application code.
+- [x] Verify password login and a disposable upload/edit/delete through the browser.
+- [x] Remove the temporary account, sessions, photo row and Qiniu object.
+- [x] Configure production CloudBase variables and promote the tested deployment.
 
-- [x] Convert the photography schema and queries to CloudBase MySQL.
-- [x] Preserve Better Auth and photograph metadata during database migration.
-- [x] Keep the public application and dashboard deployable on Vercel.
-- [x] Remove CloudBase Static Hosting and media-gateway runtime dependencies.
-- [x] Restore browser-direct uploads to Qiniu with server-signed tokens.
-- [x] Restore Qiniu object deletion and storage health checks.
-- [x] Document the active Vercel + CloudBase MySQL + Qiniu architecture.
-
-## Deployment configuration
-
-- [ ] Configure a CloudBase MySQL URL reachable from Vercel.
-- [ ] Configure `QINIU_ACCESS_KEY`, `QINIU_SECRET_KEY`, `QINIU_BUCKET`, and
-  `QINIU_PUBLIC_URL` in Vercel.
-- [ ] Confirm the Qiniu bucket CORS policy permits uploads from the production
-  and intended preview origins.
-- [ ] Upload one disposable compressed photograph through the dashboard.
-- [ ] Verify the database row points to `cdn.ytools.xyz` and the image accepts
-  `imageView2` transformations.
-- [ ] Delete the disposable photograph and verify both row and object removal.
+See [the cutover record](./postgres-cutover.md) for production verification,
+backup locations, renewal information and rollback requirements.
