@@ -1,6 +1,6 @@
 # Photography Blog 📸
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ECarry/photography-website)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YueYongDev/photography-website)
 
 A modern, open-source photography blog platform built with the latest web technologies. Share your photography journey with style and efficiency.
 
@@ -106,7 +106,7 @@ for data verification, credentials, and rollback procedures.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/photography-website.git
+git clone https://github.com/YueYongDev/photography-website.git
 cd photography-website
 ```
 
